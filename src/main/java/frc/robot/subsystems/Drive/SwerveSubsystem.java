@@ -104,17 +104,13 @@ public class SwerveSubsystem extends TunerSwerveDrivetrain implements Subsystem 
                 /* also log the requested output for SysId */
                 SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
             },
-            // log -> {
-            //     log.motor("Drive Motor")
-            //         .voltage(getModule(0).getSteerMotor().get() * RobotController.getBatteryVoltage());
-            // },
             null,
             this
         )
     );
 
     /* The SysId routine to test */
-    private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
+    private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineSteer;
 
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
