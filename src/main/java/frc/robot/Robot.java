@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -30,6 +31,9 @@ public class Robot extends TimedRobot {
 
     public final SwerveSubsystem drivetrain = SwerveConstants.createDrivetrain();
 
+    private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
+        .withTimestampReplay()
+        .withJoystickReplay();
 
   public Robot() {
     // Note that X is defined as forward according to WPILib convention,
@@ -72,6 +76,7 @@ public class Robot extends TimedRobot {
 
 @Override
 public void robotPeriodic() {
+    m_timeAndJoystickReplay.update();
     CommandScheduler.getInstance().run();
   }
 
