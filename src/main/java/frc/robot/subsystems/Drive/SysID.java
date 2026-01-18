@@ -11,15 +11,17 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 public class SysID {
     private final SwerveSubsystem m_Subsystem;
-
+    
     // Swerve requests to apply during SysId characterization
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
     private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
-
+    
     private SysIdRoutine m_sysIdRoutineTranslation;
     private SysIdRoutine m_sysIdRoutineSteer;
     private SysIdRoutine m_sysIdRoutineRotation;
+
+    private SysIdRoutine m_sysIdRoutineToApply;
 
     public SysID(SwerveSubsystem subsystem) {
         m_Subsystem = subsystem;
@@ -33,7 +35,7 @@ public class SysID {
                 state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())
             ),
             new SysIdRoutine.Mechanism(
-                output -> m_Subsystem.setControl(m_translationCharacterization.withVolts(output)),
+                output -> m_Subsystem.setControl(m_translationCharacterization.withVolts(output.times(0.5))),
                 null,
                 m_Subsystem
             )
@@ -76,9 +78,8 @@ public class SysID {
             )
         );
 
+        m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
     }
-
-    private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineSteer;
 
     /**
      * Runs the SysId Quasistatic test in the given direction for the routine

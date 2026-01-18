@@ -4,19 +4,29 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.controller.HolonomicDriveController;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.trajectory.Trajectory.State;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.util.CommandBuilder;
+import frc.util.Constants;
+import frc.util.Constants.SwerveConstants;
 
 public class SwerveSubsystem extends SwerveBase implements Subsystem {
     private static final double kSimLoopPeriod = 0.004; // 4 ms
@@ -29,10 +39,18 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
 
     public SysID sysID;
 
+    private HolonomicDriveController driveController;
+
     public SwerveSubsystem() {
         super();
 
         sysID = new SysID(this);
+
+        driveController = new HolonomicDriveController(
+            new PIDController(SwerveConstants.driveGains.kP, SwerveConstants.driveGains.kI, SwerveConstants.driveGains.kD),
+            new PIDController(SwerveConstants.driveGains.kP, SwerveConstants.driveGains.kI, SwerveConstants.driveGains.kD),
+            new ProfiledPIDController(SwerveConstants.steerGains.kP, SwerveConstants.steerGains.kI, SwerveConstants.steerGains.kD, new Constraints(SwerveConstants.kMaxAngularRate, SwerveConstants.kMaxAngularAcceleration))
+        );
 
         if (Utils.isSimulation()) {
             startSimThread();
@@ -109,5 +127,31 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
     @Override
     public Optional<Pose2d> samplePoseAt(double timestampSeconds) {
         return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
+    }
+
+    private Pose2d currentPose() {
+        return getState().Pose;
+    }
+
+    public Command driveToState(State targetState, Rotation2d targetRotation) {
+        return new CommandBuilder(this)
+            .onExecute(
+                () -> {
+                    ChassisSpeeds speeds = driveController.calculate(
+                        currentPose(),
+                        targetState,
+                        targetRotation
+                    );
+
+                    final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
+                    .withDeadband(Constants.SwerveConstants.kMaxSpeed * 0.1)
+                    .withRotationalDeadband(Constants.SwerveConstants.kMaxAngularRate * 0.1) // Add a 10% deadband
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
+                    setControl(() -> {
+                        
+                    });
+                }
+            );
     }
 }
