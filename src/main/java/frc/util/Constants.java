@@ -13,7 +13,6 @@ import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -27,6 +26,9 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerFeedbackType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
 import com.ctre.phoenix6.swerve.SwerveModuleConstantsFactory;
 
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -35,6 +37,10 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Voltage;
 
 public class Constants {
+    public static boolean kUseSignalLogger = false;
+
+    public static final double kCANChainDisconectTimout = 0.3; // in seconds
+
     public class IOMap {
         /*
         *    +======================================+
@@ -73,6 +79,46 @@ public class Constants {
     }
 
     public class SwerveConstants {
+        // Max Speed
+        public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(5.76); // 5.76
+
+        private static final double kCoupleRatio = 3.125;
+
+        private static final double kDriveGearRatio = 5.357142857142857;
+        private static final double kSteerGearRatio = 18.75;
+        private static final Distance kWheelRadius = Inches.of(2);
+
+        private static final boolean kInvertLeftSide = false;
+        private static final boolean kInvertRightSide = true;
+
+        public static final double kGotoXYTolerance = 0.1d;
+        public static final double kGotoThetaTolerance = 1.0d;
+
+        // These are only used for simulation
+        private static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.01);
+        private static final MomentOfInertia kDriveInertia = KilogramSquareMeters.of(0.01);
+        // Simulated voltage necessary to overcome friction
+        private static final Voltage kSteerFrictionVoltage = Volts.of(0.2);
+        private static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
+
+        public static final double kMaxSpeed = 0.25 * kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+        public static final double kMaxAngularRate = .25 * RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+        public static final double kMaxAngularAcceleration = .25 * RotationsPerSecondPerSecond.of(1).in(RadiansPerSecondPerSecond);
+
+        private class XYPID {
+            public static final double kP = 3.25;
+            public static final double kI = .1;
+            public static final double kD = 0;
+        }
+        private class ThetaPID {
+            public static final double kP = 3;
+            public static final double kI = 0;
+            public static final double kD = .1;
+        }
+        public static final PIDController kHolonomicXPIDController = new PIDController(XYPID.kP, XYPID.kI, XYPID.kD);
+        public static final PIDController kHolonomicYPIDController = new PIDController(XYPID.kP, XYPID.kI, XYPID.kD);
+        public static final ProfiledPIDController kHolonomicThetaPIDController = new ProfiledPIDController(ThetaPID.kP, ThetaPID.kI, ThetaPID.kD, new Constraints(kMaxAngularRate, kMaxAngularAcceleration));
+
         // Steer PID
         public static final Slot0Configs steerGains = new Slot0Configs()
             .withKP(38.568).withKI(0).withKD(1.7601)
@@ -112,29 +158,6 @@ public class Constants {
         private static final Pigeon2Configuration pigeonConfigs = null;
 
         public static final CANBus kCANBus = new CANBus("", "./logs/example.hoot");
-
-        // Max Speed
-        public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(5.76); // 5.76
-
-        private static final double kCoupleRatio = 3.125;
-
-        private static final double kDriveGearRatio = 5.357142857142857;
-        private static final double kSteerGearRatio = 18.75;
-        private static final Distance kWheelRadius = Inches.of(2);
-
-        private static final boolean kInvertLeftSide = false;
-        private static final boolean kInvertRightSide = true;
-
-        // These are only used for simulation
-        private static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.01);
-        private static final MomentOfInertia kDriveInertia = KilogramSquareMeters.of(0.01);
-        // Simulated voltage necessary to overcome friction
-        private static final Voltage kSteerFrictionVoltage = Volts.of(0.2);
-        private static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
-        
-        public static final double kMaxSpeed = 1.0 * kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-        public static final double kMaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-        public static final double kMaxAngularAcceleration = RotationsPerSecondPerSecond.of(1).in(RadiansPerSecondPerSecond);
 
         public static final SwerveDrivetrainConstants kDrivetrainConstants = new SwerveDrivetrainConstants()
                 .withCANBusName(kCANBus.getName())

@@ -8,8 +8,11 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -29,6 +32,8 @@ public class Robot extends TimedRobot {
   public final SwerveSubsystem drivetrain = new SwerveSubsystem();
 
   public Robot() {
+    DataLogManager.start();
+
     final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
       .withDeadband(Constants.SwerveConstants.kMaxSpeed * 0.1)
       .withRotationalDeadband(Constants.SwerveConstants.kMaxAngularRate * 0.1) // Add a 10% deadband
@@ -59,6 +64,11 @@ public class Robot extends TimedRobot {
     // Reset the field-centric heading on left bumper press.
     driverController.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
+    Pose2d targetPose = Pose2d.kZero;
+    Rotation2d targetRotation = Rotation2d.kZero;
+    driverController.rightBumper().onTrue(drivetrain.driveToPose(targetPose, targetRotation, 0.0d));
+    driverController.rightBumper().onFalse(drivetrain.cancelGoto());
+
     //* This should probably stay separate from the rest of controls
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.
@@ -72,7 +82,14 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     m_timeAndJoystickReplay.update();
+    SmartDashboard.putData(CommandScheduler.getInstance());
+
+    if (!drivetrain.isCANSafe()) {
+      CommandScheduler.getInstance().disable();
+      return;
+    }
     CommandScheduler.getInstance().run();
+
   }
 
   @Override

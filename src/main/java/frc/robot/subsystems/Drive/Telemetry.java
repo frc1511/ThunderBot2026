@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import frc.util.Constants;
 
 public class Telemetry {
     private final double MaxSpeed;
@@ -31,7 +32,9 @@ public class Telemetry {
     public Telemetry(double maxSpeed) {
         MaxSpeed = maxSpeed;
         SignalLogger.setPath("/home/lvuser/logs/");
-        SignalLogger.start();
+        if (Constants.kUseSignalLogger) {
+            SignalLogger.start();
+        }
 
         /* Set up the module state Mechanism2d telemetry */
         for (int i = 0; i < 4; i++) {
@@ -87,6 +90,7 @@ public class Telemetry {
 
     /** Accept the swerve drive state and telemeterize it to SmartDashboard and SignalLogger. */
     public void telemeterize(SwerveDriveState state) {
+        if (!Constants.kUseSignalLogger) return;
         /* Telemeterize the swerve drive state */
         drivePose.set(state.Pose);
         driveSpeeds.set(state.Speeds);
