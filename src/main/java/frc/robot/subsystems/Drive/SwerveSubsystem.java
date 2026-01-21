@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.util.CommandBuilder;
 import frc.util.Constants.SwerveConstants;
+import frc.util.LimelightHelpers;
 import frc.util.Constants;
 
 public class SwerveSubsystem extends SwerveBase implements Subsystem {
@@ -86,6 +87,13 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
                 m_hasAppliedOperatorPerspective = true;
             });
         }
+
+        LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+        addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
+
+        Field2d currentField = new Field2d();
+        currentField.setRobotPose(currentPose());
+        SmartDashboard.putData("currentPose", currentField);
     }
 
     private void startSimThread() {
@@ -146,9 +154,6 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
                     Field2d targetField = new Field2d();
                     targetField.setRobotPose(targetPose);
                     SmartDashboard.putData("targetPose", targetField);
-                    Field2d currentField = new Field2d();
-                    currentField.setRobotPose(currentPose());
-                    SmartDashboard.putData("currentPose", currentField);
                     SmartDashboard.putNumber("targetVelX", speeds.vxMetersPerSecond * SwerveConstants.kMaxSpeed);
                     SmartDashboard.putNumber("targetVelY", speeds.vyMetersPerSecond * SwerveConstants.kMaxSpeed);
                     SmartDashboard.putNumber("targetVelTheta", speeds.omegaRadiansPerSecond * SwerveConstants.kMaxAngularRate);
