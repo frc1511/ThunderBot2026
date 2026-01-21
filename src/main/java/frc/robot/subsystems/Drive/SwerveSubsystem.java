@@ -152,8 +152,11 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
                     SmartDashboard.putNumber("targetVelX", speeds.vxMetersPerSecond * SwerveConstants.kMaxSpeed);
                     SmartDashboard.putNumber("targetVelY", speeds.vyMetersPerSecond * SwerveConstants.kMaxSpeed);
                     SmartDashboard.putNumber("targetVelTheta", speeds.omegaRadiansPerSecond * SwerveConstants.kMaxAngularRate);
+                    SmartDashboard.putNumber("currentVelTheta", getModule(0).getSteerMotor().getVelocity().getValueAsDouble());
+                    SmartDashboard.putNumber("currentTheta", currentPose().getRotation().getDegrees());
+                    SmartDashboard.putNumber("targetTheta", targetRotation.getDegrees());
                     setControl(
-                        new SwerveRequest.FieldCentric()
+                        new SwerveRequest.RobotCentric()
                             .withVelocityX(speeds.vxMetersPerSecond * SwerveConstants.kMaxSpeed)
                             .withVelocityY(speeds.vyMetersPerSecond * SwerveConstants.kMaxSpeed)
                             .withRotationalRate(speeds.omegaRadiansPerSecond * SwerveConstants.kMaxAngularRate)
@@ -180,12 +183,5 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
             }
         }
         return true;
-    }
-
-    public Command cancelGoto() {
-        return new CommandBuilder(this)
-            .onInitialize(() -> {m_cancelGoto = true;})
-            .isFinished(true)
-            .withName("cancelGoto");
     }
 }

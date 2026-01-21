@@ -92,7 +92,7 @@ public class Constants {
         private static final boolean kInvertRightSide = true;
 
         public static final double kGotoXYTolerance = 0.1d;
-        public static final double kGotoThetaTolerance = 1.0d;
+        public static final double kGotoThetaTolerance = 3d / 180d * Math.PI;
 
         // These are only used for simulation
         private static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.01);
@@ -111,9 +111,9 @@ public class Constants {
             public static final double kD = 0;
         }
         private class ThetaPID {
-            public static final double kP = 3;
+            public static final double kP = 5; // 5
             public static final double kI = 0;
-            public static final double kD = .1;
+            public static final double kD = 0.1;
         }
         public static final PIDController kHolonomicXPIDController = new PIDController(XYPID.kP, XYPID.kI, XYPID.kD);
         public static final PIDController kHolonomicYPIDController = new PIDController(XYPID.kP, XYPID.kI, XYPID.kD);

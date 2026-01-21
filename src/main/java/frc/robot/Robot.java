@@ -67,7 +67,6 @@ public class Robot extends TimedRobot {
     Pose2d targetPose = Pose2d.kZero;
     Rotation2d targetRotation = Rotation2d.kZero;
     driverController.rightBumper().onTrue(drivetrain.driveToPose(targetPose, targetRotation, 0.0d));
-    driverController.rightBumper().onFalse(drivetrain.cancelGoto());
 
     //* This should probably stay separate from the rest of controls
     // Run SysId routines when holding back/start and X/Y.
@@ -88,6 +87,7 @@ public class Robot extends TimedRobot {
       CommandScheduler.getInstance().disable();
       return;
     }
+    CommandScheduler.getInstance().enable();
     CommandScheduler.getInstance().run();
 
   }
