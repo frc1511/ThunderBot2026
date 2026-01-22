@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.HolonomicDriveController;
@@ -35,11 +36,17 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
     private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
     private boolean m_hasAppliedOperatorPerspective = false;
 
+    private boolean m_fieldCentric;
+    private SwerveRequest.FieldCentric m_fieldCentricRequest = new SwerveRequest.FieldCentric();
+    private SwerveRequest.RobotCentric m_robotCentricRequest = new SwerveRequest.RobotCentric();
+
     public SysID sysID;
 
     private HolonomicDriveController driveController;
 
     private boolean m_cancelGoto = false;
+
+    private Field2d m_currentField;
 
     public SwerveSubsystem() {
         super();
@@ -53,8 +60,43 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         );
         driveController.setTolerance(new Pose2d(SwerveConstants.kGotoXYTolerance, SwerveConstants.kGotoXYTolerance, new Rotation2d(SwerveConstants.kGotoThetaTolerance)));
 
+        m_currentField = new Field2d();
+
+        m_fieldCentric = true;
+
         if (Utils.isSimulation()) {
             startSimThread();
+        }
+    }
+
+    public Command toggleFieldCentric() {
+        return new CommandBuilder()
+            .onExecute(() -> {
+                m_fieldCentric = !m_fieldCentric;
+            })
+            .isFinished(() -> true);
+    }
+
+    public Command driveWithJoysticks(double leftX, double leftY, double rightX) {
+        System.out.println(leftX);
+        if (m_fieldCentric) {
+            return applyRequest(() -> m_fieldCentricRequest
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                .withVelocityX(-leftY * Constants.SwerveConstants.kMaxSpeed)
+                .withVelocityY(-leftX * Constants.SwerveConstants.kMaxSpeed)
+                .withRotationalRate(-rightX * Constants.SwerveConstants.kMaxAngularRate)
+                .withDeadband(.4 * Constants.SwerveConstants.kMaxSpeed)
+                .withRotationalDeadband(.1 * Constants.SwerveConstants.kMaxAngularRate)
+            );
+        } else {
+            return applyRequest(() -> m_robotCentricRequest
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                .withVelocityX(-leftY * Constants.SwerveConstants.kMaxSpeed)
+                .withVelocityY(-leftX * Constants.SwerveConstants.kMaxSpeed)
+                .withRotationalRate(-rightX * Constants.SwerveConstants.kMaxAngularRate)
+                .withDeadband(.4 * Constants.SwerveConstants.kMaxSpeed)
+                .withRotationalDeadband(.1 * Constants.SwerveConstants.kMaxAngularRate)
+            );
         }
     }
 
@@ -88,12 +130,11 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
             });
         }
 
-        LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
-        addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
+        // LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+        // addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
 
-        Field2d currentField = new Field2d();
-        currentField.setRobotPose(currentPose());
-        SmartDashboard.putData("currentPose", currentField);
+        m_currentField.setRobotPose(currentPose());
+        SmartDashboard.putData("currentPose", m_currentField);
     }
 
     private void startSimThread() {

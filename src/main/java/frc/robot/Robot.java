@@ -6,7 +6,6 @@ package frc.robot;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.HootAutoReplay;
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,14 +17,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
-import frc.robot.subsystems.Drive.Telemetry;
-import frc.util.Constants;
 
 public class Robot extends TimedRobot {
 
   private final CommandXboxController driverController = new CommandXboxController(0);
 
-  private final Telemetry logger = new Telemetry(Constants.SwerveConstants.kMaxSpeed);
+  // private final Telemetry logger = new Telemetry(Constants.SwerveConstants.kMaxSpeed);
   private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
       .withTimestampReplay()
       .withJoystickReplay();
@@ -34,21 +31,13 @@ public class Robot extends TimedRobot {
   public Robot() {
     DataLogManager.start();
 
-    final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-      .withDeadband(Constants.SwerveConstants.kMaxSpeed * 0.1)
-      .withRotationalDeadband(Constants.SwerveConstants.kMaxAngularRate * 0.1) // Add a 10% deadband
-      .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
     final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
+    driverController.leftTrigger(.1).onTrue(drivetrain.toggleFieldCentric());
+
     drivetrain.setDefaultCommand(
-        drivetrain.applyRequest(() ->
-            drive.withVelocityX(-driverController.getLeftY() * Constants.SwerveConstants.kMaxSpeed)
-                .withVelocityY(-driverController.getLeftX() * Constants.SwerveConstants.kMaxSpeed)
-                .withRotationalRate(-driverController.getRightX() * Constants.SwerveConstants.kMaxAngularRate)
-                .withDeadband(.4 * Constants.SwerveConstants.kMaxSpeed)
-                .withRotationalDeadband(.1 * Constants.SwerveConstants.kMaxAngularRate)
-        )
+        drivetrain.driveWithJoysticks(driverController.getLeftX(), driverController.getLeftY(), driverController.getRightX())
     );
 
     final var idle = new SwerveRequest.Idle();
@@ -75,7 +64,7 @@ public class Robot extends TimedRobot {
     driverController.start().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
     driverController.back().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
     driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
-    drivetrain.registerTelemetry(logger::telemeterize);
+    // drivetrain.registerTelemetry(logger::telemeterize);
 }
 
   @Override
