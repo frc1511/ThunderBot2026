@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.HootAutoReplay;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -31,30 +30,24 @@ public class Robot extends TimedRobot {
   public Robot() {
     DataLogManager.start();
 
-    final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-    final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
-
     driverController.leftTrigger(.1).onTrue(drivetrain.toggleFieldCentric());
 
     drivetrain.setDefaultCommand(
-        drivetrain.driveWithJoysticks(driverController.getLeftX(), driverController.getLeftY(), driverController.getRightX())
+        drivetrain.driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
     );
 
-    final var idle = new SwerveRequest.Idle();
     RobotModeTriggers.disabled().whileTrue(
-        drivetrain.applyRequest(() -> idle).ignoringDisable(true)
+        drivetrain.idle()
     );
 
-    driverController.a().whileTrue(drivetrain.applyRequest(() -> brake));
-    driverController.b().whileTrue(drivetrain.applyRequest(() ->
-        point.withModuleDirection(new Rotation2d(-driverController.getLeftY(), -driverController.getLeftX()))
-    ));
+    driverController.a().whileTrue(drivetrain.brick());
+    driverController.b().whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
 
     // Reset the field-centric heading on left bumper press.
     driverController.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
     Pose2d targetPose = Pose2d.kZero;
-    Rotation2d targetRotation = Rotation2d.kZero;
+    Rotation2d targetRotation = Rotation2d.k180deg;
     driverController.rightBumper().onTrue(drivetrain.driveToPose(targetPose, targetRotation, 0.0d));
 
     //* This should probably stay separate from the rest of controls
@@ -78,7 +71,6 @@ public class Robot extends TimedRobot {
     }
     CommandScheduler.getInstance().enable();
     CommandScheduler.getInstance().run();
-
   }
 
   @Override

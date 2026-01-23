@@ -1,6 +1,7 @@
 package frc.robot.subsystems.Drive;
 
 import java.util.Optional;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.Utils;
@@ -37,8 +38,11 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
     private boolean m_hasAppliedOperatorPerspective = false;
 
     private boolean m_fieldCentric;
-    private SwerveRequest.FieldCentric m_fieldCentricRequest = new SwerveRequest.FieldCentric();
-    private SwerveRequest.RobotCentric m_robotCentricRequest = new SwerveRequest.RobotCentric();
+    private final SwerveRequest.FieldCentric m_fieldCentricRequest = new SwerveRequest.FieldCentric();
+    private final SwerveRequest.RobotCentric m_robotCentricRequest = new SwerveRequest.RobotCentric();
+    private final SwerveRequest.SwerveDriveBrake m_brickRequest = new SwerveRequest.SwerveDriveBrake();
+    private final SwerveRequest.PointWheelsAt m_pointRequest = new SwerveRequest.PointWheelsAt();
+    private final SwerveRequest.Idle m_idleRequest = new SwerveRequest.Idle();
 
     public SysID sysID;
 
@@ -77,27 +81,41 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
             .isFinished(() -> true);
     }
 
-    public Command driveWithJoysticks(double leftX, double leftY, double rightX) {
-        System.out.println(leftX);
-        if (m_fieldCentric) {
-            return applyRequest(() -> m_fieldCentricRequest
-                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-                .withVelocityX(-leftY * Constants.SwerveConstants.kMaxSpeed)
-                .withVelocityY(-leftX * Constants.SwerveConstants.kMaxSpeed)
-                .withRotationalRate(-rightX * Constants.SwerveConstants.kMaxAngularRate)
-                .withDeadband(.4 * Constants.SwerveConstants.kMaxSpeed)
-                .withRotationalDeadband(.1 * Constants.SwerveConstants.kMaxAngularRate)
-            );
-        } else {
-            return applyRequest(() -> m_robotCentricRequest
-                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-                .withVelocityX(-leftY * Constants.SwerveConstants.kMaxSpeed)
-                .withVelocityY(-leftX * Constants.SwerveConstants.kMaxSpeed)
-                .withRotationalRate(-rightX * Constants.SwerveConstants.kMaxAngularRate)
-                .withDeadband(.4 * Constants.SwerveConstants.kMaxSpeed)
-                .withRotationalDeadband(.1 * Constants.SwerveConstants.kMaxAngularRate)
-            );
-        }
+    public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX) {
+        return applyRequest(() -> {
+            if (m_fieldCentric) {
+                return m_fieldCentricRequest
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(-leftY.getAsDouble() * Constants.SwerveConstants.kMaxSpeed)
+                    .withVelocityY(-leftX.getAsDouble() * Constants.SwerveConstants.kMaxSpeed)
+                    .withRotationalRate(-rightX.getAsDouble() * Constants.SwerveConstants.kMaxAngularRate)
+                    .withDeadband(.4 * Constants.SwerveConstants.kMaxSpeed)
+                    .withRotationalDeadband(.1 * Constants.SwerveConstants.kMaxAngularRate);
+            } else {
+                return m_robotCentricRequest
+                    .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                    .withVelocityX(-leftY.getAsDouble() * Constants.SwerveConstants.kMaxSpeed)
+                    .withVelocityY(-leftX.getAsDouble() * Constants.SwerveConstants.kMaxSpeed)
+                    .withRotationalRate(-rightX.getAsDouble() * Constants.SwerveConstants.kMaxAngularRate)
+                    .withDeadband(.4 * Constants.SwerveConstants.kMaxSpeed)
+                    .withRotationalDeadband(.1 * Constants.SwerveConstants.kMaxAngularRate);
+            }
+        }).withName("driveWithJoysticks");
+    }
+
+    public Command brick() {
+        return applyRequest(() -> m_brickRequest).withName("driveBrick");
+    }
+
+    public Command pointWithController(DoubleSupplier leftX, DoubleSupplier leftY) {
+        return applyRequest(() ->
+            m_pointRequest.withModuleDirection(new Rotation2d(-leftY.getAsDouble(), -leftX.getAsDouble()))
+        )
+        .withName("drivePointWithController");
+    }
+
+    public Command idle() {
+        return applyRequest(() -> m_idleRequest).ignoringDisable(true).withName("driveIdle");
     }
 
     /**
@@ -135,6 +153,8 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
 
         m_currentField.setRobotPose(currentPose());
         SmartDashboard.putData("currentPose", m_currentField);
+
+        SmartDashboard.putString("Robot drive mode", m_fieldCentric ? "Field Centric" : "Robot Centric");
     }
 
     private void startSimThread() {
