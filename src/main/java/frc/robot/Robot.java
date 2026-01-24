@@ -7,15 +7,15 @@ package frc.robot;
 import com.ctre.phoenix6.HootAutoReplay;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+// import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
+import frc.util.Alert;
+import frc.util.Constants.SwerveConstants;
 
 public class Robot extends TimedRobot {
 
@@ -28,17 +28,19 @@ public class Robot extends TimedRobot {
   public final SwerveSubsystem drivetrain = new SwerveSubsystem();
 
   public Robot() {
-    DataLogManager.start();
+    // DataLogManager.start();
+    Alert.info("The robot has restarted");
 
     driverController.leftTrigger(.1).onTrue(drivetrain.toggleFieldCentric());
 
     drivetrain.setDefaultCommand(
-        drivetrain.driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
+        drivetrain
+          .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
+          // .unless(() -> driverController.y().getAsBoolean())
+          .withName("driveWithJoysticks")
     );
 
-    RobotModeTriggers.disabled().whileTrue(
-        drivetrain.idle()
-    );
+    RobotModeTriggers.disabled().whileTrue(drivetrain.idle());
 
     driverController.a().whileTrue(drivetrain.brick());
     driverController.b().whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
@@ -46,17 +48,15 @@ public class Robot extends TimedRobot {
     // Reset the field-centric heading on left bumper press.
     driverController.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-    Pose2d targetPose = Pose2d.kZero;
-    Rotation2d targetRotation = Rotation2d.k180deg;
-    driverController.rightBumper().onTrue(drivetrain.driveToPose(targetPose, targetRotation, 0.0d));
+    Pose2d targetPose = SwerveConstants.targetPose;
+    driverController.rightBumper().onTrue(drivetrain.driveToPose(() -> targetPose, 0.0d, null));
 
-    //* This should probably stay separate from the rest of controls
-    // Run SysId routines when holding back/start and X/Y.
-    // Note that each routine should be run exactly once in a single log.
-    driverController.start().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
-    driverController.start().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
-    driverController.back().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
-    driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
+    driverController.y().whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
+
+    // driverController.start().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
+    // driverController.start().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
+    // driverController.back().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
+    // driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
     // drivetrain.registerTelemetry(logger::telemeterize);
 }
 
@@ -65,11 +65,6 @@ public class Robot extends TimedRobot {
     m_timeAndJoystickReplay.update();
     SmartDashboard.putData(CommandScheduler.getInstance());
 
-    if (!drivetrain.isCANSafe()) {
-      CommandScheduler.getInstance().disable();
-      return;
-    }
-    CommandScheduler.getInstance().enable();
     CommandScheduler.getInstance().run();
   }
 

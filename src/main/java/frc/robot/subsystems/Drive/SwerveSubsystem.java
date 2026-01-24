@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.util.Alert;
 import frc.util.CommandBuilder;
 import frc.util.Constants.SwerveConstants;
 import frc.util.LimelightHelpers;
@@ -46,25 +47,28 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
 
     public SysID sysID;
 
-    private HolonomicDriveController driveController;
-
-    private boolean m_cancelGoto = false;
+    private HolonomicDriveController m_driveController;
 
     private Field2d m_currentField;
+    private Field2d m_targetField;
+
+    private double m_arcLockDistance;
+    private double m_arcLockTheta;
 
     public SwerveSubsystem() {
         super();
 
         sysID = new SysID(this);
 
-        driveController = new HolonomicDriveController(
+        m_driveController = new HolonomicDriveController(
             SwerveConstants.kHolonomicXPIDController,
             SwerveConstants.kHolonomicYPIDController,
             SwerveConstants.kHolonomicThetaPIDController
         );
-        driveController.setTolerance(new Pose2d(SwerveConstants.kGotoXYTolerance, SwerveConstants.kGotoXYTolerance, new Rotation2d(SwerveConstants.kGotoThetaTolerance)));
+        m_driveController.setTolerance(new Pose2d(SwerveConstants.kGotoXYTolerance, SwerveConstants.kGotoXYTolerance, new Rotation2d(SwerveConstants.kGotoThetaTolerance)));
 
         m_currentField = new Field2d();
+        m_targetField = new Field2d();
 
         m_fieldCentric = true;
 
@@ -83,22 +87,26 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
 
     public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX) {
         return applyRequest(() -> {
+            // YES! The y and x are swaped on purpose, it has to do with coordiante systems in the library so just leave it like this please!
+            double vx = -leftY.getAsDouble() * Constants.SwerveConstants.kMaxSpeed;
+            double vy = -leftX.getAsDouble() * Constants.SwerveConstants.kMaxSpeed;
+            double vrot = -rightX.getAsDouble() * Constants.SwerveConstants.kMaxAngularRate;
             if (m_fieldCentric) {
                 return m_fieldCentricRequest
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-                    .withVelocityX(-leftY.getAsDouble() * Constants.SwerveConstants.kMaxSpeed)
-                    .withVelocityY(-leftX.getAsDouble() * Constants.SwerveConstants.kMaxSpeed)
-                    .withRotationalRate(-rightX.getAsDouble() * Constants.SwerveConstants.kMaxAngularRate)
-                    .withDeadband(.4 * Constants.SwerveConstants.kMaxSpeed)
-                    .withRotationalDeadband(.1 * Constants.SwerveConstants.kMaxAngularRate);
+                    .withVelocityX(vx)
+                    .withVelocityY(vy)
+                    .withRotationalRate(vrot)
+                    .withDeadband(Constants.SwerveConstants.kVelocityDeadband)
+                    .withRotationalDeadband(Constants.SwerveConstants.kAngularVelocityDeadband);
             } else {
                 return m_robotCentricRequest
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-                    .withVelocityX(-leftY.getAsDouble() * Constants.SwerveConstants.kMaxSpeed)
-                    .withVelocityY(-leftX.getAsDouble() * Constants.SwerveConstants.kMaxSpeed)
-                    .withRotationalRate(-rightX.getAsDouble() * Constants.SwerveConstants.kMaxAngularRate)
-                    .withDeadband(.4 * Constants.SwerveConstants.kMaxSpeed)
-                    .withRotationalDeadband(.1 * Constants.SwerveConstants.kMaxAngularRate);
+                    .withVelocityX(vx)
+                    .withVelocityY(vy)
+                    .withRotationalRate(vrot)
+                    .withDeadband(Constants.SwerveConstants.kVelocityDeadband)
+                    .withRotationalDeadband(Constants.SwerveConstants.kAngularVelocityDeadband);
             }
         }).withName("driveWithJoysticks");
     }
@@ -125,7 +133,14 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
      * @return Command to run
      */
     public Command applyRequest(Supplier<SwerveRequest> request) {
-        return run(() -> this.setControl(request.get()));
+        return run(() -> {
+            if (isCANSafe()) {
+                this.setControl(request.get());
+            } else {
+                Alert.error("DRIVE DISABLED | CAN DISCONNECT");
+                this.setControl(m_idleRequest);
+            }
+        });
     }
 
     @Override
@@ -148,11 +163,18 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
             });
         }
 
-        // LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
-        // addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
+        LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+        if (limelightMeasurement != null) {
+            if (limelightMeasurement.tagCount >= 1) {
+                addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
+            }
+        } else {
+            Alert.warning("Couldn't find limelight");
+        }
 
         m_currentField.setRobotPose(currentPose());
         SmartDashboard.putData("currentPose", m_currentField);
+        SmartDashboard.putData("targetPose", m_targetField);
 
         SmartDashboard.putString("Robot drive mode", m_fieldCentric ? "Field Centric" : "Robot Centric");
     }
@@ -202,52 +224,74 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         return getState().Pose;
     }
 
-    public Command driveToPose(Pose2d targetPose, Rotation2d targetRotation, double targetVelocity) {
-        return new CommandBuilder(this)
+    public CommandBuilder driveToPose(Supplier<Pose2d> targetPoseSupplier, double targetVelocity, Optional<Boolean> allowedToFinish) {
+        return new CommandBuilder("DriveToPose", this)
             .onExecute(
                 () -> {
-                    ChassisSpeeds speeds = driveController.calculate(
+                    Pose2d targetPose = targetPoseSupplier.get();
+                    ChassisSpeeds speeds = m_driveController.calculate(
                         currentPose(),
                         targetPose,
                         targetVelocity,
-                        targetRotation
+                        targetPose.getRotation()
                     );
-                    Field2d targetField = new Field2d();
-                    targetField.setRobotPose(targetPose);
-                    SmartDashboard.putData("targetPose", targetField);
+                    m_targetField.setRobotPose(targetPose);
                     SmartDashboard.putNumber("targetVelX", speeds.vxMetersPerSecond * SwerveConstants.kMaxSpeed);
                     SmartDashboard.putNumber("targetVelY", speeds.vyMetersPerSecond * SwerveConstants.kMaxSpeed);
                     SmartDashboard.putNumber("targetVelTheta", speeds.omegaRadiansPerSecond * SwerveConstants.kMaxAngularRate);
                     SmartDashboard.putNumber("currentVelTheta", getModule(0).getSteerMotor().getVelocity().getValueAsDouble());
                     SmartDashboard.putNumber("currentTheta", currentPose().getRotation().getDegrees());
-                    SmartDashboard.putNumber("targetTheta", targetRotation.getDegrees());
+                    SmartDashboard.putNumber("targetTheta", targetPose.getRotation().getDegrees());
                     setControl(
                         new SwerveRequest.RobotCentric()
                             .withVelocityX(speeds.vxMetersPerSecond * SwerveConstants.kMaxSpeed)
                             .withVelocityY(speeds.vyMetersPerSecond * SwerveConstants.kMaxSpeed)
                             .withRotationalRate(speeds.omegaRadiansPerSecond * SwerveConstants.kMaxAngularRate)
+                            .withDeadband(SwerveConstants.kVelocityDeadband * 0.5)
+                            .withRotationalDeadband(SwerveConstants.kAngularVelocityDeadband)
                     );
                 }
             )
             .isFinished(
                 () -> {
-                    if (m_cancelGoto) {
-                        m_cancelGoto = false;
-                        return true;
-                    }
-                    return driveController.atReference() || m_cancelGoto;
+                    return m_driveController.atReference() && allowedToFinish.orElse(true);
                 }
-            )
-            .withName("driveToPose");
+            );
     }
 
     public boolean isCANSafe() {
         for (int i = 0; i < getModules().length; i++) {
             if (!getModule(i).getDriveMotor().isConnected(Constants.kCANChainDisconectTimout) || !getModule(i).getSteerMotor().isConnected(Constants.kCANChainDisconectTimout)) {
-                System.err.println("[!!!!!!!] THERE IS A BIG O PROBLEM WITH THE DRIVE TRAIN D: (CAN DISCONECT)");
                 return false;
             }
         }
         return true;
+    }
+
+    public Command driveLockedToArcWithJoysticks(DoubleSupplier leftX) {
+        Pose2d centerPose = new Pose2d(
+            11.887319,
+            7.41196,
+            Rotation2d.kZero
+        );
+        return driveToPose(
+                () -> {
+                    m_arcLockTheta += Math.toRadians(leftX.getAsDouble());
+                    
+                    return new Pose2d(
+                        Math.cos(m_arcLockTheta) * m_arcLockDistance + centerPose.getX(),
+                        Math.sin(m_arcLockTheta) * m_arcLockDistance + centerPose.getY(),
+                        new Rotation2d(m_arcLockTheta + Math.PI)
+                    );
+                }, 0.0d, Optional.of(Boolean.valueOf(false)))
+            .onInitialize(() -> {
+                Pose2d currentPose = currentPose();
+
+                double dX = currentPose.getX() - centerPose.getX();
+                double dY = currentPose.getY() - centerPose.getY();
+        
+                m_arcLockDistance = Math.hypot(dX, dY);
+                m_arcLockTheta = Math.atan2(dY, dX);
+            });
     }
 }

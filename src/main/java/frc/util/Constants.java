@@ -29,6 +29,8 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstantsFactory;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -39,7 +41,9 @@ import edu.wpi.first.units.measure.Voltage;
 public class Constants {
     public static boolean kUseSignalLogger = false;
 
-    public static final double kCANChainDisconectTimout = 0.3; // in seconds
+    public static final double kCANChainDisconectTimout = 0.4; // in seconds
+
+    public static final double kAntiSpamAlertTimeout = 5; // in seconds
 
     public class IOMap {
         /*
@@ -80,7 +84,7 @@ public class Constants {
 
     public class SwerveConstants {
         // Max Speed
-        public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(5.76); // 5.76
+        public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(5.76); // DON"T TOUCH, USE MULTIPLIER FOR MAX SPEED INSTEAD
 
         private static final double kCoupleRatio = 3.125;
 
@@ -101,9 +105,12 @@ public class Constants {
         private static final Voltage kSteerFrictionVoltage = Volts.of(0.2);
         private static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
 
-        public static final double kMaxSpeed = 0.25 * kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-        public static final double kMaxAngularRate = .25 * RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-        public static final double kMaxAngularAcceleration = .25 * RotationsPerSecondPerSecond.of(1).in(RadiansPerSecondPerSecond);
+        public static final double kMaxSpeed = 0.25 * kSpeedAt12Volts.in(MetersPerSecond); // % Multiplier | kSpeedAt12Volts desired top speed
+        public static final double kMaxAngularRate = .5 * RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+        public static final double kMaxAngularAcceleration = .5 * RotationsPerSecondPerSecond.of(1).in(RadiansPerSecondPerSecond);
+
+        public static final double kVelocityDeadband = 0.40 * kMaxSpeed; // % Multiplier 
+        public static final double kAngularVelocityDeadband = 0.10 * kMaxAngularRate; // % Multiplier
 
         private class XYPID {
             public static final double kP = 3.25;
@@ -118,6 +125,12 @@ public class Constants {
         public static final PIDController kHolonomicXPIDController = new PIDController(XYPID.kP, XYPID.kI, XYPID.kD);
         public static final PIDController kHolonomicYPIDController = new PIDController(XYPID.kP, XYPID.kI, XYPID.kD);
         public static final ProfiledPIDController kHolonomicThetaPIDController = new ProfiledPIDController(ThetaPID.kP, ThetaPID.kI, ThetaPID.kD, new Constraints(kMaxAngularRate, kMaxAngularAcceleration));
+
+        public static Pose2d targetPose = new Pose2d(
+            11.887319 - 1,
+            7.41196,
+            new Rotation2d(-Math.PI / 2d)
+        );
 
         // Steer PID
         public static final Slot0Configs steerGains = new Slot0Configs()
