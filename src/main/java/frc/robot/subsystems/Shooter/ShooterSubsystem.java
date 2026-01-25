@@ -15,61 +15,47 @@ public class ShooterSubsystem extends SubsystemBase {
     private TalonFX m_shooterMotor;
     private TalonFX m_turretMotor;
     private TalonFX m_hoodMotor;
-    private TalonFXConfiguration configuration;
-    private TalonFXConfiguration turretConfiguration;
-    private TalonFXConfiguration hoodConfiguration;
 
     public ShooterSubsystem() {
         m_shooterMotor = new TalonFX(Constants.IOMap.Shooter.shooterMotor);
-        configuration = new TalonFXConfiguration();
-        configuration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        m_shooterMotor.getConfigurator().apply(configuration);
+        TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
+        shooterConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        m_shooterMotor.getConfigurator().apply(shooterConfig);
 
         m_turretMotor = new TalonFX(Constants.IOMap.Shooter.turretMotor);
-        turretConfiguration = new TalonFXConfiguration(); 
-        turretConfiguration.Slot0 = new Slot0Configs()
-            .withKP(0).withKI(0).withKD(0); // just placeholder values
-        m_turretMotor.getConfigurator().apply(turretConfiguration);
-    
+        TalonFXConfiguration turretConfig = new TalonFXConfiguration(); 
+        turretConfig.Slot0 = new Slot0Configs()
+            .withKP(Constants.Shooter.TurretPID.kP).withKI(Constants.Shooter.TurretPID.kI).withKD(Constants.Shooter.TurretPID.kD);
+        m_turretMotor.getConfigurator().apply(turretConfig);
+
         m_hoodMotor = new TalonFX(Constants.IOMap.Shooter.hoodMotor);
-        hoodConfiguration = new TalonFXConfiguration(); 
-        hoodConfiguration.Slot0 = new Slot0Configs()
-            .withKP(0).withKI(0).withKD(0); // just placeholder values
-        m_hoodMotor.getConfigurator().apply(hoodConfiguration);
+        TalonFXConfiguration hoodConfig = new TalonFXConfiguration(); 
+        hoodConfig.Slot0 = new Slot0Configs()
+            .withKP(Constants.Shooter.HoodPID.kP).withKI(Constants.Shooter.HoodPID.kI).withKD(Constants.Shooter.HoodPID.kD);
+        m_hoodMotor.getConfigurator().apply(hoodConfig);
     }
 
-    public Command shooterRun() {
+    public Command shoot() {
         return new CommandBuilder(this)
-            .onExecute(() -> {
-                m_shooterMotor.set(.1);
-            });
+            .onExecute(() -> m_shooterMotor.set(Constants.Shooter.kMaxShooterSpeed))
+            .isFinished(true);
     }
 
-    public Command shooterStop() {
+    public Command stopShoot() {
         return new CommandBuilder(this)
-            .onExecute(() -> {
-                m_shooterMotor.stopMotor();
-            })
-            .isFinished(() -> true);
+            .onExecute(m_shooterMotor::stopMotor)
+            .isFinished(true);
     }
 
     public Command turretToPosition(double targetPosition) {
         return new CommandBuilder(this) 
-            .onExecute(() -> {
-                m_turretMotor.setControl(new PositionVoltage(targetPosition));
-            })
-            .isFinished(() ->{
-                return m_turretMotor.getClosedLoopError().getValueAsDouble() < .5d;
-            });
+            .onExecute(() -> m_turretMotor.setControl(new PositionVoltage(targetPosition)))
+            .isFinished(() -> m_turretMotor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kTurretTolerance);
     }
 
     public Command hoodToPosition(double targetPosition) {
         return new CommandBuilder(this) 
-            .onExecute(() -> {
-                m_hoodMotor.setControl(new PositionVoltage(targetPosition));
-            })
-            .isFinished(() ->{
-                return m_hoodMotor.getClosedLoopError().getValueAsDouble() < .5d;
-            });
+            .onExecute(() -> m_hoodMotor.setControl(new PositionVoltage(targetPosition)))
+            .isFinished(() -> m_hoodMotor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kHoodTolerance);
     }  
 }

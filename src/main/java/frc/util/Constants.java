@@ -17,10 +17,27 @@ public class Constants {
         *    +======================================+
         */
 
-        public class Shooter {
-            public static final int shooterMotor = 20;
-            public static final int hoodMotor = 21;      // line 21, 22 and 23 have placeholder values
-            public static final int turretMotor = 22;
+        public interface Shooter {
+            //TODO: actual can ids
+            int shooterMotor = 20;
+            int hoodMotor = 21;
+            int turretMotor = 22;
         }
+    }
+
+    protected interface BasePID {
+        double kP = 0.0d;
+        double kI = 0.0d;
+        double kD = 0.0d;
+    }
+
+    public interface Shooter {
+        double kMaxShooterSpeed = 0.5d;
+        double kTurretTolerance = 0.5d;
+        double kHoodTolerance = 0.5d;
+
+        public interface TurretPID extends BasePID {}
+        public interface HoodPID extends BasePID {}
+
     }
 }   

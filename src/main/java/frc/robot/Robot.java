@@ -16,7 +16,7 @@ public class Robot extends TimedRobot {
   private final ShooterSubsystem shooter = new ShooterSubsystem();
 
   public Robot() {
-    driverController.rightBumper().onTrue(shooter.shooterRun()).onFalse(shooter.shooterStop()); // right bumper toggle shooter motor
+    driverController.rightBumper().onTrue(shooter.shoot()).onFalse(shooter.stopShoot()); // right bumper toggle shooter motor
   }
 
   @Override
