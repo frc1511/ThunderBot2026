@@ -80,6 +80,13 @@ public class Constants {
 
             public static final int kPigeon = 13;
         }
+      
+        public interface Shooter {
+            //TODO: actual can ids
+            int shooterMotor = 20;
+            int hoodMotor = 21;
+            int turretMotor = 22;
+        }
     }
 
     protected interface BasePID {
@@ -87,7 +94,17 @@ public class Constants {
         double kI = 0.0d;
         double kD = 0.0d;
     }
+    
+    public interface Shooter {
+        double kMaxShooterSpeed = 0.5d;
+        double kTurretTolerance = 0.5d;
+        double kHoodTolerance = 0.5d;
 
+        public interface TurretPID extends BasePID {}
+        public interface HoodPID extends BasePID {}
+
+    }
+  
     public class Swerve {
         // Max Speed
         public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(5.76); // DON"T TOUCH, USE MULTIPLIER FOR MAX SPEED INSTEAD

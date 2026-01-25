@@ -24,7 +24,9 @@ public class Robot extends TimedRobot {
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
         .withTimestampReplay()
         .withJoystickReplay();
+  
     public final SwerveSubsystem drivetrain = new SwerveSubsystem();
+    private final ShooterSubsystem shooter = new ShooterSubsystem();
 
     public Robot() {
         // DataLogManager.start();
@@ -36,9 +38,9 @@ public class Robot extends TimedRobot {
             drivetrain
                 .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
         );
-
+      
         RobotModeTriggers.disabled().whileTrue(drivetrain.idle());
-
+        
         driverController.a().whileTrue(drivetrain.brick());
         driverController.b().whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
 
@@ -51,6 +53,7 @@ public class Robot extends TimedRobot {
         );
 
         driverController.y().whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
+        driverController.rightBumper().onTrue(shooter.shoot()).onFalse(shooter.stopShoot()); // right bumper toggle shooter motor
 
         // driverController.start().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
         // driverController.start().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
@@ -87,8 +90,7 @@ public class Robot extends TimedRobot {
     public void autonomousExit() {}
 
     @Override
-    public void teleopInit() {
-    }
+    public void teleopInit() {}
 
     @Override
     public void teleopPeriodic() {}
