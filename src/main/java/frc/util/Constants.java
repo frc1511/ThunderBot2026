@@ -16,5 +16,10 @@ public class Constants {
         *    |                                      |
         *    +======================================+
         */
+
+        public class Intake {
+            public static final int pivotMotor = 24;
+            public static final int chompMotor = 25;
+        }
     }
 }
