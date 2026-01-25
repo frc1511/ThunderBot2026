@@ -4,65 +4,108 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.HootAutoReplay;
+
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.subsystems.Shooter.ShooterSubsystem;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+// import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.subsystems.Drive.SwerveSubsystem;
+import frc.util.Alert;
+import frc.util.Constants.Swerve;
 
 public class Robot extends TimedRobot {
 
-  private final CommandXboxController driverController = new CommandXboxController(0);
+    private final CommandXboxController driverController = new CommandXboxController(0);
 
-  private final ShooterSubsystem shooter = new ShooterSubsystem();
+    // private final Telemetry logger = new Telemetry(Constants.SwerveConstants.kMaxSpeed);
+    private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
+        .withTimestampReplay()
+        .withJoystickReplay();
+  
+    public final SwerveSubsystem drivetrain = new SwerveSubsystem();
+    private final ShooterSubsystem shooter = new ShooterSubsystem();
 
-  public Robot() {
-    driverController.rightBumper().onTrue(shooter.shoot()).onFalse(shooter.stopShoot()); // right bumper toggle shooter motor
-  }
+    public Robot() {
+        // DataLogManager.start();
+        Alert.info("The robot has restarted");
 
-  @Override
-  public void robotPeriodic() {
-    CommandScheduler.getInstance().run();
-  }
+        driverController.leftTrigger(.1).onTrue(drivetrain.toggleFieldCentric());
 
-  @Override
-  public void disabledInit() {}
+        drivetrain.setDefaultCommand(
+            drivetrain
+                .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
+        );
+      
+        RobotModeTriggers.disabled().whileTrue(drivetrain.idle());
+        
+        driverController.a().whileTrue(drivetrain.brick());
+        driverController.b().whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
 
-  @Override
-  public void disabledPeriodic() {}
+        // Reset the field-centric heading on left bumper press.
+        driverController.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-  @Override
-  public void disabledExit() {}
+        driverController.rightBumper().onTrue(
+            drivetrain.driveToPose()
+                .withTarget(Swerve.targetPose)
+        );
 
-  @Override
-  public void autonomousInit() {
+        driverController.y().whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
+        driverController.rightBumper().onTrue(shooter.shoot()).onFalse(shooter.stopShoot()); // right bumper toggle shooter motor
 
-  }
+        // driverController.start().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
+        // driverController.start().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
+        // driverController.back().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
+        // driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
+        // drivetrain.registerTelemetry(logger::telemeterize);
+    }
 
-  @Override
-  public void autonomousPeriodic() {}
+    @Override
+    public void robotPeriodic() {
+        m_timeAndJoystickReplay.update();
+        SmartDashboard.putData(CommandScheduler.getInstance());
 
-  @Override
-  public void autonomousExit() {}
+        CommandScheduler.getInstance().run();
+    }
 
-  @Override
-  public void teleopInit() {
+    @Override
+    public void disabledInit() {}
 
-  }
+    @Override
+    public void disabledPeriodic() {}
 
-  @Override
-  public void teleopPeriodic() {}
+    @Override
+    public void disabledExit() {}
 
-  @Override
-  public void teleopExit() {}
+    @Override
+    public void autonomousInit() {
+    }
 
-  @Override
-  public void testInit() {
-    CommandScheduler.getInstance().cancelAll();
-  }
+    @Override
+    public void autonomousPeriodic() {}
 
-  @Override
-  public void testPeriodic() {}
+    @Override
+    public void autonomousExit() {}
 
-  @Override
-  public void testExit() {}
+    @Override
+    public void teleopInit() {}
+
+    @Override
+    public void teleopPeriodic() {}
+
+    @Override
+    public void teleopExit() {}
+
+    @Override
+    public void testInit() {
+        CommandScheduler.getInstance().cancelAll();
+    }
+
+    @Override
+    public void testPeriodic() {}
+
+    @Override
+    public void testExit() {}
 }
