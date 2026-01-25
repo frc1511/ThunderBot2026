@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 // import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
+import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.util.Alert;
 import frc.util.Constants.Swerve;
 
