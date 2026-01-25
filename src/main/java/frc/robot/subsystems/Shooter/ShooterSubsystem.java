@@ -1,5 +1,7 @@
 package frc.robot.subsystems.Shooter;
 
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
@@ -47,15 +49,15 @@ public class ShooterSubsystem extends SubsystemBase {
             .isFinished(true);
     }
 
-    public Command turretToPosition(double targetPosition) {
+    public Command turretToPosition(Supplier<Double> targetPosition) {
         return new CommandBuilder(this) 
-            .onExecute(() -> m_turretMotor.setControl(new PositionVoltage(targetPosition)))
+            .onExecute(() -> m_turretMotor.setControl(new PositionVoltage(targetPosition.get())))
             .isFinished(() -> m_turretMotor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kTurretTolerance);
     }
 
-    public Command hoodToPosition(double targetPosition) {
+    public Command hoodToPosition(Supplier<Double> targetPosition) {
         return new CommandBuilder(this) 
-            .onExecute(() -> m_hoodMotor.setControl(new PositionVoltage(targetPosition)))
+            .onExecute(() -> m_hoodMotor.setControl(new PositionVoltage(targetPosition.get())))
             .isFinished(() -> m_hoodMotor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kHoodTolerance);
-    }  
+    }
 }
