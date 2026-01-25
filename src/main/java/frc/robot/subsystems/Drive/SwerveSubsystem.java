@@ -1,6 +1,7 @@
 package frc.robot.subsystems.Drive;
 
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -224,15 +225,58 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         return getState().Pose;
     }
 
-    public CommandBuilder driveToPose(Supplier<Pose2d> targetPoseSupplier, double targetVelocity, Optional<Boolean> allowedToFinish) {
-        return new CommandBuilder("DriveToPose", this)
-            .onExecute(
-                () -> {
-                    Pose2d targetPose = targetPoseSupplier.get();
+    public DriveToPose driveToPose() {
+        return new DriveToPose();
+    }
+
+    /**
+     * <h3>DriveToPose</h3>
+     * <p>This structure uses <code>with*</code> methods.</p>
+     * <p>This means you can just create an instance with the helper method of <code>SwerveSubsystem.driveToPose</code> and only have to worry about adding the targetPose, along with anything else you need.</p>
+     */
+    public class DriveToPose extends CommandBuilder {
+        private DoubleSupplier m_targetVelocity = () -> 0.0d;
+        private BooleanSupplier m_allowedToFinish = () -> true;
+
+        public DriveToPose() {
+            super(SwerveSubsystem.this);
+            isFinished(
+                () -> m_driveController.atReference() && m_allowedToFinish.getAsBoolean()
+            );
+        }
+
+        public DriveToPose withTargetVelocity(double target) {
+            return withTargetVelocity(() -> target);
+        }
+
+        public DriveToPose withTargetVelocity(DoubleSupplier target) {
+            m_targetVelocity = target;
+            return this;
+        }
+
+        public DriveToPose withFinishAllowance(boolean allow) {
+            return withFinishAllowance(() -> allow);
+        }
+
+        public DriveToPose withFinishAllowance(BooleanSupplier isAllowed) {
+            m_allowedToFinish = isAllowed;
+            isFinished(
+                () -> m_driveController.atReference() && m_allowedToFinish.getAsBoolean()
+            );
+            return this;
+        }
+
+        public DriveToPose withTarget(Pose2d target) {
+            return withTarget(() -> target);
+        }
+
+        public DriveToPose withTarget(Supplier<Pose2d> target) {
+            onExecute(() -> {
+                    Pose2d targetPose = target.get();
                     ChassisSpeeds speeds = m_driveController.calculate(
                         currentPose(),
                         targetPose,
-                        targetVelocity,
+                        m_targetVelocity.getAsDouble(),
                         targetPose.getRotation()
                     );
                     m_targetField.setRobotPose(targetPose);
@@ -251,12 +295,9 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
                             .withRotationalDeadband(SwerveConstants.kAngularVelocityDeadband)
                     );
                 }
-            )
-            .isFinished(
-                () -> {
-                    return m_driveController.atReference() && allowedToFinish.orElse(true);
-                }
             );
+            return this;
+        }
     }
 
     public boolean isCANSafe() {
@@ -274,7 +315,8 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
             7.41196,
             Rotation2d.kZero
         );
-        return driveToPose(
+        return driveToPose()
+            .withTarget(
                 () -> {
                     m_arcLockTheta += Math.toRadians(leftX.getAsDouble());
                     
@@ -283,15 +325,18 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
                         Math.sin(m_arcLockTheta) * m_arcLockDistance + centerPose.getY(),
                         new Rotation2d(m_arcLockTheta + Math.PI)
                     );
-                }, 0.0d, Optional.of(Boolean.valueOf(false)))
-            .onInitialize(() -> {
-                Pose2d currentPose = currentPose();
+                }
+            )
+            .onInitialize(
+                () -> {
+                    Pose2d currentPose = currentPose();
 
-                double dX = currentPose.getX() - centerPose.getX();
-                double dY = currentPose.getY() - centerPose.getY();
-        
-                m_arcLockDistance = Math.hypot(dX, dY);
-                m_arcLockTheta = Math.atan2(dY, dX);
-            });
+                    double dX = currentPose.getX() - centerPose.getX();
+                    double dY = currentPose.getY() - centerPose.getY();
+            
+                    m_arcLockDistance = Math.hypot(dX, dY);
+                    m_arcLockTheta = Math.atan2(dY, dX);
+                }
+            );
     }
 }

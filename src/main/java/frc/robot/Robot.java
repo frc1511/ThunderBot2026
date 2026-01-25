@@ -6,7 +6,6 @@ package frc.robot;
 
 import com.ctre.phoenix6.HootAutoReplay;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -19,92 +18,92 @@ import frc.util.Constants.SwerveConstants;
 
 public class Robot extends TimedRobot {
 
-  private final CommandXboxController driverController = new CommandXboxController(0);
+    private final CommandXboxController driverController = new CommandXboxController(0);
 
-  // private final Telemetry logger = new Telemetry(Constants.SwerveConstants.kMaxSpeed);
-  private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
-      .withTimestampReplay()
-      .withJoystickReplay();
-  public final SwerveSubsystem drivetrain = new SwerveSubsystem();
+    // private final Telemetry logger = new Telemetry(Constants.SwerveConstants.kMaxSpeed);
+    private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
+        .withTimestampReplay()
+        .withJoystickReplay();
+    public final SwerveSubsystem drivetrain = new SwerveSubsystem();
 
-  public Robot() {
-    // DataLogManager.start();
-    Alert.info("The robot has restarted");
+    public Robot() {
+        // DataLogManager.start();
+        Alert.info("The robot has restarted");
 
-    driverController.leftTrigger(.1).onTrue(drivetrain.toggleFieldCentric());
+        driverController.leftTrigger(.1).onTrue(drivetrain.toggleFieldCentric());
 
-    drivetrain.setDefaultCommand(
-        drivetrain
-          .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
-          // .unless(() -> driverController.y().getAsBoolean())
-          .withName("driveWithJoysticks")
-    );
+        drivetrain.setDefaultCommand(
+            drivetrain
+                .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
+        );
 
-    RobotModeTriggers.disabled().whileTrue(drivetrain.idle());
+        RobotModeTriggers.disabled().whileTrue(drivetrain.idle());
 
-    driverController.a().whileTrue(drivetrain.brick());
-    driverController.b().whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
+        driverController.a().whileTrue(drivetrain.brick());
+        driverController.b().whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
 
-    // Reset the field-centric heading on left bumper press.
-    driverController.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        // Reset the field-centric heading on left bumper press.
+        driverController.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-    Pose2d targetPose = SwerveConstants.targetPose;
-    driverController.rightBumper().onTrue(drivetrain.driveToPose(() -> targetPose, 0.0d, null));
+        driverController.rightBumper().onTrue(
+            drivetrain.driveToPose()
+                .withTarget(SwerveConstants.targetPose)
+        );
 
-    driverController.y().whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
+        driverController.y().whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
 
-    // driverController.start().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
-    // driverController.start().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
-    // driverController.back().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
-    // driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
-    // drivetrain.registerTelemetry(logger::telemeterize);
-}
+        // driverController.start().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
+        // driverController.start().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
+        // driverController.back().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
+        // driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
+        // drivetrain.registerTelemetry(logger::telemeterize);
+    }
 
-  @Override
-  public void robotPeriodic() {
-    m_timeAndJoystickReplay.update();
-    SmartDashboard.putData(CommandScheduler.getInstance());
+    @Override
+    public void robotPeriodic() {
+        m_timeAndJoystickReplay.update();
+        SmartDashboard.putData(CommandScheduler.getInstance());
 
-    CommandScheduler.getInstance().run();
-  }
+        CommandScheduler.getInstance().run();
+    }
 
-  @Override
-  public void disabledInit() {}
+    @Override
+    public void disabledInit() {}
 
-  @Override
-  public void disabledPeriodic() {}
+    @Override
+    public void disabledPeriodic() {}
 
-  @Override
-  public void disabledExit() {}
+    @Override
+    public void disabledExit() {}
 
-  @Override
-  public void autonomousInit() {
-  }
+    @Override
+    public void autonomousInit() {
+    }
 
-  @Override
-  public void autonomousPeriodic() {}
+    @Override
+    public void autonomousPeriodic() {}
 
-  @Override
-  public void autonomousExit() {}
+    @Override
+    public void autonomousExit() {}
 
-  @Override
-  public void teleopInit() {
-  }
+    @Override
+    public void teleopInit() {
+    }
 
-  @Override
-  public void teleopPeriodic() {}
+    @Override
+    public void teleopPeriodic() {}
 
-  @Override
-  public void teleopExit() {}
+    @Override
+    public void teleopExit() {}
 
-  @Override
-  public void testInit() {
-    CommandScheduler.getInstance().cancelAll();
-  }
+    @Override
+    public void testInit() {
+        CommandScheduler.getInstance().cancelAll();
+    }
 
-  @Override
-  public void testPeriodic() {}
+    @Override
+    public void testPeriodic() {}
 
-  @Override
-  public void testExit() {}
+    @Override
+    public void testExit() {}
 }
