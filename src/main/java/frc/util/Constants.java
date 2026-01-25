@@ -82,7 +82,13 @@ public class Constants {
         }
     }
 
-    public class SwerveConstants {
+    protected interface BasePID {
+        double kP = 0.0d;
+        double kI = 0.0d;
+        double kD = 0.0d;
+    }
+
+    public class Swerve {
         // Max Speed
         public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(5.76); // DON"T TOUCH, USE MULTIPLIER FOR MAX SPEED INSTEAD
 
@@ -112,15 +118,13 @@ public class Constants {
         public static final double kVelocityDeadband = 0.40 * kMaxSpeed; // % Multiplier 
         public static final double kAngularVelocityDeadband = 0.10 * kMaxAngularRate; // % Multiplier
 
-        private class XYPID {
-            public static final double kP = 3.25;
-            public static final double kI = .1;
-            public static final double kD = 0;
+        private interface XYPID extends BasePID {
+            double kP = 3.25;
+            double kI = .1;
         }
-        private class ThetaPID {
-            public static final double kP = 5; // 5
-            public static final double kI = 0;
-            public static final double kD = 0.1;
+        private interface ThetaPID extends BasePID {
+            double kP = 5;
+            double kD = 0.1;
         }
         public static final PIDController kHolonomicXPIDController = new PIDController(XYPID.kP, XYPID.kI, XYPID.kD);
         public static final PIDController kHolonomicYPIDController = new PIDController(XYPID.kP, XYPID.kI, XYPID.kD);
@@ -129,7 +133,7 @@ public class Constants {
         public static Pose2d targetPose = new Pose2d(
             11.887319 - 1,
             7.41196,
-            new Rotation2d(-Math.PI / 2d)
+            new Rotation2d(-Math.PI / 2.0d)
         );
 
         // Steer PID

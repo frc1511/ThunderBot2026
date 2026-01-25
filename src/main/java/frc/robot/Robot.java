@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 // import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
 import frc.util.Alert;
-import frc.util.Constants.SwerveConstants;
+import frc.util.Constants.Swerve;
 
 public class Robot extends TimedRobot {
 
@@ -47,7 +47,7 @@ public class Robot extends TimedRobot {
 
         driverController.rightBumper().onTrue(
             drivetrain.driveToPose()
-                .withTarget(SwerveConstants.targetPose)
+                .withTarget(Swerve.targetPose)
         );
 
         driverController.y().whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));

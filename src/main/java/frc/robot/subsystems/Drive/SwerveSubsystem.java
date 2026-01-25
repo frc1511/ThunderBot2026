@@ -26,7 +26,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.util.Alert;
 import frc.util.CommandBuilder;
-import frc.util.Constants.SwerveConstants;
+import frc.util.Constants.Swerve;
 import frc.util.LimelightHelpers;
 import frc.util.Constants;
 
@@ -62,11 +62,11 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         sysID = new SysID(this);
 
         m_driveController = new HolonomicDriveController(
-            SwerveConstants.kHolonomicXPIDController,
-            SwerveConstants.kHolonomicYPIDController,
-            SwerveConstants.kHolonomicThetaPIDController
+            Swerve.kHolonomicXPIDController,
+            Swerve.kHolonomicYPIDController,
+            Swerve.kHolonomicThetaPIDController
         );
-        m_driveController.setTolerance(new Pose2d(SwerveConstants.kGotoXYTolerance, SwerveConstants.kGotoXYTolerance, new Rotation2d(SwerveConstants.kGotoThetaTolerance)));
+        m_driveController.setTolerance(new Pose2d(Swerve.kGotoXYTolerance, Swerve.kGotoXYTolerance, new Rotation2d(Swerve.kGotoThetaTolerance)));
 
         m_currentField = new Field2d();
         m_targetField = new Field2d();
@@ -89,25 +89,25 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
     public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX) {
         return applyRequest(() -> {
             // YES! The y and x are swaped on purpose, it has to do with coordiante systems in the library so just leave it like this please!
-            double vx = -leftY.getAsDouble() * Constants.SwerveConstants.kMaxSpeed;
-            double vy = -leftX.getAsDouble() * Constants.SwerveConstants.kMaxSpeed;
-            double vrot = -rightX.getAsDouble() * Constants.SwerveConstants.kMaxAngularRate;
+            double vx = -leftY.getAsDouble() * Constants.Swerve.kMaxSpeed;
+            double vy = -leftX.getAsDouble() * Constants.Swerve.kMaxSpeed;
+            double vrot = -rightX.getAsDouble() * Constants.Swerve.kMaxAngularRate;
             if (m_fieldCentric) {
                 return m_fieldCentricRequest
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
                     .withVelocityX(vx)
                     .withVelocityY(vy)
                     .withRotationalRate(vrot)
-                    .withDeadband(Constants.SwerveConstants.kVelocityDeadband)
-                    .withRotationalDeadband(Constants.SwerveConstants.kAngularVelocityDeadband);
+                    .withDeadband(Constants.Swerve.kVelocityDeadband)
+                    .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband);
             } else {
                 return m_robotCentricRequest
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
                     .withVelocityX(vx)
                     .withVelocityY(vy)
                     .withRotationalRate(vrot)
-                    .withDeadband(Constants.SwerveConstants.kVelocityDeadband)
-                    .withRotationalDeadband(Constants.SwerveConstants.kAngularVelocityDeadband);
+                    .withDeadband(Constants.Swerve.kVelocityDeadband)
+                    .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband);
             }
         }).withName("driveWithJoysticks");
     }
@@ -280,19 +280,19 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
                         targetPose.getRotation()
                     );
                     m_targetField.setRobotPose(targetPose);
-                    SmartDashboard.putNumber("targetVelX", speeds.vxMetersPerSecond * SwerveConstants.kMaxSpeed);
-                    SmartDashboard.putNumber("targetVelY", speeds.vyMetersPerSecond * SwerveConstants.kMaxSpeed);
-                    SmartDashboard.putNumber("targetVelTheta", speeds.omegaRadiansPerSecond * SwerveConstants.kMaxAngularRate);
+                    SmartDashboard.putNumber("targetVelX", speeds.vxMetersPerSecond * Swerve.kMaxSpeed);
+                    SmartDashboard.putNumber("targetVelY", speeds.vyMetersPerSecond * Swerve.kMaxSpeed);
+                    SmartDashboard.putNumber("targetVelTheta", speeds.omegaRadiansPerSecond * Swerve.kMaxAngularRate);
                     SmartDashboard.putNumber("currentVelTheta", getModule(0).getSteerMotor().getVelocity().getValueAsDouble());
                     SmartDashboard.putNumber("currentTheta", currentPose().getRotation().getDegrees());
                     SmartDashboard.putNumber("targetTheta", targetPose.getRotation().getDegrees());
                     setControl(
                         new SwerveRequest.RobotCentric()
-                            .withVelocityX(speeds.vxMetersPerSecond * SwerveConstants.kMaxSpeed)
-                            .withVelocityY(speeds.vyMetersPerSecond * SwerveConstants.kMaxSpeed)
-                            .withRotationalRate(speeds.omegaRadiansPerSecond * SwerveConstants.kMaxAngularRate)
-                            .withDeadband(SwerveConstants.kVelocityDeadband * 0.5)
-                            .withRotationalDeadband(SwerveConstants.kAngularVelocityDeadband)
+                            .withVelocityX(speeds.vxMetersPerSecond * Swerve.kMaxSpeed)
+                            .withVelocityY(speeds.vyMetersPerSecond * Swerve.kMaxSpeed)
+                            .withRotationalRate(speeds.omegaRadiansPerSecond * Swerve.kMaxAngularRate)
+                            .withDeadband(Swerve.kVelocityDeadband * 0.5)
+                            .withRotationalDeadband(Swerve.kAngularVelocityDeadband)
                     );
                 }
             );
