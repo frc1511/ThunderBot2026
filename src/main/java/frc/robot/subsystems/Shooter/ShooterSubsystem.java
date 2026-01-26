@@ -10,6 +10,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.util.Alert;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
 
@@ -37,27 +38,51 @@ public class ShooterSubsystem extends SubsystemBase {
         m_hoodMotor.getConfigurator().apply(hoodConfig);
     }
 
-    public Command shoot() {
-        return new CommandBuilder(this)
-            .onExecute(() -> m_shooterMotor.set(Constants.Shooter.kMaxShooterSpeed))
-            .isFinished(true);
+    public boolean shooterAtSpeed() {
+        return Math.abs(Constants.Shooter.kMaxShooterSpeed - m_turretMotor.getVelocity().getValueAsDouble()) < Constants.Shooter.kShooterAtSpeedTolerance;
     }
 
-    public Command stopShoot() {
+    public boolean turretAtPosition() {
+        return m_turretMotor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kTurretTolerance;
+    }
+
+    public boolean hoodAtPosition() {
+        return m_hoodMotor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kHoodTolerance;
+    }
+
+    public Command preheat() {
+        return new CommandBuilder(this)
+            .onExecute(() -> m_shooterMotor.set(Constants.Shooter.kMaxShooterSpeed))
+            .isFinished(this::shooterAtSpeed);
+    }
+
+    public Command stopShooter() {
         return new CommandBuilder(this)
             .onExecute(m_shooterMotor::stopMotor)
             .isFinished(true);
     }
 
+    public Command rapidFire() {
+        return new CommandBuilder(this)
+            .onExecute(() -> Alert.error("This is where we beam a command to storage, but its not implemented yet, may have to move to a state machine"));
+    }
+
     public Command turretToPosition(Supplier<Double> targetPosition) {
         return new CommandBuilder(this) 
             .onExecute(() -> m_turretMotor.setControl(new PositionVoltage(targetPosition.get())))
-            .isFinished(() -> m_turretMotor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kTurretTolerance);
+            .isFinished(this::turretAtPosition);
     }
 
     public Command hoodToPosition(Supplier<Double> targetPosition) {
         return new CommandBuilder(this) 
             .onExecute(() -> m_hoodMotor.setControl(new PositionVoltage(targetPosition.get())))
-            .isFinished(() -> m_hoodMotor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kHoodTolerance);
+            .isFinished(this::hoodAtPosition);
+    }
+
+    public Command autoFire(Supplier<Double> optimalTurretPosition, Supplier<Double> optimalHoodPosition) {
+        return turretToPosition(optimalTurretPosition)
+            .alongWith(hoodToPosition(optimalHoodPosition))
+            .alongWith(preheat())
+            .andThen(rapidFire());
     }
 }

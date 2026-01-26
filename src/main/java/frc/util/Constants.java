@@ -97,6 +97,7 @@ public class Constants {
     
     public interface Shooter {
         double kMaxShooterSpeed = 0.5d;
+        double kShooterAtSpeedTolerance = 0.1d;
         double kTurretTolerance = 0.5d;
         double kHoodTolerance = 0.5d;
 
