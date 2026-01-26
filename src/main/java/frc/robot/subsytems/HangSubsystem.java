@@ -1,8 +1,8 @@
 package frc.robot.subsytems;
 
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -12,17 +12,14 @@ import frc.util.Constants.HangConstants;
 import frc.util.Constants.IOMap;
 
 public class HangSubsystem extends SubsystemBase {
-    private TalonFX m_hangMotor;
-    private TalonFXConfiguration m_hangMotorConfiguration;
+    private SparkMax m_motor;
+    private RelativeEncoder m_encoder;
     private DigitalInput m_lowerLimitSensor;
     private boolean m_isZeroed;
 
     public HangSubsystem() {
-        m_hangMotor = new TalonFX(IOMap.Hang.hangMotor);
-
-        m_hangMotorConfiguration = new TalonFXConfiguration();
-        m_hangMotorConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-        m_hangMotor.getConfigurator().apply(m_hangMotorConfiguration);
+        m_motor = new SparkMax(IOMap.Hang.hangMotor, MotorType.kBrushless);
+        m_encoder = m_motor.getEncoder();
 
         m_lowerLimitSensor = new DigitalInput(1);
 
@@ -40,13 +37,13 @@ public class HangSubsystem extends SubsystemBase {
     public Command zeroHang() {
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_hangMotor.set(HangConstants.kZeroingSpeed);
+                m_motor.set(HangConstants.kZeroingSpeed);
             })
             .isFinished(this::isAtLowerLimit)
             .onEnd((boolean interupped) -> {
-                m_hangMotor.set(0);
+                m_motor.set(0);
                 if (!interupped) {
-                    m_hangMotor.setPosition(0);
+                    m_encoder.setPosition(0);
                     m_isZeroed = true;
                 }
             });
@@ -56,9 +53,9 @@ public class HangSubsystem extends SubsystemBase {
     public Command extend() {
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_hangMotor.set(HangConstants.kMaxDelpoySpeed);
+                m_motor.set(HangConstants.kMaxDelpoySpeed);
             })
-            .isFinished(() -> m_hangMotor.getPosition().getValueAsDouble() > HangConstants.kMaxDeployDistanceRotations)
+            .isFinished(() -> m_encoder.getPosition() > HangConstants.kMaxDeployDistanceRotations)
             .onlyIf(this::isZeroed);
     }
 
@@ -66,9 +63,9 @@ public class HangSubsystem extends SubsystemBase {
     public Command retract() {
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_hangMotor.set(HangConstants.kMaxPullSpeed);
+                m_motor.set(HangConstants.kMaxPullSpeed);
             })
-            .isFinished(() -> m_hangMotor.getPosition().getValueAsDouble() < HangConstants.kMaxPullDistanceRotations)
+            .isFinished(() -> m_encoder.getPosition() < HangConstants.kMaxPullDistanceRotations)
             .onlyIf(this::isZeroed);
     }
 }
