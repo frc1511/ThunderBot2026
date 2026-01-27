@@ -15,6 +15,7 @@ public class HangSubsystem extends SubsystemBase {
     private SparkMax m_motor;
     private RelativeEncoder m_encoder;
     private DigitalInput m_lowerLimitSensor;
+    private DigitalInput m_upperLimitSensor;
     private boolean m_isZeroed;
 
     public HangSubsystem() {
@@ -22,12 +23,17 @@ public class HangSubsystem extends SubsystemBase {
         m_encoder = m_motor.getEncoder();
 
         m_lowerLimitSensor = new DigitalInput(1);
+        m_upperLimitSensor = new DigitalInput(2);
 
         m_isZeroed = false;
     }
 
     private boolean isAtLowerLimit() {
         return m_lowerLimitSensor.get();
+    }
+
+    private boolean isAtUpperLimit() {
+        return m_upperLimitSensor.get();
     }
 
     public boolean isZeroed() {
@@ -50,12 +56,12 @@ public class HangSubsystem extends SubsystemBase {
     }
 
     // TODO: Use PID to automatically extend to the proper height with proper speeds and error correction
-    public Command extend() {
+    public Command extend() { //hang will die if it goes past the upper limit
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_motor.set(HangConstants.kMaxDelpoySpeed);
+                m_motor.set(HangConstants.kMaxDeploySpeed);
             })
-            .isFinished(() -> m_encoder.getPosition() > HangConstants.kMaxDeployDistanceRotations)
+            .isFinished(() -> isAtUpperLimit() || m_encoder.getPosition() > HangConstants.kMaxDeployDistanceRotations)
             .onlyIf(this::isZeroed);
     }
 
