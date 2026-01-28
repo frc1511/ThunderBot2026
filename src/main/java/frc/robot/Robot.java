@@ -55,7 +55,7 @@ public class Robot extends TimedRobot {
 
         driverController.y().whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
 
-        driverController.leftBumper().onTrue(shooter.turretToPosition(drivetrain::hubLockTurretAngle));
+        // driverController.leftBumper().onTrue(shooter.turretToPosition(drivetrain::hubLockTurretAngle));
         driverController.rightBumper().onTrue(shooter.preheat()).onFalse(shooter.stopShooter()); // right bumper toggle shooter motor
 
         // driverController.start().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
