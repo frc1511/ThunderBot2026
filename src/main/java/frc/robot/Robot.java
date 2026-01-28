@@ -18,7 +18,6 @@ import frc.util.Alert;
 import frc.util.Constants.Swerve;
 
 public class Robot extends TimedRobot {
-
     private final CommandXboxController driverController = new CommandXboxController(0);
 
     // private final Telemetry logger = new Telemetry(Constants.SwerveConstants.kMaxSpeed);
@@ -62,7 +61,7 @@ public class Robot extends TimedRobot {
         // driverController.start().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
         // driverController.back().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
         // driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
-        // drivetrain.registerTelemetry(logger::telemeterize);
+        // drivetrain.registerTelemetry(logger::telemeterize);}
     }
 
     @Override
