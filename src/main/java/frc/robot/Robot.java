@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.orchestration.CannonOrchestrator;
+import frc.robot.orchestration.HubOrchestrator;
 // import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
 import frc.robot.subsystems.Hood.HoodSubsystem;
@@ -32,7 +33,9 @@ public class Robot extends TimedRobot {
     public final ShooterSubsystem shooter = new ShooterSubsystem();
     public final HoodSubsystem hood = new HoodSubsystem();
     public final TurretSubsystem turret = new TurretSubsystem();
+
     public final CannonOrchestrator cannonOrchestrator;
+    public final HubOrchestrator hubOrchestrator;
 
     public Robot() {
         // DataLogManager.start();
@@ -69,6 +72,7 @@ public class Robot extends TimedRobot {
         // driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
         // drivetrain.registerTelemetry(logger::telemeterize);}
         cannonOrchestrator = new CannonOrchestrator(this);
+        hubOrchestrator = new HubOrchestrator(this);
     }
 
     @Override
