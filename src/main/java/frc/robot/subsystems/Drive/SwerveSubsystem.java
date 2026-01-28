@@ -221,7 +221,7 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
     }
 
-    private Pose2d currentPose() {
+    public Pose2d currentPose() {
         return getState().Pose;
     }
 
@@ -338,22 +338,5 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
                     m_arcLockTheta = Math.atan2(dY, dX);
                 }
             );
-    }
-
-    // Plugs into turret
-    // Its best to put it here because turret can do what it needs to on its own for offsets and stuff, but the math for raw angle needs the nearest hub and robot position which are both in drivetrain already.
-    // Also, a very similar thing is going on with arc locking
-    public double hubLockTurretAngle() {
-        Pose2d nearestHub = new Pose2d(
-            11.887319,
-            7.41196,
-            Rotation2d.kZero
-        );
-        Pose2d currentPose = currentPose();
-
-        double dX = currentPose.getX() - nearestHub.getX();
-        double dY = currentPose.getY() - nearestHub.getY();
-
-        return Math.atan2(dY, dX) - currentPose.getRotation().getRadians();
     }
 }

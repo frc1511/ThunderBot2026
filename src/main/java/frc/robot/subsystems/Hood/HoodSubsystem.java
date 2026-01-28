@@ -27,7 +27,7 @@ public class HoodSubsystem extends SubsystemBase {
         return m_hoodMotor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kHoodTolerance;
     }
 
-    public Command hoodToPosition(Supplier<Double> targetPosition) {
+    public Command toPosition(Supplier<Double> targetPosition) {
         return new CommandBuilder(this) 
             .onExecute(() -> m_hoodMotor.setControl(new PositionVoltage(targetPosition.get())))
             .isFinished(this::hoodAtPosition);

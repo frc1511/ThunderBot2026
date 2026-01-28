@@ -15,7 +15,7 @@ import frc.util.Constants;
 public class TurretSubsystem extends SubsystemBase {
     private TalonFX m_turretMotor;
     
-    private TurretSubsystem() {
+    public TurretSubsystem() {
         m_turretMotor = new TalonFX(Constants.IOMap.Shooter.turretMotor);
         TalonFXConfiguration turretConfig = new TalonFXConfiguration(); 
         turretConfig.Slot0 = new Slot0Configs()
@@ -23,7 +23,7 @@ public class TurretSubsystem extends SubsystemBase {
         m_turretMotor.getConfigurator().apply(turretConfig);
     }
         
-    public Command turretToPosition(Supplier<Double> targetPosition) {
+    public Command toPosition(Supplier<Double> targetPosition) {
         return new CommandBuilder(this) 
             .onExecute(() -> m_turretMotor.setControl(new PositionVoltage(targetPosition.get())))
             .isFinished(this::turretAtPosition);

@@ -11,9 +11,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import frc.robot.orchestration.CannonOrchestrator;
 // import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
+import frc.robot.subsystems.Hood.HoodSubsystem;
 import frc.robot.subsystems.Shooter.ShooterSubsystem;
+import frc.robot.subsystems.Turret.TurretSubsystem;
 import frc.util.Alert;
 import frc.util.Constants.Swerve;
 
@@ -26,7 +29,10 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
   
     public final SwerveSubsystem drivetrain = new SwerveSubsystem();
-    private final ShooterSubsystem shooter = new ShooterSubsystem();
+    public final ShooterSubsystem shooter = new ShooterSubsystem();
+    public final HoodSubsystem hood = new HoodSubsystem();
+    public final TurretSubsystem turret = new TurretSubsystem();
+    public final CannonOrchestrator cannonOrchestrator;
 
     public Robot() {
         // DataLogManager.start();
@@ -62,6 +68,7 @@ public class Robot extends TimedRobot {
         // driverController.back().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
         // driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
         // drivetrain.registerTelemetry(logger::telemeterize);}
+        cannonOrchestrator = new CannonOrchestrator(this);
     }
 
     @Override
