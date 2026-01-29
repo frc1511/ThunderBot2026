@@ -1,0 +1,171 @@
+{
+  "settings": {
+    "auto_export": false,
+    "auto_save": false,
+    "csv_export_props": {
+      "actions_bit_field": true,
+      "angular_velocity": false,
+      "centripetal_acceleration": false,
+      "component_velocities": false,
+      "curvature": false,
+      "distance": false,
+      "heading": false,
+      "linear_velocity": true,
+      "position": true,
+      "rotation": true,
+      "time": true
+    },
+    "drive_controller": 0,
+    "field": {
+      "img": "2026",
+      "img_type": 1
+    },
+    "robot_corner_radius": 0.2,
+    "robot_length": 0.7620000243186951,
+    "robot_width": 0.6349999904632568,
+    "version_major": 2026
+  },
+  "state": {
+    "actions": {
+      "Hang": {
+        "type": "command"
+      },
+      "Shoot": {
+        "type": "command"
+      }
+    },
+    "actions_order": [
+      "Shoot",
+      "Hang"
+    ],
+    "auto_modes": {
+      "Basic": {
+        "steps": [
+          {
+            "trajectory": "ShootFromStart",
+            "type": "trajectory"
+          },
+          {
+            "action": "Shoot",
+            "type": "action"
+          },
+          {
+            "trajectory": "HangFromShootPosition",
+            "type": "trajectory"
+          },
+          {
+            "action": "Hang",
+            "type": "action"
+          }
+        ]
+      }
+    },
+    "editor_state": {
+      "auto_mode_editor_state": {
+        "current_auto_mode_name": "Basic"
+      },
+      "trajectory_editor_state": {
+        "current_trajectory_name": "HangFromShootPosition"
+      },
+      "view": 2
+    },
+    "trajectories": {
+      "HangFromShootPosition": {
+        "end_rotation": 3.141592653589793,
+        "points": [
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0,
+              "outgoing_weight": 0.6502543073038265
+            },
+            "headings": {
+              "incoming_angle": -1.2220350027584501,
+              "outgoing_angle": 1.9195576508313432
+            },
+            "link": "",
+            "position": {
+              "x": 2.069999933242798,
+              "y": 4.039999961853027
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 0.46726038629925315,
+              "outgoing_weight": 1.0
+            },
+            "headings": {
+              "incoming_angle": 0.15511306226524238,
+              "outgoing_angle": -2.9864795913245508
+            },
+            "link": "",
+            "position": {
+              "x": 1.054324746131897,
+              "y": 4.723293781280518
+            }
+          }
+        ],
+        "settings": {
+          "max_angular_accel": 4.71238898038469,
+          "max_angular_velocity": 4.71238898038469,
+          "max_centripetal_accel": 19.62,
+          "max_linear_accel": 2.0,
+          "max_linear_velocity": 2.0
+        },
+        "start_rotation": 0.0
+      },
+      "ShootFromStart": {
+        "end_rotation": 0.0,
+        "points": [
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0,
+              "outgoing_weight": 2.5858712013200527
+            },
+            "headings": {
+              "incoming_angle": -1.2122751920556136,
+              "outgoing_angle": 1.9293174615341795
+            },
+            "link": "",
+            "position": {
+              "x": 3.595789909362793,
+              "y": 0.4328483045101166
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 0.789808988571167,
+              "outgoing_weight": 0.2838896753846713
+            },
+            "headings": {
+              "incoming_angle": -1.0084722594696467,
+              "outgoing_angle": 2.1331203941201466
+            },
+            "link": "",
+            "position": {
+              "x": 2.0680770874023438,
+              "y": 4.040981292724609
+            }
+          }
+        ],
+        "settings": {
+          "max_angular_accel": 4.71238898038469,
+          "max_angular_velocity": 4.71238898038469,
+          "max_centripetal_accel": 19.62,
+          "max_linear_accel": 2.0,
+          "max_linear_velocity": 2.0
+        },
+        "start_rotation": 0.0
+      }
+    },
+    "trajectory_end_behavior_links": [],
+    "waypoint_links": []
+  },
+  "version": {
+    "major": 2026,
+    "minor": 0
+  }
+}
