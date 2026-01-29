@@ -310,11 +310,10 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
     }
 
     public Command driveLockedToArcWithJoysticks(DoubleSupplier leftX) {
-        Pose2d centerPose = new Pose2d(
-            11.887319,
-            7.41196,
-            Rotation2d.kZero
-        );
+        Alliance alliance;
+        if (DriverStation.getAlliance().isEmpty()) alliance = DriverStation.Alliance.Blue;
+        else alliance = DriverStation.getAlliance().get();
+        Pose2d centerPose = alliance == DriverStation.Alliance.Blue ? Constants.Swerve.blueHubCenterPose : Constants.Swerve.redHubCenterPose;
         return driveToPose()
             .withTarget(
                 () -> {

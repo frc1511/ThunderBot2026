@@ -153,6 +153,18 @@ public class Constants {
             new Rotation2d(-Math.PI / 2.0d)
         );
 
+        // These are welded
+        public static Pose2d redHubCenterPose = new Pose2d(
+            11.887319,
+            4.034631,
+            new Rotation2d()
+        );
+        public static Pose2d blueHubCenterPose = new Pose2d(
+            4.5998835,
+            4.034631,
+            new Rotation2d()
+        );
+
         // Steer PID
         public static final Slot0Configs steerGains = new Slot0Configs()
             .withKP(38.568).withKI(0).withKD(1.7601)

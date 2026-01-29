@@ -26,7 +26,7 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
   
     public final SwerveSubsystem drivetrain = new SwerveSubsystem();
-    private final ShooterSubsystem shooter = new ShooterSubsystem();
+    // private final ShooterSubsystem shooter = new ShooterSubsystem();
 
     public Robot() {
         // DataLogManager.start();
@@ -53,7 +53,7 @@ public class Robot extends TimedRobot {
         );
 
         driverController.y().whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
-        driverController.rightBumper().onTrue(shooter.shoot()).onFalse(shooter.stopShoot()); // right bumper toggle shooter motor
+        // driverController.rightBumper().onTrue(shooter.shoot()).onFalse(shooter.stopShoot()); // right bumper toggle shooter motor
 
         // driverController.start().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
         // driverController.start().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
