@@ -2,8 +2,6 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-private final Moving moving = new Moving();
-
 package frc.robot;
 
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -22,9 +20,10 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
-
-        moving.switchLow.onTrue(m_motor.runForward()).onFalse(m_motor.stopMotor);
-        moving.switchHigh.onTrue(m_motor.runBackward()).onFalse(m_motor.stopMotor);
+        moving.switchLowTrueFalse.onFalse(moving.runForward());  
+        moving.switchLowTrueFalse.onTrue(moving.stopMotor());    // Unfinished code i have to go - oliver  P.S DONT TOUCH IT!!! :3
+        moving.switchHighTrueFalse.onFalse(moving.runBackward());
+        moving.switchHighTrueFalse.onTrue(moving.stopMotor());
     }
 
     @Override
