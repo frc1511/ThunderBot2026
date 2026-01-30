@@ -1,67 +1,48 @@
 package frc.robot.subsytem;
 
-import com.revrobotics.PersistMode;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.SparkFlexExternalEncoder;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkBaseConfig;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.ctre.phoenix6.hardware.TalonFX;
 
-import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.util.CommandBuilder;
-import frc.util.Constants.IOMap;
 
 public class Moving extends SubsystemBase {
-    public SparkMax m_motor;
-    public DigitalInput switchLow;
-    public DigitalInput switchHigh;
-    public Trigger switchLowTrueFalse, switchHighTrueFalse;
+    private TalonFX m_motor;
+    private AnalogInput m_potentiomiter;
 
     public Moving() {
-        m_motor = new SparkMax(1, MotorType.kBrushless);
-        
-        SparkMaxConfig cfg = new SparkMaxConfig();
-        cfg.idleMode(IdleMode.kCoast);
-        m_motor.configure(cfg, com.revrobotics.ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);  
-        switchLow = new DigitalInput(1);
-        switchLowTrueFalse = new Trigger(switchLow::get);
-        switchHigh = new DigitalInput(2);                               // Triggers seem to allow for onTrue to be called but il ifnish it later - oliver
-        switchHighTrueFalse = new Trigger(switchHigh::get);
+        m_motor = new TalonFX(41);
+        m_potentiomiter = new AnalogInput(0);
     }
 
-    public boolean lowFlipped() {
-        return !switchLow.get();
+    private double getRunSpeed() {
+        return m_potentiomiter.getVoltage() / 5;
     }
 
-    public boolean highFlipped() {
-        return !switchHigh.get();
+    public void periodic() {
+        SmartDashboard.putNumber("LE SPEED", getRunSpeed());
     }
 
     public Command runForward() {
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_motor.set(0.5);
-            })
-            .isFinished(() -> true);
+                m_motor.set(getRunSpeed());
+            });
     }
+
     public Command runBackward() {
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_motor.set(-0.5);
-            })
-            .isFinished(() -> true);
+                m_motor.set(-getRunSpeed());
+            });
     }
-    public Command stopMotor() {
+
+    public Command stop() {
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_motor.stopMotor();
-            })
-            .isFinished(() -> true);
+                m_motor.set(0);
+            });
     }
 }
