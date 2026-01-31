@@ -8,6 +8,7 @@ import java.util.function.Supplier;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.thunder.lib.trajectory.ThunderTrajectoryRunnerProperties;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.HolonomicDriveController;
@@ -27,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.util.Alert;
 import frc.util.CommandBuilder;
 import frc.util.Constants.Swerve;
+import frc.util.Elastic.NotificationLevel;
 import frc.util.LimelightHelpers;
 import frc.util.Constants;
 
@@ -337,5 +339,28 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
                     m_arcLockTheta = Math.atan2(dY, dX);
                 }
             );
+    }
+
+    private void setSpeeds(ChassisSpeeds speeds) {
+        SmartDashboard.putNumber("velX", speeds.vxMetersPerSecond * Swerve.kMaxSpeed);
+        SmartDashboard.putNumber("velY", speeds.vyMetersPerSecond * Swerve.kMaxSpeed);
+        SmartDashboard.putNumber("velTheta", speeds.omegaRadiansPerSecond * Swerve.kMaxAngularRate);
+        setControl(m_robotCentricRequest
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+            .withVelocityX(speeds.vxMetersPerSecond * Swerve.kMaxSpeed)
+            .withVelocityY(speeds.vyMetersPerSecond * Swerve.kMaxSpeed)
+            .withRotationalRate(speeds.omegaRadiansPerSecond * Swerve.kMaxAngularRate)
+            .withDeadband(Swerve.kVelocityDeadband * 0.5)
+            .withRotationalDeadband(Swerve.kAngularVelocityDeadband)
+        );
+    }
+
+    public ThunderTrajectoryRunnerProperties getTrajectoryRunnerProperties() {
+        return new ThunderTrajectoryRunnerProperties(
+            this::currentPose,
+            pose -> resetPose(pose),
+            speeds -> setSpeeds(speeds),
+            m_driveController
+        );
     }
 }

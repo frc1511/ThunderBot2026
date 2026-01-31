@@ -5,14 +5,22 @@
 package frc.robot;
 
 import com.ctre.phoenix6.HootAutoReplay;
+import com.thunder.lib.auto.ThunderAutoProject;
+import com.thunder.lib.auto.ThunderAutoSendableChooser;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import frc.robot.orchestration.Conductor;
+import frc.robot.orchestration.HubOrchestrator;
+import frc.robot.orchestration.Autonomous.AutoLoader;
 // import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
+import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import frc.util.Alert;
 import frc.util.Constants.Swerve;
 
@@ -26,7 +34,15 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
   
     public final SwerveSubsystem drivetrain = new SwerveSubsystem();
-    // private final ShooterSubsystem shooter = new ShooterSubsystem();
+    private final ShooterSubsystem shooter = new ShooterSubsystem();
+
+    private final HubOrchestrator hubOrchestrator = new HubOrchestrator(
+        shooter
+    );
+
+    private final Conductor conductor = new Conductor(hubOrchestrator);
+
+    ThunderAutoSendableChooser autoChooser;
 
     public Robot() {
         // DataLogManager.start();
@@ -60,6 +76,15 @@ public class Robot extends TimedRobot {
         // driverController.back().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
         // driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
         // drivetrain.registerTelemetry(logger::telemeterize);
+
+        ThunderAutoProject autoProject = AutoLoader.load(conductor);
+
+        autoChooser = new ThunderAutoSendableChooser("Auto_Mode");
+
+        autoChooser.includeProjectSource(autoProject);
+        autoChooser.addAllAutoModesFromProject(autoProject.getName());
+        autoChooser.addTrajectoryFromProject(autoProject.getName(), "ShootFromStart");
+        autoChooser.setTrajectoryRunnerProperties(drivetrain.getTrajectoryRunnerProperties());
     }
 
     @Override
@@ -81,6 +106,10 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
+        Command autoCommand = autoChooser.getSelectedCommand();
+        if (autoCommand != Commands.none()) {
+            CommandScheduler.getInstance().schedule(autoCommand);
+        }
     }
 
     @Override
