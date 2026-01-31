@@ -13,16 +13,20 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.orchestration.CannonOrchestrator;
 import frc.robot.orchestration.HubOrchestrator;
+import frc.robot.subsystems.Cannon.HoodSubsystem;
+import frc.robot.subsystems.Cannon.ShooterSubsystem;
+import frc.robot.subsystems.Cannon.TurretSubsystem;
 // import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
-import frc.robot.subsystems.Hood.HoodSubsystem;
-import frc.robot.subsystems.Shooter.ShooterSubsystem;
-import frc.robot.subsystems.Turret.TurretSubsystem;
+import frc.robot.subsystems.Intake.IntakeSubsystem;
+import frc.robot.subsystems.Storage.KickerSubsystem;
+import frc.robot.subsystems.Storage.SpindexerSubsystem;
 import frc.util.Alert;
 import frc.util.Constants.Swerve;
 
 public class Robot extends TimedRobot {
     private final CommandXboxController driverController = new CommandXboxController(0);
+    private final CommandXboxController auxController = new CommandXboxController(1);
 
     // private final Telemetry logger = new Telemetry(Constants.SwerveConstants.kMaxSpeed);
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -30,9 +34,14 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
   
     public final SwerveSubsystem drivetrain = new SwerveSubsystem();
+
     public final ShooterSubsystem shooter = new ShooterSubsystem();
     public final HoodSubsystem hood = new HoodSubsystem();
     public final TurretSubsystem turret = new TurretSubsystem();
+    
+    public final SpindexerSubsystem spindexer = new SpindexerSubsystem();
+    public final KickerSubsystem kicker = new KickerSubsystem();
+    public final IntakeSubsystem intake = new IntakeSubsystem();
 
     public final CannonOrchestrator cannonOrchestrator;
     public final HubOrchestrator hubOrchestrator;
@@ -73,6 +82,9 @@ public class Robot extends TimedRobot {
         // drivetrain.registerTelemetry(logger::telemeterize);}
         cannonOrchestrator = new CannonOrchestrator(this);
         hubOrchestrator = new HubOrchestrator(this);
+
+        auxController.a().onTrue(kicker.playSoccer());
+        auxController.a().onFalse(kicker.halt());
     }
 
     @Override

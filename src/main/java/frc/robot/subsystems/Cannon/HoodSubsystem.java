@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Hood;
+package frc.robot.subsystems.Cannon;
 
 import java.util.function.Supplier;
 
@@ -16,7 +16,7 @@ public class HoodSubsystem extends SubsystemBase {
     private TalonFX m_hoodMotor;
 
     public HoodSubsystem() {
-        m_hoodMotor = new TalonFX(Constants.IOMap.Shooter.hoodMotor);
+        m_hoodMotor = new TalonFX(Constants.IOMap.Shooter.kHoodMotor);
         TalonFXConfiguration hoodConfig = new TalonFXConfiguration(); 
         hoodConfig.Slot0 = new Slot0Configs()
             .withKP(Constants.Shooter.HoodPID.kP).withKI(Constants.Shooter.HoodPID.kI).withKD(Constants.Shooter.HoodPID.kD);

@@ -88,9 +88,14 @@ public class Constants {
       
         public interface Shooter {
             //TODO: actual can ids
-            int shooterMotor = 20;
-            int hoodMotor = 21;
-            int turretMotor = 22;
+            int kShooterMotor = 20;
+            int kHoodMotor = 21;
+            int kturretMotor = 22;
+        }
+
+        public interface Storage {
+            int kSpindexerMotor = 41;
+            int kKickerMotor = 42;
         }
     }
 
@@ -108,7 +113,6 @@ public class Constants {
 
         public interface TurretPID extends BasePID {}
         public interface HoodPID extends BasePID {}
-
     }
   
     public class Swerve {

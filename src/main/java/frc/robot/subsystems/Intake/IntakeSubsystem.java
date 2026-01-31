@@ -1,7 +1,8 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.Intake;
+
+import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.spark.SparkMax;
@@ -25,6 +26,9 @@ public class IntakeSubsystem extends SubsystemBase {
         m_pivotMotor.getConfigurator().apply(pivotConfig);
     }
 
+    /**
+     * Intake
+     */
     public Command eat() {
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -33,6 +37,9 @@ public class IntakeSubsystem extends SubsystemBase {
             .isFinished(true);
     }
 
+    /**
+     * Stop Intake
+     */
     public Command stopEating() {
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -61,11 +68,24 @@ public class IntakeSubsystem extends SubsystemBase {
         });
     }
 
+    /**
+     * Put the intake down while intaking FUEL
+     */
     public Command consume() {
         return pivotDown().alongWith(eat());
     }
 
+    /**
+     * Retract intake from ground and stop intaking FUEL
+     */
     public Command excuseYourself() {
         return pivotUp().alongWith(stopEating());
+    }
+
+    public Command manual_pivot(DoubleSupplier speed) {
+        return new CommandBuilder(this)
+            .onExecute(() -> {
+                m_pivotMotor.set(speed.getAsDouble());
+            });
     }
 }

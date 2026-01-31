@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Shooter;
+package frc.robot.subsystems.Cannon;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -13,7 +13,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private TalonFX m_shooterMotor;
 
     public ShooterSubsystem() {
-        m_shooterMotor = new TalonFX(Constants.IOMap.Shooter.shooterMotor);
+        m_shooterMotor = new TalonFX(Constants.IOMap.Shooter.kShooterMotor);
         TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
         shooterConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         m_shooterMotor.getConfigurator().apply(shooterConfig);

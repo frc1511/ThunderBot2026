@@ -2,10 +2,9 @@ package frc.robot.orchestration;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Robot;
-import frc.robot.subsystems.Hood.HoodSubsystem;
-import frc.robot.subsystems.Shooter.ShooterSubsystem;
-import frc.robot.subsystems.Turret.TurretSubsystem;
-import frc.util.CommandBuilder;
+import frc.robot.subsystems.Cannon.HoodSubsystem;
+import frc.robot.subsystems.Cannon.ShooterSubsystem;
+import frc.robot.subsystems.Cannon.TurretSubsystem;
 
 public class CannonOrchestrator {
     private HoodSubsystem hood;
