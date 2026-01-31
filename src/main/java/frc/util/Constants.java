@@ -104,6 +104,10 @@ public class Constants {
         double kI = 0.0d;
         double kD = 0.0d;
     }
+
+    public interface Storage {
+        double kKickerSpeed = 1.0;
+    }
     
     public interface Shooter {
         double kMaxShooterSpeed = 0.5d;

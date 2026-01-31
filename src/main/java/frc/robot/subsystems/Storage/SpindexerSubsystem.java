@@ -30,7 +30,7 @@ public class SpindexerSubsystem extends SubsystemBase {
         double FULL_BAY = 4;
         double PARTIAL_BAY = 2;
         double AUTO_BAY = 1;
-        double INTAKE = 10_000_000;
+        double INTAKE = 1.0E9;
     }
     
     /**
@@ -50,7 +50,7 @@ public class SpindexerSubsystem extends SubsystemBase {
             );
     }
 
-    public Command manual_run(DoubleSupplier speed) {
+    public Command manual_spindexer(DoubleSupplier speed) {
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.set(speed.getAsDouble()));
     }

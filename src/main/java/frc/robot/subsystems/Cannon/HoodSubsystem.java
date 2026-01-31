@@ -1,5 +1,6 @@
 package frc.robot.subsystems.Cannon;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -31,5 +32,12 @@ public class HoodSubsystem extends SubsystemBase {
         return new CommandBuilder(this) 
             .onExecute(() -> m_hoodMotor.setControl(new PositionVoltage(targetPosition.get())))
             .isFinished(this::hoodAtPosition);
+    }
+
+    public Command manual_hood(DoubleSupplier speed) {
+        return new CommandBuilder(this)
+            .onExecute(() -> {
+                m_hoodMotor.set(speed.getAsDouble());
+            });
     }
 }

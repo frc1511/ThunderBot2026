@@ -1,5 +1,7 @@
 package frc.robot.subsystems.Cannon;
 
+import java.util.function.DoubleSupplier;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -33,5 +35,12 @@ public class ShooterSubsystem extends SubsystemBase {
         return new CommandBuilder(this)
             .onExecute(() -> m_shooterMotor.set(Constants.Shooter.kMaxShooterSpeed))
             .isFinished(this::shooterAtSpeed);
+    }
+    
+    public Command manual_shooter(DoubleSupplier speed) {
+        return new CommandBuilder(this)
+            .onExecute(() -> {
+                m_shooterMotor.set(speed.getAsDouble());
+            });
     }
 }

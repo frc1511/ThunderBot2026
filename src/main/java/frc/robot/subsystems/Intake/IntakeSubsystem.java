@@ -88,4 +88,11 @@ public class IntakeSubsystem extends SubsystemBase {
                 m_pivotMotor.set(speed.getAsDouble());
             });
     }
+
+    public Command manual_eating(DoubleSupplier speed) {
+        return new CommandBuilder(this)
+            .onExecute(() -> {
+                m_chompMotor.set(speed.getAsDouble());
+            });
+    }
 }

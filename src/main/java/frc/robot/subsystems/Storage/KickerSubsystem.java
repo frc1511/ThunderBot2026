@@ -16,19 +16,14 @@ public class KickerSubsystem extends SubsystemBase {
     private AnalogInput m_p;
     public KickerSubsystem() {
         m_motor = new TalonFX(Constants.IOMap.Storage.kKickerMotor);
-        m_p = new AnalogInput(0);
     }
 
     public Command playSoccer() {
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_motor.set(m_p.getVoltage() / 5);
+                m_motor.set(Constants.Storage.kKickerSpeed);
             })
             .isFinished(() -> false);
-    }
-
-    public void periodic() {
-        SmartDashboard.putNumber("kickerPercent", m_p.getVoltage() / 5);
     }
 
     public Command halt() {

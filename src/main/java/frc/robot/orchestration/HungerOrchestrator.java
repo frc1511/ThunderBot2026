@@ -1,11 +1,11 @@
 package frc.robot.orchestration;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Robot;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.Storage.SpindexerSubsystem;
 import frc.robot.subsystems.Storage.SpindexerSubsystem.SpinDuration;
-import frc.util.CommandBuilder;
 
 // Intake + Storage
 public class HungerOrchestrator {
@@ -20,8 +20,10 @@ public class HungerOrchestrator {
     /**
      * Intake the FUEL and spin the SPINDEXER
     */
-    // public Command feast() {
-    //     new Command().
-    //     return spindexer.spin(SpinDuration.INTAKE).alongWith(intake.consume());
-    // }
+    public Command feast() {
+        return spindexer.spin(SpinDuration.INTAKE)
+            .alongWith(intake.consume())
+            .withDeadline(Commands.none())
+            .until(() -> true);
+    }
 }
