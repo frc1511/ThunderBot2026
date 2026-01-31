@@ -1,5 +1,35 @@
 package frc.robot.orchestration;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Robot;
+import frc.robot.subsystems.Hood.HoodSubsystem;
+import frc.robot.subsystems.Shooter.ShooterSubsystem;
+import frc.robot.subsystems.Turret.TurretSubsystem;
+import frc.util.CommandBuilder;
+
 public class CannonOrchestrator {
-    
+    private HoodSubsystem hood;
+    private ShooterSubsystem shooter;
+    private TurretSubsystem turret;
+
+    public CannonOrchestrator(Robot robot) {
+        hood = robot.hood;
+        shooter = robot.shooter;
+        turret = robot.turret;
+    }
+
+    public static class Orientation {
+        public double turretDeg;
+        public double hoodDeg;
+
+        public Orientation(double turretDeg_, double hoodDeg_) {
+            turretDeg = turretDeg_;
+            hoodDeg = hoodDeg_;
+        }
+    }
+
+    public Command moveToOrientation(Orientation orientation) {
+        return hood.toPosition(() -> orientation.hoodDeg)
+            .alongWith(turret.toPosition(() -> orientation.turretDeg));                
+    }
 }
