@@ -364,7 +364,7 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
     public ThunderTrajectoryRunnerProperties getTrajectoryRunnerProperties() {
         return new ThunderTrajectoryRunnerProperties(
             this::currentPose,
-            pose -> resetPose(pose),
+            pose -> resetControl(pose),
             speeds -> setSpeeds(speeds),
             m_driveController
         );
