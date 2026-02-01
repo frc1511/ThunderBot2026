@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.ctre.phoenix6.HootAutoReplay;
 
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -27,6 +28,8 @@ import frc.util.Constants.Swerve;
 public class Robot extends TimedRobot {
     private final CommandXboxController driverController = new CommandXboxController(0);
     private final CommandXboxController auxController = new CommandXboxController(1);
+
+    private AnalogInput m_pot;
 
     // private final Telemetry logger = new Telemetry(Constants.SwerveConstants.kMaxSpeed);
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -83,15 +86,19 @@ public class Robot extends TimedRobot {
         cannonOrchestrator = new CannonOrchestrator(this);
         hubOrchestrator = new HubOrchestrator(this);
 
-        auxController.a().onTrue(kicker.playSoccer());
-        auxController.a().onFalse(kicker.halt());
+        // auxController.a().onTrue(kicker.playSoccer());
+        // auxController.a().onFalse(kicker.halt());
+
+        m_pot = new AnalogInput(0);
+        auxController.a().onTrue(shooter.manual_shooter(() -> m_pot.getVoltage() / 5));
+        auxController.a().onFalse(shooter.stopShooter());
     }
 
     @Override
     public void robotPeriodic() {
         m_timeAndJoystickReplay.update();
         SmartDashboard.putData(CommandScheduler.getInstance());
-
+        SmartDashboard.putNumber("POT", m_pot.getVoltage() / 5);
         CommandScheduler.getInstance().run();
     }
 

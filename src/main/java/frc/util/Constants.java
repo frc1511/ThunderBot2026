@@ -88,9 +88,10 @@ public class Constants {
       
         public interface Shooter {
             //TODO: actual can ids
-            int kShooterMotor = 20;
-            int kHoodMotor = 21;
-            int kturretMotor = 22;
+            int kShooterMotorA = 21;
+            int kShooterMotorB = 22;
+            int kHoodMotor = 23;
+            int kturretMotor = 24;
         }
 
         public interface Storage {
