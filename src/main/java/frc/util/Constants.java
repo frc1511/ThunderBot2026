@@ -118,6 +118,14 @@ public class Constants {
 
         public interface TurretPID extends BasePID {}
         public interface HoodPID extends BasePID {}
+
+        double kTargetShooterRPM = 3000;
+
+        public interface ShooterPID extends BasePID {
+            double kP = 0.2;
+            double kI = .6;
+            double kD = 0.01;
+        }
     }
   
     public class Swerve {

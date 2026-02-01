@@ -6,7 +6,6 @@ package frc.robot;
 
 import com.ctre.phoenix6.HootAutoReplay;
 
-import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -23,13 +22,13 @@ import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.Storage.KickerSubsystem;
 import frc.robot.subsystems.Storage.SpindexerSubsystem;
 import frc.util.Alert;
+import frc.util.CommandBuilder;
+import frc.util.Constants;
 import frc.util.Constants.Swerve;
 
 public class Robot extends TimedRobot {
     private final CommandXboxController driverController = new CommandXboxController(0);
     private final CommandXboxController auxController = new CommandXboxController(1);
-
-    private AnalogInput m_pot;
 
     // private final Telemetry logger = new Telemetry(Constants.SwerveConstants.kMaxSpeed);
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -48,6 +47,8 @@ public class Robot extends TimedRobot {
 
     public final CannonOrchestrator cannonOrchestrator;
     public final HubOrchestrator hubOrchestrator;
+
+    public double shootSpeed = 0.2;
 
     public Robot() {
         // DataLogManager.start();
@@ -86,19 +87,34 @@ public class Robot extends TimedRobot {
         cannonOrchestrator = new CannonOrchestrator(this);
         hubOrchestrator = new HubOrchestrator(this);
 
-        // auxController.a().onTrue(kicker.playSoccer());
-        // auxController.a().onFalse(kicker.halt());
+        auxController.a().onTrue(kicker.playSoccer());
+        auxController.a().onFalse(kicker.halt());
 
-        m_pot = new AnalogInput(0);
-        auxController.a().onTrue(shooter.manual_shooter(() -> m_pot.getVoltage() / 5));
+        auxController.a().onTrue(shooter.manual_shooter(() -> shootSpeed));
         auxController.a().onFalse(shooter.stopShooter());
+
+        auxController.b().onTrue(new CommandBuilder()
+            .onExecute(() -> {
+                shootSpeed += .05;
+            })
+            .isFinished(true)
+            .ignoringDisable(true)
+        );
+        auxController.x().onTrue(new CommandBuilder()
+            .onExecute(() -> {
+                shootSpeed -= .05;
+            })
+            .isFinished(true)
+            .ignoringDisable(true)
+        );
     }
 
     @Override
     public void robotPeriodic() {
         m_timeAndJoystickReplay.update();
         SmartDashboard.putData(CommandScheduler.getInstance());
-        SmartDashboard.putNumber("POT", m_pot.getVoltage() / 5);
+        SmartDashboard.putNumber("Speed", shootSpeed);
+        SmartDashboard.putNumber("RPM", shootSpeed * Constants.Shooter.kTargetShooterRPM);
         CommandScheduler.getInstance().run();
     }
 
