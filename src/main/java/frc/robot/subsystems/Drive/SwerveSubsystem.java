@@ -28,7 +28,6 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.util.Alert;
 import frc.util.CommandBuilder;
 import frc.util.Constants.Swerve;
-import frc.util.Elastic.NotificationLevel;
 import frc.util.LimelightHelpers;
 import frc.util.Constants;
 
@@ -353,6 +352,13 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
             .withDeadband(Swerve.kVelocityDeadband * 0.5)
             .withRotationalDeadband(Swerve.kAngularVelocityDeadband)
         );
+    }
+
+    public void resetControl(Pose2d pose) {
+        resetPose(pose);
+        m_driveController.getXController().reset();
+        m_driveController.getYController().reset();
+        m_driveController.getThetaController().reset(pose.getRotation().getRadians());
     }
 
     public ThunderTrajectoryRunnerProperties getTrajectoryRunnerProperties() {
