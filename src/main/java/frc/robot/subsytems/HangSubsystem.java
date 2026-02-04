@@ -4,7 +4,10 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.CommandBuilder;
@@ -22,18 +25,25 @@ public class HangSubsystem extends SubsystemBase {
         m_motor = new SparkMax(IOMap.Hang.hangMotor, MotorType.kBrushless);
         m_encoder = m_motor.getEncoder();
 
-        m_lowerLimitSensor = new DigitalInput(1);
-        m_upperLimitSensor = new DigitalInput(2);
+        m_lowerLimitSensor = new DigitalInput(IOMap.Hang.lowerLimit);
+        m_upperLimitSensor = new DigitalInput(IOMap.Hang.upperLimit);
 
         m_isZeroed = false;
     }
 
+    public void periodic() {
+        SmartDashboard.putBoolean("Hang_atLower", isAtLowerLimit());
+        SmartDashboard.putBoolean("Hang_atUpper", isAtUpperLimit());
+        SmartDashboard.putBoolean("Hang_isZeroed", isZeroed());
+        SmartDashboard.putNumber("Hang_position", m_encoder.getPosition());
+    }
+
     private boolean isAtLowerLimit() {
-        return m_lowerLimitSensor.get();
+        return !m_lowerLimitSensor.get();
     }
 
     private boolean isAtUpperLimit() {
-        return m_upperLimitSensor.get();
+        return !m_upperLimitSensor.get();
     }
 
     public boolean isZeroed() {
@@ -59,6 +69,7 @@ public class HangSubsystem extends SubsystemBase {
     public Command extend() { //hang will die if it goes past the upper limit
         return new CommandBuilder(this)
             .onExecute(() -> {
+                if (isAtUpperLimit()) {m_motor.set(0);return;}
                 m_motor.set(HangConstants.kMaxDeploySpeed);
             })
             .isFinished(() -> isAtUpperLimit() || m_encoder.getPosition() > HangConstants.kMaxDeployDistanceRotations)
@@ -69,9 +80,18 @@ public class HangSubsystem extends SubsystemBase {
     public Command retract() {
         return new CommandBuilder(this)
             .onExecute(() -> {
+                if (isAtLowerLimit()) {m_motor.set(0);return;};
                 m_motor.set(HangConstants.kMaxPullSpeed);
             })
-            .isFinished(() -> m_encoder.getPosition() < HangConstants.kMaxPullDistanceRotations)
+            .isFinished(() -> m_encoder.getPosition() < HangConstants.kMaxPullDistanceRotations || isAtLowerLimit())
             .onlyIf(this::isZeroed);
+    }
+    
+    public Command halt() {
+        return new CommandBuilder(this)
+            .onExecute(() -> {
+                m_motor.set(0);
+            })
+            .isFinished(true);
     }
 }
