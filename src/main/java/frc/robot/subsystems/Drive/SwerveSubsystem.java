@@ -17,6 +17,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -73,6 +75,27 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         m_targetField = new Field2d();
 
         m_fieldCentric = true;
+
+        SmartDashboard.putData("Swerve Data", new Sendable() {
+            @Override
+            public void initSendable(SendableBuilder builder) {
+                builder.setSmartDashboardType("Swerve Data");
+
+                builder.addDoubleProperty("Module 0 Angle", () -> getModule(0).getCurrentState().angle.getRadians(), null);
+                builder.addDoubleProperty("Module 0 Vel", () -> getModule(0).getCurrentState().speedMetersPerSecond, null);
+
+                builder.addDoubleProperty("Module 1 Angle", () -> getModule(1).getCurrentState().angle.getRadians(), null);
+                builder.addDoubleProperty("Module 1 Vel", () -> getModule(1).getCurrentState().speedMetersPerSecond, null);
+
+                builder.addDoubleProperty("Module 2 Angle", () -> getModule(2).getCurrentState().angle.getRadians(), null);
+                builder.addDoubleProperty("Module 2 Vel", () -> getModule(2).getCurrentState().speedMetersPerSecond, null);
+
+                builder.addDoubleProperty("Module 3 Angle", () -> getModule(3).getCurrentState().angle.getRadians(), null);
+                builder.addDoubleProperty("Module 3 Vel", () -> getModule(3).getCurrentState().speedMetersPerSecond, null);
+
+                builder.addDoubleProperty("Robot Angle", () -> getPigeon2().getRotation2d().getRadians(), null);
+            }
+        });
 
         if (Utils.isSimulation()) {
             startSimThread();
@@ -341,9 +364,6 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
     }
 
     private void setSpeeds(ChassisSpeeds speeds) {
-        SmartDashboard.putNumber("velX", speeds.vxMetersPerSecond * Swerve.kMaxSpeed);
-        SmartDashboard.putNumber("velY", speeds.vyMetersPerSecond * Swerve.kMaxSpeed);
-        SmartDashboard.putNumber("velTheta", speeds.omegaRadiansPerSecond * Swerve.kMaxAngularRate);
         setControl(m_robotCentricRequest
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
             .withVelocityX(speeds.vxMetersPerSecond * Swerve.kMaxSpeed)

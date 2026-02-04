@@ -13,8 +13,6 @@ public class AutoLoader {
 
         if (autoProject.isLoaded()) {
             autoProject.registerActionCommand("Shoot", conductor.hub.shoot());
-
-            
         } else {
             Alert.warning("Auto failed to load");
         }
