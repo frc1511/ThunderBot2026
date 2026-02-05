@@ -1,15 +1,20 @@
 package frc.robot.subsytems;
 
+import java.util.function.DoubleSupplier;
+
+import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
-import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
 import frc.util.CommandBuilder;
 import frc.util.Constants.HangConstants;
 import frc.util.Constants.IOMap;
@@ -23,6 +28,7 @@ public class HangSubsystem extends SubsystemBase {
 
     public HangSubsystem() {
         m_motor = new SparkMax(IOMap.Hang.hangMotor, MotorType.kBrushless);
+        m_motor.configure(new SparkMaxConfig().idleMode(IdleMode.kBrake), ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         m_encoder = m_motor.getEncoder();
 
         m_lowerLimitSensor = new DigitalInput(IOMap.Hang.lowerLimit);
@@ -86,12 +92,25 @@ public class HangSubsystem extends SubsystemBase {
             .isFinished(() -> m_encoder.getPosition() < HangConstants.kMaxPullDistanceRotations || isAtLowerLimit())
             .onlyIf(this::isZeroed);
     }
-    
+
     public Command halt() {
         return new CommandBuilder(this)
             .onExecute(() -> {
                 m_motor.set(0);
             })
             .isFinished(true);
+    }
+
+    public Command manual(DoubleSupplier speedSupplier) {
+        return new CommandBuilder(this)
+            .onExecute(() -> {
+                double speed = speedSupplier.getAsDouble() * .5;
+                if ((isAtLowerLimit() && speed > 0) || (isAtUpperLimit() && speed < 0))
+                    m_motor.set(0);
+                else
+                    m_motor.set(speed);
+            })
+            .isFinished(true)
+            .repeatedly();
     }
 }

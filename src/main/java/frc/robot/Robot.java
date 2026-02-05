@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsytems.HangSubsystem;
 
 public class Robot extends TimedRobot {
@@ -21,6 +22,8 @@ public class Robot extends TimedRobot {
         m_auxController.y().onTrue(hang.zeroHang());
         m_auxController.a().onTrue(hang.retract());
         m_auxController.b().onTrue(hang.extend());
+
+        new Trigger(() -> Math.abs(m_auxController.getLeftY()) > .1).onTrue(hang.manual(() -> m_auxController.getLeftY())).onFalse(hang.halt());
     }
 
     private int i = 0;
@@ -28,6 +31,8 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);
+
+        SmartDashboard.putData(CommandScheduler.getInstance());
         CommandScheduler.getInstance().run();
     }
 
