@@ -25,10 +25,12 @@ public class Constants {
     }
 
     public interface HangConstants {
+        double kSetpointMaxVelocity = 0.02; // Prevents flybys
+        double kSetpointPositionTolerance = 0.05;
         double kZeroingSpeed = -0.1;
-        double kMaxDeploySpeed = 0.2; // Extending Hanger
-        double kMaxPullSpeed = -0.1;  // Retracting Hanger (pulling the robot up on the bar)
-        double kMaxDeployDistanceRotations = 270;
-        double kMaxPullDistanceRotations = 1; // This is not a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down
+        double kMaxDeploySpeed = 0.8; // Extending Hanger
+        double kMaxPullSpeed = -0.6;  // Retracting Hanger (pulling the robot up on the bar)
+        double kMaxDeployDistanceRotations = 33;
+        double kMaxPullDistanceRotations = 8; // This is not a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down
     }
 }
