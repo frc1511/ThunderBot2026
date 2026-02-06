@@ -28,8 +28,8 @@ public class Constants {
         double kSetpointMaxVelocity = 0.02; // Prevents flybys
         double kSetpointPositionTolerance = 0.05;
         double kZeroingSpeed = -0.1;
-        double kMaxDeploySpeed = 0.8; // Extending Hanger
-        double kMaxPullSpeed = -0.6;  // Retracting Hanger (pulling the robot up on the bar)
+        double kMaxDeploySpeed = 0.4; // TODO: DOUBLE FOR LATER TESTING // Extending Hanger
+        double kMaxPullSpeed = -0.3;  // TODO: DOUBLE FOR LATER TESTING // Retracting Hanger (pulling the robot up on the bar)
         double kMaxDeployDistanceRotations = 33;
         double kMaxPullDistanceRotations = 8; // This is not a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down
     }
