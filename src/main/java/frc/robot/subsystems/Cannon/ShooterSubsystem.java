@@ -62,4 +62,12 @@ public class ShooterSubsystem extends SubsystemBase {
             })
             .isFinished(() -> false);
     }
+
+    public Command shoot() {
+        return new CommandBuilder(this)
+            .onExecute(() -> {
+                m_shooterMotorA.set(Constants.Shooter.kMaxShooterSpeed);
+            })
+            .isFinished(true);
+    }
 }

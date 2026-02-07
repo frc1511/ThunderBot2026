@@ -5,6 +5,7 @@ import frc.robot.Robot;
 import frc.robot.subsystems.Cannon.HoodSubsystem;
 import frc.robot.subsystems.Cannon.ShooterSubsystem;
 import frc.robot.subsystems.Cannon.TurretSubsystem;
+import frc.util.CommandBuilder;
 
 public class CannonOrchestrator {
     private HoodSubsystem hood;
@@ -30,5 +31,15 @@ public class CannonOrchestrator {
     public Command moveToOrientation(Orientation orientation) {
         return hood.toPosition(() -> orientation.hoodDeg)
             .alongWith(turret.toPosition(() -> orientation.turretDeg));                
+    }
+
+    public Command shootTurret() {
+        return new CommandBuilder()
+            .onExecute(() -> {
+                if (shooter.shooterAtSpeed() && hood.hoodAtPosition() && turret.turretAtPosition()) {
+                    shooter.shoot();
+                }
+            })
+            .isFinished(true);
     }
 }
