@@ -111,6 +111,9 @@ public class Robot extends TimedRobot {
 
     @Override
     public void robotPeriodic() {
+        // DataLogManager.start();
+        Alert.info(String.format("Last build time: %s, on branch %s", BuildConstants.BUILD_DATE, BuildConstants.GIT_BRANCH));
+
         m_timeAndJoystickReplay.update();
         SmartDashboard.putData(CommandScheduler.getInstance());
         SmartDashboard.putNumber("Speed", shootSpeed);
