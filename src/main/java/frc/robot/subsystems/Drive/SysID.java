@@ -78,7 +78,7 @@ public class SysID {
             )
         );
 
-        m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
+        m_sysIdRoutineToApply = m_sysIdRoutineRotation;
     }
 
     /**
