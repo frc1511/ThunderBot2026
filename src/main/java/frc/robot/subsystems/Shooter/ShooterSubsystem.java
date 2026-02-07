@@ -8,6 +8,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
 
@@ -37,7 +38,10 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public Command shoot() {
         return new CommandBuilder(this)
-            .onExecute(() -> m_shooterMotor.set(Constants.Shooter.kMaxShooterSpeed))
+            .onExecute(() -> {
+                if (Broken.shooterFull) return;
+                m_shooterMotor.set(Constants.Shooter.kMaxShooterSpeed);
+            })
             .isFinished(true);
     }
 
