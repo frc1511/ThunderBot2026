@@ -6,12 +6,16 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.util.Alert;
 
 public class Robot extends TimedRobot {
     public Robot() {}
 
     @Override
     public void robotPeriodic() {
+        // DataLogManager.start();
+        Alert.info(String.format("Last build time: %s, on branch %s", BuildConstants.BUILD_DATE, BuildConstants.GIT_BRANCH));
+
         CommandScheduler.getInstance().run();
     }
 
