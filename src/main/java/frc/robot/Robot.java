@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsytems.HangSubsystem;
 
+import frc.util.Alert;
+
 public class Robot extends TimedRobot {
 
     private CommandXboxController m_auxController = new CommandXboxController(1);
@@ -30,6 +32,9 @@ public class Robot extends TimedRobot {
 
     @Override
     public void robotPeriodic() {
+        // DataLogManager.start();
+        Alert.info(String.format("Last build time: %s, on branch %s", BuildConstants.BUILD_DATE, BuildConstants.GIT_BRANCH));
+
         SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);
 
         SmartDashboard.putData(CommandScheduler.getInstance());
