@@ -127,6 +127,32 @@ public class Constants {
             double kD = 0.01;
         }
     }
+
+    public class Hunger {
+        public interface Intake {
+            double kEatSpeed = 0.3;
+        }
+
+        public interface Pivot {
+            interface PivotPID extends BasePID { }
+
+            enum Position {
+                TOP(31), BOTTOM(40); // TODO: these aren't real
+
+                private double m_value;
+
+                private Position(double value) {
+                    m_value = value;
+                }
+
+                public double get() {
+                    return this.m_value;
+                }
+            }
+
+            double kTolerance = 0.5d;
+        }
+    }
   
     public class Swerve {
         // Max Speed

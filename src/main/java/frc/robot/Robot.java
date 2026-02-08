@@ -19,6 +19,7 @@ import frc.robot.subsystems.Cannon.TurretSubsystem;
 // import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
+import frc.robot.subsystems.Intake.PivotSubsystem;
 import frc.robot.subsystems.Storage.KickerSubsystem;
 import frc.robot.subsystems.Storage.SpindexerSubsystem;
 import frc.util.Alert;
@@ -40,10 +41,11 @@ public class Robot extends TimedRobot {
     public final ShooterSubsystem shooter = new ShooterSubsystem();
     public final HoodSubsystem hood = new HoodSubsystem();
     public final TurretSubsystem turret = new TurretSubsystem();
-    
+
     public final SpindexerSubsystem spindexer = new SpindexerSubsystem();
     public final KickerSubsystem kicker = new KickerSubsystem();
     public final IntakeSubsystem intake = new IntakeSubsystem();
+    public final PivotSubsystem pivot = new PivotSubsystem();
 
     public final CannonOrchestrator cannonOrchestrator;
     public final HubOrchestrator hubOrchestrator;
