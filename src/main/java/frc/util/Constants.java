@@ -107,7 +107,27 @@ public class Constants {
     }
 
     public interface Storage {
-        double kKickerSpeed = 1.0;
+        interface Spindexer {
+           double kSpeed = 1;
+
+            /** Seconds */
+            enum Duration {
+                FULL_BAY(4), PARTIAL_BAY(2), AUTO_BAY(1), INTAKE(1.0E9);
+
+                private double m_value;
+                private Duration(double value) {
+                    this.m_value = value;
+                }
+
+                public double get() {
+                    return this.m_value;
+                }
+            }
+        }
+
+        interface Kicker {
+            double kSpeed = 1.0;
+        }
     }
     
     public interface Shooter {
@@ -142,7 +162,7 @@ public class Constants {
                 private double m_value;
 
                 private Position(double value) {
-                    m_value = value;
+                    this.m_value = value;
                 }
 
                 public double get() {

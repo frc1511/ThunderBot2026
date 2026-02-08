@@ -4,7 +4,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Robot;
 import frc.robot.subsystems.Cannon.ShooterSubsystem;
 import frc.robot.subsystems.Storage.SpindexerSubsystem;
-import frc.robot.subsystems.Storage.SpindexerSubsystem.SpinDuration;
+import frc.util.Constants;
 import frc.robot.subsystems.Storage.KickerSubsystem;
 
 public class FiringOrchestrator {
@@ -17,11 +17,11 @@ public class FiringOrchestrator {
         kicker = robot.kicker;
         spindexer = robot.spindexer;
     }
-    
+
     public Command fire() {
         return shooter.preheat()
             .alongWith(kicker.playSoccer())
-            .alongWith(spindexer.spin(SpinDuration.PARTIAL_BAY))
+            .alongWith(spindexer.spin(Constants.Storage.Spindexer.Duration.PARTIAL_BAY.get()))
             .onlyIf(shooter::shooterAtSpeed);
     }
 }
