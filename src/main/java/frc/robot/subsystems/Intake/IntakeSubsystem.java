@@ -23,7 +23,8 @@ public class IntakeSubsystem extends SubsystemBase {
     public Command eat() {
         return new CommandBuilder(this)
             .onExecute(() -> m_chompMotor.set(Constants.Hunger.Intake.kEatSpeed))
-            .isFinished(true);
+            .isFinished(true)
+            .withName(Constants.Hunger.Intake.intakeCommandName);
     }
 
     /**

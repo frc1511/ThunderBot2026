@@ -106,6 +106,16 @@ public class Constants {
         double kD = 0.0d;
     }
 
+    public interface BlinkyBlinky {
+        int kPort = 0;
+
+        int kLength = 40;
+
+        enum Mode {
+            NONE, INTAKING, HUNG, FIRE_READY, HOME, TRENCH_SAFE
+        }
+    }
+
     public interface Storage {
         interface Spindexer {
            double kSpeed = 1;
@@ -151,6 +161,8 @@ public class Constants {
     public class Hunger {
         public interface Intake {
             double kEatSpeed = 0.3;
+
+            String intakeCommandName = "intake";
         }
 
         public interface Pivot {
@@ -171,6 +183,12 @@ public class Constants {
             }
 
             double kTolerance = 0.5d;
+        }
+    }
+
+    public interface Cannon {
+        interface Hood {
+            double kBottomPosition = 0;
         }
     }
   

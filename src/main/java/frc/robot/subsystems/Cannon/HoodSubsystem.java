@@ -24,14 +24,14 @@ public class HoodSubsystem extends SubsystemBase {
         m_hoodMotor.getConfigurator().apply(hoodConfig);
     }
 
-    public boolean hoodAtPosition() {
+    public boolean atPosition() {
         return m_hoodMotor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kHoodTolerance;
     }
 
     public Command toPosition(Supplier<Double> targetPosition) {
         return new CommandBuilder(this) 
             .onExecute(() -> m_hoodMotor.setControl(new PositionVoltage(targetPosition.get())))
-            .isFinished(this::hoodAtPosition);
+            .isFinished(this::atPosition);
     }
 
     public Command manual_hood(DoubleSupplier speed) {
@@ -39,5 +39,9 @@ public class HoodSubsystem extends SubsystemBase {
             .onExecute(() -> {
                 m_hoodMotor.set(speed.getAsDouble());
             });
+    }
+
+    public boolean safeForTrench() {
+        return m_hoodMotor.getClosedLoopReference().getValueAsDouble() == Constants.Cannon.Hood.kBottomPosition && atPosition();
     }
 }

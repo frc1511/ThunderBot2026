@@ -8,9 +8,9 @@ import frc.robot.subsystems.Cannon.TurretSubsystem;
 import frc.util.CommandBuilder;
 
 public class CannonOrchestrator {
-    private HoodSubsystem hood;
-    private ShooterSubsystem shooter;
-    private TurretSubsystem turret;
+    public HoodSubsystem hood;
+    public ShooterSubsystem shooter;
+    public TurretSubsystem turret;
 
     public CannonOrchestrator(Robot robot) {
         hood = robot.hood;
@@ -36,10 +36,14 @@ public class CannonOrchestrator {
     public Command shootTurret() {
         return new CommandBuilder()
             .onExecute(() -> {
-                if (shooter.shooterAtSpeed() && hood.hoodAtPosition() && turret.turretAtPosition()) {
+                if (ready()) {
                     shooter.shoot();
                 }
             })
             .isFinished(true);
+    }
+
+    public boolean ready() {
+        return shooter.shooterAtSpeed() && hood.atPosition() && turret.turretAtPosition();
     }
 }

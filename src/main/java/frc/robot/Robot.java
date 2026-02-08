@@ -11,8 +11,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import frc.robot.orchestration.BlinkyBlinkyOrchestrator;
 import frc.robot.orchestration.CannonOrchestrator;
+import frc.robot.orchestration.Conductor;
+import frc.robot.orchestration.FiringOrchestrator;
 import frc.robot.orchestration.HubOrchestrator;
+import frc.robot.orchestration.HungerOrchestrator;
 import frc.robot.subsystems.Cannon.HoodSubsystem;
 import frc.robot.subsystems.Cannon.ShooterSubsystem;
 import frc.robot.subsystems.Cannon.TurretSubsystem;
@@ -47,8 +51,13 @@ public class Robot extends TimedRobot {
     public final IntakeSubsystem intake = new IntakeSubsystem();
     public final PivotSubsystem pivot = new PivotSubsystem();
 
+    public final BlinkyBlinkyOrchestrator blinkyBlinkyOrchestrator;
     public final CannonOrchestrator cannonOrchestrator;
+    public final FiringOrchestrator firingOrchestrator;
     public final HubOrchestrator hubOrchestrator;
+    public final HungerOrchestrator hungerOrchestrator;
+
+    public final Conductor conductor;
 
     public double shootSpeed = 0.2;
 
@@ -62,9 +71,9 @@ public class Robot extends TimedRobot {
             drivetrain
                 .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
         );
-      
+
         RobotModeTriggers.disabled().whileTrue(drivetrain.idle());
-        
+
         driverController.a().whileTrue(drivetrain.brick());
         driverController.b().whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
 
@@ -86,8 +95,14 @@ public class Robot extends TimedRobot {
         // driverController.back().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
         // driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
         // drivetrain.registerTelemetry(logger::telemeterize);}
+
+        blinkyBlinkyOrchestrator = new BlinkyBlinkyOrchestrator(this);
         cannonOrchestrator = new CannonOrchestrator(this);
+        firingOrchestrator = new FiringOrchestrator(this);
         hubOrchestrator = new HubOrchestrator(this);
+        hungerOrchestrator = new HungerOrchestrator(this);
+
+        conductor = new Conductor(this);
 
         auxController.a().onTrue(kicker.playSoccer());
         auxController.a().onFalse(kicker.halt());

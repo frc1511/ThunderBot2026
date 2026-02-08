@@ -44,4 +44,8 @@ public class HungerOrchestrator {
     public Command feast() {
         return spintake().alongWith(pivot.pivotDown());
     }
+
+    public boolean isIntaking() {
+        return intake.getCurrentCommand().getName().equals(Constants.Hunger.Intake.intakeCommandName);
+    }
 }
