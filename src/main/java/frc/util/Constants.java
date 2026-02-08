@@ -1,6 +1,9 @@
 package frc.util;
 
 public class Constants {
+
+    public static final double kAntiSpamAlertTimeout = 0.1;
+
     public class IOMap {
         /*
         *    +======================================+

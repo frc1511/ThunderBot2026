@@ -6,10 +6,11 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsytem.Moving;
+import frc.util.Alert;
 
 public class Robot extends TimedRobot {
     Moving moving;
@@ -21,8 +22,10 @@ public class Robot extends TimedRobot {
         m_SW_2 = new DigitalInput(2);
         m_SW_3 = new DigitalInput(3);
 
-        new Trigger(() -> m_SW_2.get()).onFalse(moving.runForward()).onTrue(moving.stop());  
-        new Trigger(() -> m_SW_3.get()).onFalse(moving.runBackward()).onTrue(moving.stop());
+        // new Trigger(() -> m_SW_2.get()).onFalse(moving.runForward()).onTrue(moving.stop());  
+        // new Trigger(() -> m_SW_3.get()).onFalse(moving.runBackward()).onTrue(moving.stop());
+
+        new Trigger(() -> m_SW_2.get()).onTrue(new InstantCommand(() -> Alert.critical("DRIVE SAFETY", "SECONDARY SAFETY TRIPPED")).ignoringDisable(true));
     }
 
     @Override
