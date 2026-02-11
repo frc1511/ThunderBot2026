@@ -1,4 +1,4 @@
-package frc.robot.subsytems;
+package frc.robot.subsystems.Hang;
 
 import java.util.function.DoubleSupplier;
 
@@ -80,7 +80,10 @@ public class HangSubsystem extends SubsystemBase {
     public Command zeroHang() {
         return new CommandBuilder(this)
             .onExecute(() -> {
-                if (isAtLowerLimit()) {m_motor.stopMotor();return;}
+                if (isAtLowerLimit()) {
+                    m_motor.stopMotor();
+                    return;
+                }
                 m_motor.set(HangConstants.kZeroingSpeed);
             })
             .isFinished(this::isAtLowerLimit)
@@ -105,7 +108,10 @@ public class HangSubsystem extends SubsystemBase {
     public Command extend() { //hang will die if it goes past the upper limit
         return new CommandBuilder(this)
             .onExecute(() -> {
-                if (atExtentionLimit()) {m_motor.stopMotor();return;}
+                if (atExtentionLimit()) {
+                    m_motor.stopMotor();
+                    return;
+                }
                 m_pidController.setSetpoint(HangConstants.kMaxDeployDistanceRotations, ControlType.kPosition);
             })
             .isFinished(this::atExtentionLimit)
@@ -121,7 +127,10 @@ public class HangSubsystem extends SubsystemBase {
         return new CommandBuilder(this)
             .onExecute(() -> {
                 m_pidController.setSetpoint(HangConstants.kMaxPullDistanceRotations, ControlType.kPosition);
-                if (atRetractionLimit()) {m_motor.stopMotor();return;};
+                if (atRetractionLimit()) {
+                    m_motor.stopMotor();
+                    return;
+                }
             })
             .isFinished(this::atRetractionLimit)
             .onlyIf(this::isZeroed);
