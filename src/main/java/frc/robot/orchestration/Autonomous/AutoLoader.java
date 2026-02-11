@@ -3,7 +3,6 @@ package frc.robot.orchestration.Autonomous;
 import com.thunder.lib.auto.ThunderAutoProject;
 
 import frc.robot.Robot;
-import frc.robot.orchestration.Conductor;
 import frc.util.Alert;
 
 public class AutoLoader {

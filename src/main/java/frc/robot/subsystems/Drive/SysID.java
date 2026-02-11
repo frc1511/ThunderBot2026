@@ -17,8 +17,11 @@ public class SysID {
     private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
     
+    @SuppressWarnings("unused")
     private SysIdRoutine m_sysIdRoutineTranslation;
+    @SuppressWarnings("unused")
     private SysIdRoutine m_sysIdRoutineSteer;
+    @SuppressWarnings("unused")
     private SysIdRoutine m_sysIdRoutineRotation;
 
     private SysIdRoutine m_sysIdRoutineToApply;

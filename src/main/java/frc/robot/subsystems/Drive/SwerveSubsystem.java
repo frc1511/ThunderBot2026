@@ -8,8 +8,6 @@ import java.util.function.Supplier;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.thunder.lib.auto.ThunderAutoMode;
-import com.thunder.lib.auto.ThunderAutoTrajectory;
 import com.thunder.lib.trajectory.ThunderTrajectoryRunnerProperties;
 
 import edu.wpi.first.math.Matrix;
