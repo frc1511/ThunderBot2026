@@ -68,12 +68,6 @@ public class Robot extends TimedRobot {
 
     public double shootSpeed = 0.2;
 
-    private final HubOrchestrator hubOrchestrator = new HubOrchestrator(
-        shooter
-    );
-
-    private final Conductor conductor = new Conductor(hubOrchestrator);
-
     ThunderAutoSendableChooser autoChooser;
 
     public Robot() {
@@ -140,7 +134,7 @@ public class Robot extends TimedRobot {
             .ignoringDisable(true)
         );
 
-        ThunderAutoProject autoProject = AutoLoader.load(conductor);
+        ThunderAutoProject autoProject = AutoLoader.load(this);
 
         autoChooser = new ThunderAutoSendableChooser("Auto_Mode");
 

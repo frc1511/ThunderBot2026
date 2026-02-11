@@ -1,31 +1,20 @@
 package frc.robot.orchestration;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.Shooter.ShooterSubsystem;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Robot;
 import frc.robot.orchestration.CannonOrchestrator.Orientation;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
 
 
 public class HubOrchestrator {
-    private ShooterSubsystem shooter;
-    public HubOrchestrator(ShooterSubsystem shooterSubsystem) { // TODO: other subsystems
-        shooter = shooterSubsystem;
-    }
-
     CannonOrchestrator cannonOrchestrator;
     SwerveSubsystem swerveSubsystem;
     
     public HubOrchestrator(Robot robot) {
         cannonOrchestrator = robot.cannonOrchestrator;
         swerveSubsystem = robot.drivetrain;
-    }
-    
-    public Command shoot() {
-        return shooter.shoot();
     }
 
     public double hubLockTurretAngle() {
