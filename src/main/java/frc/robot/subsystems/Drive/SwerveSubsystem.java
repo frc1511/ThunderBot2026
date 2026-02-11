@@ -8,6 +8,9 @@ import java.util.function.Supplier;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.thunder.lib.auto.ThunderAutoMode;
+import com.thunder.lib.auto.ThunderAutoTrajectory;
+import com.thunder.lib.trajectory.ThunderTrajectoryRunnerProperties;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.HolonomicDriveController;
@@ -16,6 +19,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -23,8 +28,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.util.Alert;
+import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants.Swerve;
 import frc.util.LimelightHelpers;
@@ -53,6 +60,9 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
     private Field2d m_currentField;
     private Field2d m_targetField;
 
+    private Field2d m_targetCenterPoseField;
+
+    private Pose2d m_arcLockCenter;
     private double m_arcLockDistance;
     private double m_arcLockTheta;
 
@@ -71,7 +81,30 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         m_currentField = new Field2d();
         m_targetField = new Field2d();
 
+        m_targetCenterPoseField = new Field2d();
+
         m_fieldCentric = true;
+
+        SmartDashboard.putData("Swerve Data", new Sendable() {
+            @Override
+            public void initSendable(SendableBuilder builder) {
+                builder.setSmartDashboardType("Swerve Data");
+
+                builder.addDoubleProperty("Module 0 Angle", () -> getModule(0).getCurrentState().angle.getRadians(), null);
+                builder.addDoubleProperty("Module 0 Vel", () -> getModule(0).getCurrentState().speedMetersPerSecond, null);
+
+                builder.addDoubleProperty("Module 1 Angle", () -> getModule(1).getCurrentState().angle.getRadians(), null);
+                builder.addDoubleProperty("Module 1 Vel", () -> getModule(1).getCurrentState().speedMetersPerSecond, null);
+
+                builder.addDoubleProperty("Module 2 Angle", () -> getModule(2).getCurrentState().angle.getRadians(), null);
+                builder.addDoubleProperty("Module 2 Vel", () -> getModule(2).getCurrentState().speedMetersPerSecond, null);
+
+                builder.addDoubleProperty("Module 3 Angle", () -> getModule(3).getCurrentState().angle.getRadians(), null);
+                builder.addDoubleProperty("Module 3 Vel", () -> getModule(3).getCurrentState().speedMetersPerSecond, null);
+
+                builder.addDoubleProperty("Robot Angle", () -> getPigeon2().getRotation2d().getRadians(), null);
+            }
+        });
 
         if (Utils.isSimulation()) {
             startSimThread();
@@ -88,16 +121,16 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
 
     public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX) {
         return applyRequest(() -> {
-            // YES! The y and x are swaped on purpose, it has to do with coordiante systems in the library so just leave it like this please!
+            // YES! The y and x are swapped on purpose, it has to do with coordinate systems in the library so just leave it like this please!
             double vx = -leftY.getAsDouble() * Constants.Swerve.kMaxSpeed;
             double vy = -leftX.getAsDouble() * Constants.Swerve.kMaxSpeed;
-            double vrot = -rightX.getAsDouble() * Constants.Swerve.kMaxAngularRate;
+            double vRot = -rightX.getAsDouble() * Constants.Swerve.kMaxAngularRate;
             if (m_fieldCentric) {
                 return m_fieldCentricRequest
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
                     .withVelocityX(vx)
                     .withVelocityY(vy)
-                    .withRotationalRate(vrot)
+                    .withRotationalRate(vRot)
                     .withDeadband(Constants.Swerve.kVelocityDeadband)
                     .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband);
             } else {
@@ -105,7 +138,7 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
                     .withVelocityX(vx)
                     .withVelocityY(vy)
-                    .withRotationalRate(vrot)
+                    .withRotationalRate(vRot)
                     .withDeadband(Constants.Swerve.kVelocityDeadband)
                     .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband);
             }
@@ -135,10 +168,11 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
      */
     public Command applyRequest(Supplier<SwerveRequest> request) {
         return run(() -> {
-            if (isCANSafe()) {
+            if (isCANSafe() && Broken.drivetrainFullyDisabled) {
                 this.setControl(request.get());
             } else {
-                Alert.error("DRIVE DISABLED | CAN DISCONNECT");
+                if (!Broken.drivetrainFullyDisabled)
+                    Alert.critical("DRIVE DISABLED | CAN DISCONNECT");
                 this.setControl(m_idleRequest);
             }
         });
@@ -178,6 +212,10 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         SmartDashboard.putData("targetPose", m_targetField);
 
         SmartDashboard.putString("Robot drive mode", m_fieldCentric ? "Field Centric" : "Robot Centric");
+
+        SmartDashboard.putData(m_driveController.getXController());
+        SmartDashboard.putData(m_driveController.getYController());
+        SmartDashboard.putData(m_driveController.getThetaController());
     }
 
     private void startSimThread() {
@@ -296,13 +334,16 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
                     );
                 }
             );
+            onInitialize(() -> {
+                resetPose(currentPose());
+            });
             return this;
         }
     }
 
     public boolean isCANSafe() {
         for (int i = 0; i < getModules().length; i++) {
-            if (!getModule(i).getDriveMotor().isConnected(Constants.kCANChainDisconectTimout) || !getModule(i).getSteerMotor().isConnected(Constants.kCANChainDisconectTimout)) {
+            if (!getModule(i).getDriveMotor().isConnected(Constants.kCANChainDisconnectTimeout) || !getModule(i).getSteerMotor().isConnected(Constants.kCANChainDisconnectTimeout)) {
                 return false;
             }
         }
@@ -310,33 +351,72 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
     }
 
     public Command driveLockedToArcWithJoysticks(DoubleSupplier leftX) {
-        Pose2d centerPose = new Pose2d(
-            11.887319,
-            7.41196,
-            Rotation2d.kZero
-        );
         return driveToPose()
+            .withFinishAllowance(false)
             .withTarget(
                 () -> {
                     m_arcLockTheta += Math.toRadians(leftX.getAsDouble());
-                    
+
+                    m_targetCenterPoseField.setRobotPose(m_arcLockCenter);
+
+                    SmartDashboard.putData(m_targetCenterPoseField);
+
                     return new Pose2d(
-                        Math.cos(m_arcLockTheta) * m_arcLockDistance + centerPose.getX(),
-                        Math.sin(m_arcLockTheta) * m_arcLockDistance + centerPose.getY(),
+                        Math.cos(m_arcLockTheta) * m_arcLockDistance + m_arcLockCenter.getX(),
+                        Math.sin(m_arcLockTheta) * m_arcLockDistance + m_arcLockCenter.getY(),
                         new Rotation2d(m_arcLockTheta + Math.PI)
                     );
                 }
             )
             .onInitialize(
                 () -> {
+                    Alliance alliance;
+                    if (DriverStation.getAlliance().isEmpty()) alliance = DriverStation.Alliance.Blue;
+                    else alliance = DriverStation.getAlliance().get();
+                    m_arcLockCenter = alliance == DriverStation.Alliance.Blue ? Constants.Swerve.blueHubCenterPose : Constants.Swerve.redHubCenterPose;
+
                     Pose2d currentPose = currentPose();
 
-                    double dX = currentPose.getX() - centerPose.getX();
-                    double dY = currentPose.getY() - centerPose.getY();
-            
+                    double dX = currentPose.getX() - m_arcLockCenter.getX();
+                    double dY = currentPose.getY() - m_arcLockCenter.getY();
+
                     m_arcLockDistance = Math.hypot(dX, dY);
                     m_arcLockTheta = Math.atan2(dY, dX);
                 }
             );
+    }
+
+    private void setSpeeds(ChassisSpeeds speeds) {
+        SmartDashboard.putNumber("SetSpeeds_x", speeds.vxMetersPerSecond);
+        SmartDashboard.putNumber("SetSpeeds_y", speeds.vyMetersPerSecond);
+        SmartDashboard.putNumber("SetSpeeds_theta", speeds.omegaRadiansPerSecond);
+
+        Command command = applyRequest(() -> m_robotCentricRequest
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+            .withVelocityX(speeds.vxMetersPerSecond)
+            .withVelocityY(speeds.vyMetersPerSecond)
+            .withRotationalRate(speeds.omegaRadiansPerSecond)
+            .withDeadband(Swerve.kVelocityDeadband * 0.5)
+            .withRotationalDeadband(Swerve.kAngularVelocityDeadband)
+        ).withName("driveSetSpeeds");
+        command.addRequirements(this);
+
+        CommandScheduler.getInstance().schedule(command);
+    }
+
+    public void resetControl(Pose2d pose) {
+        resetPose(pose);
+        m_driveController.getXController().reset();
+        m_driveController.getYController().reset();
+        m_driveController.getThetaController().reset(pose.getRotation().getRadians());
+    }
+
+    public ThunderTrajectoryRunnerProperties getTrajectoryRunnerProperties() {
+        return new ThunderTrajectoryRunnerProperties(
+            this::currentPose,
+            pose -> resetControl(pose),
+            speeds -> setSpeeds(speeds),
+            m_driveController
+        );
     }
 }

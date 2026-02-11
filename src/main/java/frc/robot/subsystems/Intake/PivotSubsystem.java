@@ -7,35 +7,47 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
 
 public class PivotSubsystem extends SubsystemBase {
-    private TalonFX m_pivotMotor;
+    private TalonFX m_motor;
 
     public PivotSubsystem() {
-        m_pivotMotor = new TalonFX(Constants.IOMap.Intake.pivotMotor);
-
         Slot0Configs pivotConfig = new Slot0Configs()
             .withKP(Constants.Hunger.Pivot.PivotPID.kP).withKI(Constants.Hunger.Pivot.PivotPID.kI).withKD(Constants.Hunger.Pivot.PivotPID.kD);
-        m_pivotMotor.getConfigurator().apply(pivotConfig);
+
+        if (!Broken.pivotDisabled) {
+            m_motor = new TalonFX(Constants.IOMap.Intake.pivotMotor);
+            m_motor.getConfigurator().apply(pivotConfig);
+        } else {
+            m_motor = null;
+        }
     }
 
     public Command pivotDown() {
+        if (Broken.pivotDisabled) return Commands.none();
+
         return new CommandBuilder(this)
-        .onExecute(() -> m_pivotMotor.setControl(new PositionVoltage(Constants.Hunger.Pivot.Position.BOTTOM.get())))
-        .isFinished(() -> m_pivotMotor.getClosedLoopError().getValueAsDouble() < Constants.Hunger.Pivot.kTolerance);
+            .onExecute(() -> m_motor.setControl(new PositionVoltage(Constants.Hunger.Pivot.Position.BOTTOM.get())))
+            .isFinished(() -> m_motor.getClosedLoopError().getValueAsDouble() < Constants.Hunger.Pivot.kTolerance);
     }
 
     public Command pivotUp() {
+        if (Broken.pivotDisabled) return Commands.none();
+
         return new CommandBuilder(this)
-        .onExecute(() -> m_pivotMotor.setControl(new PositionVoltage(Constants.Hunger.Pivot.Position.TOP.get())))
-        .isFinished(() -> m_pivotMotor.getClosedLoopError().getValueAsDouble() < Constants.Hunger.Pivot.kTolerance);
+            .onExecute(() -> m_motor.setControl(new PositionVoltage(Constants.Hunger.Pivot.Position.TOP.get())))
+            .isFinished(() -> m_motor.getClosedLoopError().getValueAsDouble() < Constants.Hunger.Pivot.kTolerance);
     }
 
     public Command manual_pivot(DoubleSupplier speed) {
+        if (Broken.pivotDisabled) return Commands.none();
+
         return new CommandBuilder(this)
-            .onExecute(() -> m_pivotMotor.set(speed.getAsDouble()));
+            .onExecute(() -> m_motor.set(speed.getAsDouble()));
     }
 }

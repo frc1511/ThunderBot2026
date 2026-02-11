@@ -5,10 +5,15 @@
 package frc.robot;
 
 import com.ctre.phoenix6.HootAutoReplay;
+import com.thunder.lib.auto.ThunderAutoProject;
+import com.thunder.lib.auto.ThunderAutoSendableChooser;
 
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.robot.orchestration.BlinkyBlinkyOrchestrator;
@@ -17,10 +22,11 @@ import frc.robot.orchestration.Conductor;
 import frc.robot.orchestration.FiringOrchestrator;
 import frc.robot.orchestration.HubOrchestrator;
 import frc.robot.orchestration.HungerOrchestrator;
+import frc.robot.orchestration.Autonomous.AutoLoader;
 import frc.robot.subsystems.Cannon.HoodSubsystem;
 import frc.robot.subsystems.Cannon.ShooterSubsystem;
 import frc.robot.subsystems.Cannon.TurretSubsystem;
-// import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.Intake.PivotSubsystem;
@@ -29,6 +35,7 @@ import frc.robot.subsystems.Storage.SpindexerSubsystem;
 import frc.util.Alert;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
+import frc.util.Broken;
 import frc.util.Constants.Swerve;
 
 public class Robot extends TimedRobot {
@@ -59,17 +66,19 @@ public class Robot extends TimedRobot {
 
     public final Conductor conductor;
 
-    public double shootSpeed = 0.2;
+    private ThunderAutoSendableChooser autoChooser;
 
     public Robot() {
         // DataLogManager.start();
         Alert.info("The robot has restarted");
 
+        Broken.autoShooterFullDisable();
+
         driverController.leftTrigger(.1).onTrue(drivetrain.toggleFieldCentric());
 
         drivetrain.setDefaultCommand(
             drivetrain
-                .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
+                .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX).onlyIf(() -> !driverController.y().getAsBoolean())
         );
 
         RobotModeTriggers.disabled().whileTrue(drivetrain.idle());
@@ -88,12 +97,12 @@ public class Robot extends TimedRobot {
         driverController.y().whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
 
         // driverController.leftBumper().onTrue(shooter.turretToPosition(drivetrain::hubLockTurretAngle));
-        driverController.rightBumper().onTrue(shooter.preheat()).onFalse(shooter.stopShooter()); // right bumper toggle shooter motor
+        // driverController.rightBumper().onTrue(shooter.preheat()).onFalse(shooter.stopShooter()); // right bumper toggle shooter motor
 
-        // driverController.start().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
-        // driverController.start().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
-        // driverController.back().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
-        // driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
+        driverController.start().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
+        driverController.start().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
+        driverController.back().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
+        driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
         // drivetrain.registerTelemetry(logger::telemeterize);}
 
         blinkyBlinkyOrchestrator = new BlinkyBlinkyOrchestrator(this);
@@ -107,34 +116,40 @@ public class Robot extends TimedRobot {
         auxController.a().onTrue(kicker.playSoccer());
         auxController.a().onFalse(kicker.halt());
 
-        auxController.a().onTrue(shooter.manual_shooter(() -> shootSpeed));
-        auxController.a().onFalse(shooter.stopShooter());
+        ThunderAutoProject autoProject = AutoLoader.load(this);
 
-        auxController.b().onTrue(new CommandBuilder()
-            .onExecute(() -> {
-                shootSpeed += .05;
-            })
-            .isFinished(true)
-            .ignoringDisable(true)
-        );
-        auxController.x().onTrue(new CommandBuilder()
-            .onExecute(() -> {
-                shootSpeed -= .05;
-            })
-            .isFinished(true)
-            .ignoringDisable(true)
-        );
+        autoChooser = new ThunderAutoSendableChooser("Auto_Mode");
+
+        autoChooser.includeProjectSource(autoProject);
+        autoChooser.addAllAutoModesFromProject(autoProject.getName());
+        autoChooser.addTrajectoryFromProject(autoProject.getName(), "ShootFromStart");
+        autoChooser.addTrajectoryFromProject(autoProject.getName(), "teehee");
+        autoChooser.setTrajectoryRunnerProperties(drivetrain.getTrajectoryRunnerProperties());
+    }
+
+    @SuppressWarnings("all") // Identical Expressions Warning Suppression (BuildConsts)
+    @Override
+    public void robotInit() {
+        Alert.info(String.format("Last build time: %s, on branch %s.", BuildConstants.BUILD_DATE, BuildConstants.GIT_BRANCH) + (BuildConstants.DIRTY == 1 ? "Modified" : ""));
     }
 
     @Override
     public void robotPeriodic() {
+        if (!driverController.isConnected()) {
+            Alert.error("Drive Controller Disconnected");
+        }
+
+        if (RobotController.getBatteryVoltage() < 9) {
+            Alert.critical(String.format("Battery voltage dipped below 9v, reached %.2f", RobotController.getBatteryVoltage()));
+        } else if (RobotController.getBatteryVoltage() < 10) {
+            Alert.error("Battery voltage dipped below 10v");
+        }
+
         // DataLogManager.start();
         Alert.info(String.format("Last build time: %s, on branch %s", BuildConstants.BUILD_DATE, BuildConstants.GIT_BRANCH));
 
         m_timeAndJoystickReplay.update();
         SmartDashboard.putData(CommandScheduler.getInstance());
-        SmartDashboard.putNumber("Speed", shootSpeed);
-        SmartDashboard.putNumber("RPM", shootSpeed * Constants.Shooter.kTargetShooterRPM);
         CommandScheduler.getInstance().run();
     }
 
@@ -149,6 +164,10 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
+        Command autoCommand = autoChooser.getSelectedCommand();
+        if (autoCommand != Commands.none()) {
+            CommandScheduler.getInstance().schedule(autoCommand);
+        }
     }
 
     @Override
