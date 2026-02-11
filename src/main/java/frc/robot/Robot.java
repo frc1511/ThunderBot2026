@@ -15,7 +15,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.orchestration.BlinkyBlinkyOrchestrator;
 import frc.robot.orchestration.CannonOrchestrator;
 import frc.robot.orchestration.Conductor;
@@ -28,6 +30,7 @@ import frc.robot.subsystems.Cannon.ShooterSubsystem;
 import frc.robot.subsystems.Cannon.TurretSubsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
+import frc.robot.subsystems.Hang.HangSubsystem;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.Intake.PivotSubsystem;
 import frc.robot.subsystems.Storage.KickerSubsystem;
@@ -56,7 +59,8 @@ public class Robot extends TimedRobot {
     public final SpindexerSubsystem spindexer = new SpindexerSubsystem();
     public final KickerSubsystem kicker = new KickerSubsystem();
     public final IntakeSubsystem intake = new IntakeSubsystem();
-    public final PivotSubsystem pivot = new PivotSubsystem();
+    public final PivotSubsystem pivot = new PivotSubsystem();   
+    public final HangSubsystem hang = new HangSubsystem();
 
     public final BlinkyBlinkyOrchestrator blinkyBlinkyOrchestrator;
     public final CannonOrchestrator cannonOrchestrator;
@@ -67,7 +71,7 @@ public class Robot extends TimedRobot {
     public final Conductor conductor;
 
     private ThunderAutoSendableChooser autoChooser;
-
+  
     public Robot() {
         // DataLogManager.start();
         Alert.info("The robot has restarted");
@@ -97,13 +101,21 @@ public class Robot extends TimedRobot {
         driverController.y().whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
 
         // driverController.leftBumper().onTrue(shooter.turretToPosition(drivetrain::hubLockTurretAngle));
+      
+        hang.setDefaultCommand(hang.halt());
+        auxController.y().whileTrue(hang.zeroHang()).onFalse(hang.halt());
+        auxController.a().whileTrue(hang.retract()).onFalse(hang.halt());
+        auxController.b().whileTrue(hang.extend()).onFalse(hang.halt());
+
+        new Trigger(() -> Math.abs(auxController.getLeftY()) > .1).onTrue(hang.manual(() -> auxController.getLeftY())).onFalse(hang.halt());
+
         // driverController.rightBumper().onTrue(shooter.preheat()).onFalse(shooter.stopShooter()); // right bumper toggle shooter motor
 
         driverController.start().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
         driverController.start().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
         driverController.back().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
         driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
-        // drivetrain.registerTelemetry(logger::telemeterize);}
+        // drivetrain.registerTelemetry(logger::telemeterize);
 
         blinkyBlinkyOrchestrator = new BlinkyBlinkyOrchestrator(this);
         cannonOrchestrator = new CannonOrchestrator(this);
@@ -132,7 +144,9 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         Alert.info(String.format("Last build time: %s, on branch %s.", BuildConstants.BUILD_DATE, BuildConstants.GIT_BRANCH) + (BuildConstants.DIRTY == 1 ? "Modified" : ""));
     }
-
+    
+    private int i = 0;
+  
     @Override
     public void robotPeriodic() {
         if (!driverController.isConnected()) {
@@ -148,8 +162,11 @@ public class Robot extends TimedRobot {
         // DataLogManager.start();
         Alert.info(String.format("Last build time: %s, on branch %s", BuildConstants.BUILD_DATE, BuildConstants.GIT_BRANCH));
 
+        SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);
+
         m_timeAndJoystickReplay.update();
         SmartDashboard.putData(CommandScheduler.getInstance());
+      
         CommandScheduler.getInstance().run();
     }
 
@@ -192,6 +209,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void testPeriodic() {}
+
 
     @Override
     public void testExit() {}
