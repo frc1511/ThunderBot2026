@@ -1,0 +1,41 @@
+package frc.robot.subsystems.Intake;
+
+import java.util.function.DoubleSupplier;
+
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.hardware.TalonFX;
+
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.util.CommandBuilder;
+import frc.util.Constants;
+
+public class PivotSubsystem extends SubsystemBase {
+    private TalonFX m_pivotMotor;
+
+    public PivotSubsystem() {
+        m_pivotMotor = new TalonFX(Constants.IOMap.Intake.pivotMotor);
+
+        Slot0Configs pivotConfig = new Slot0Configs()
+            .withKP(Constants.Hunger.Pivot.PivotPID.kP).withKI(Constants.Hunger.Pivot.PivotPID.kI).withKD(Constants.Hunger.Pivot.PivotPID.kD);
+        m_pivotMotor.getConfigurator().apply(pivotConfig);
+    }
+
+    public Command pivotDown() {
+        return new CommandBuilder(this)
+        .onExecute(() -> m_pivotMotor.setControl(new PositionVoltage(Constants.Hunger.Pivot.Position.BOTTOM.get())))
+        .isFinished(() -> m_pivotMotor.getClosedLoopError().getValueAsDouble() < Constants.Hunger.Pivot.kTolerance);
+    }
+
+    public Command pivotUp() {
+        return new CommandBuilder(this)
+        .onExecute(() -> m_pivotMotor.setControl(new PositionVoltage(Constants.Hunger.Pivot.Position.TOP.get())))
+        .isFinished(() -> m_pivotMotor.getClosedLoopError().getValueAsDouble() < Constants.Hunger.Pivot.kTolerance);
+    }
+
+    public Command manual_pivot(DoubleSupplier speed) {
+        return new CommandBuilder(this)
+            .onExecute(() -> m_pivotMotor.set(speed.getAsDouble()));
+    }
+}

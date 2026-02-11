@@ -4,32 +4,122 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.HootAutoReplay;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import frc.robot.orchestration.BlinkyBlinkyOrchestrator;
+import frc.robot.orchestration.CannonOrchestrator;
+import frc.robot.orchestration.Conductor;
+import frc.robot.orchestration.FiringOrchestrator;
+import frc.robot.orchestration.HubOrchestrator;
+import frc.robot.orchestration.HungerOrchestrator;
+import frc.robot.subsystems.Cannon.HoodSubsystem;
+import frc.robot.subsystems.Cannon.ShooterSubsystem;
+import frc.robot.subsystems.Cannon.TurretSubsystem;
+// import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.subsystems.Drive.SwerveSubsystem;
+import frc.robot.subsystems.Intake.IntakeSubsystem;
+import frc.robot.subsystems.Intake.PivotSubsystem;
+import frc.robot.subsystems.Storage.KickerSubsystem;
+import frc.robot.subsystems.Storage.SpindexerSubsystem;
 import frc.robot.subsytems.HangSubsystem;
 
 import frc.util.Alert;
+import frc.util.CommandBuilder;
+import frc.util.Constants;
+import frc.util.Constants.Swerve;
 
 public class Robot extends TimedRobot {
+    private final CommandXboxController driverController = new CommandXboxController(0);
+    private final CommandXboxController auxController = new CommandXboxController(1);
 
-    private CommandXboxController m_auxController = new CommandXboxController(1);
+    // private final Telemetry logger = new Telemetry(Constants.SwerveConstants.kMaxSpeed);
+    private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
+        .withTimestampReplay()
+        .withJoystickReplay();
+  
+    public final SwerveSubsystem drivetrain = new SwerveSubsystem();
 
-    public HangSubsystem hang = new HangSubsystem();
+    public final ShooterSubsystem shooter = new ShooterSubsystem();
+    public final HoodSubsystem hood = new HoodSubsystem();
+    public final TurretSubsystem turret = new TurretSubsystem();
+
+    public final SpindexerSubsystem spindexer = new SpindexerSubsystem();
+    public final KickerSubsystem kicker = new KickerSubsystem();
+    public final IntakeSubsystem intake = new IntakeSubsystem();
+    public final PivotSubsystem pivot = new PivotSubsystem();   
+    public final HangSubsystem hang = new HangSubsystem();
+
+    public final BlinkyBlinkyOrchestrator blinkyBlinkyOrchestrator;
+    public final CannonOrchestrator cannonOrchestrator;
+    public final FiringOrchestrator firingOrchestrator;
+    public final HubOrchestrator hubOrchestrator;
+    public final HungerOrchestrator hungerOrchestrator;
+
+    public final Conductor conductor;
 
     public Robot() {
+        // DataLogManager.start();
+        Alert.info("The robot has restarted");
+
+        driverController.leftTrigger(.1).onTrue(drivetrain.toggleFieldCentric());
+
+        drivetrain.setDefaultCommand(
+            drivetrain
+                .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
+        );
+
+        RobotModeTriggers.disabled().whileTrue(drivetrain.idle());
+
+        driverController.a().whileTrue(drivetrain.brick());
+        driverController.b().whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
+
+        // Reset the field-centric heading on left bumper press.
+        driverController.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+
+        driverController.rightBumper().onTrue(
+            drivetrain.driveToPose()
+                .withTarget(Swerve.targetPose)
+        );
+
+        driverController.y().whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
+
+        // driverController.leftBumper().onTrue(shooter.turretToPosition(drivetrain::hubLockTurretAngle));
+        driverController.rightBumper().onTrue(shooter.preheat()).onFalse(shooter.stopShooter()); // right bumper toggle shooter motor
+      
+      
         hang.setDefaultCommand(hang.halt());
-        m_auxController.y().whileTrue(hang.zeroHang()).onFalse(hang.halt());
-        m_auxController.a().whileTrue(hang.retract()).onFalse(hang.halt());
-        m_auxController.b().whileTrue(hang.extend()).onFalse(hang.halt());
+        auxController.y().whileTrue(hang.zeroHang()).onFalse(hang.halt());
+        auxController.a().whileTrue(hang.retract()).onFalse(hang.halt());
+        auxController.b().whileTrue(hang.extend()).onFalse(hang.halt());
 
-        new Trigger(() -> Math.abs(m_auxController.getLeftY()) > .1).onTrue(hang.manual(() -> m_auxController.getLeftY())).onFalse(hang.halt());
+        new Trigger(() -> Math.abs(auxController.getLeftY()) > .1).onTrue(hang.manual(() -> auxController.getLeftY())).onFalse(hang.halt());
+
+        // driverController.start().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
+        // driverController.start().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
+        // driverController.back().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
+        // driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
+        // drivetrain.registerTelemetry(logger::telemeterize);}
+
+        blinkyBlinkyOrchestrator = new BlinkyBlinkyOrchestrator(this);
+        cannonOrchestrator = new CannonOrchestrator(this);
+        firingOrchestrator = new FiringOrchestrator(this);
+        hubOrchestrator = new HubOrchestrator(this);
+        hungerOrchestrator = new HungerOrchestrator(this);
+
+        conductor = new Conductor(this);
+
+        auxController.a().onTrue(kicker.playSoccer());
+        auxController.a().onFalse(kicker.halt());
     }
-
+    
     private int i = 0;
-
+  
     @Override
     public void robotPeriodic() {
         // DataLogManager.start();
@@ -37,7 +127,9 @@ public class Robot extends TimedRobot {
 
         SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);
 
+        m_timeAndJoystickReplay.update();
         SmartDashboard.putData(CommandScheduler.getInstance());
+      
         CommandScheduler.getInstance().run();
     }
 
@@ -51,7 +143,8 @@ public class Robot extends TimedRobot {
     public void disabledExit() {}
 
     @Override
-    public void autonomousInit() {}
+    public void autonomousInit() {
+    }
 
     @Override
     public void autonomousPeriodic() {}
