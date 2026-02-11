@@ -66,9 +66,7 @@ public class Robot extends TimedRobot {
 
     public final Conductor conductor;
 
-    public double shootSpeed = 0.2;
-
-    ThunderAutoSendableChooser autoChooser;
+    private ThunderAutoSendableChooser autoChooser;
 
     public Robot() {
         // DataLogManager.start();
@@ -118,24 +116,6 @@ public class Robot extends TimedRobot {
         auxController.a().onTrue(kicker.playSoccer());
         auxController.a().onFalse(kicker.halt());
 
-        auxController.a().onTrue(shooter.manual_shooter(() -> shootSpeed));
-        auxController.a().onFalse(shooter.stopShooter());
-
-        auxController.b().onTrue(new CommandBuilder()
-            .onExecute(() -> {
-                shootSpeed += .05;
-            })
-            .isFinished(true)
-            .ignoringDisable(true)
-        );
-        auxController.x().onTrue(new CommandBuilder()
-            .onExecute(() -> {
-                shootSpeed -= .05;
-            })
-            .isFinished(true)
-            .ignoringDisable(true)
-        );
-
         ThunderAutoProject autoProject = AutoLoader.load(this);
 
         autoChooser = new ThunderAutoSendableChooser("Auto_Mode");
@@ -170,8 +150,6 @@ public class Robot extends TimedRobot {
 
         m_timeAndJoystickReplay.update();
         SmartDashboard.putData(CommandScheduler.getInstance());
-        SmartDashboard.putNumber("Speed", shootSpeed);
-        SmartDashboard.putNumber("RPM", shootSpeed * Constants.Shooter.kTargetShooterRPM);
         CommandScheduler.getInstance().run();
     }
 
