@@ -16,19 +16,31 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import frc.robot.orchestration.BlinkyBlinkyOrchestrator;
+import frc.robot.orchestration.CannonOrchestrator;
 import frc.robot.orchestration.Conductor;
+import frc.robot.orchestration.FiringOrchestrator;
 import frc.robot.orchestration.HubOrchestrator;
+import frc.robot.orchestration.HungerOrchestrator;
 import frc.robot.orchestration.Autonomous.AutoLoader;
+import frc.robot.subsystems.Cannon.HoodSubsystem;
+import frc.robot.subsystems.Cannon.ShooterSubsystem;
+import frc.robot.subsystems.Cannon.TurretSubsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
-import frc.robot.subsystems.Shooter.ShooterSubsystem;
+import frc.robot.subsystems.Intake.IntakeSubsystem;
+import frc.robot.subsystems.Intake.PivotSubsystem;
+import frc.robot.subsystems.Storage.KickerSubsystem;
+import frc.robot.subsystems.Storage.SpindexerSubsystem;
 import frc.util.Alert;
+import frc.util.CommandBuilder;
+import frc.util.Constants;
 import frc.util.Broken;
 import frc.util.Constants.Swerve;
 
 public class Robot extends TimedRobot {
-
     private final CommandXboxController driverController = new CommandXboxController(0);
+    private final CommandXboxController auxController = new CommandXboxController(1);
 
     // private final Telemetry logger = new Telemetry(Constants.SwerveConstants.kMaxSpeed);
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -36,7 +48,25 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
   
     public final SwerveSubsystem drivetrain = Broken.drivetrain ? null : new SwerveSubsystem();
-    private final ShooterSubsystem shooter = new ShooterSubsystem();
+
+    public final ShooterSubsystem shooter = new ShooterSubsystem();
+    public final HoodSubsystem hood = new HoodSubsystem();
+    public final TurretSubsystem turret = new TurretSubsystem();
+
+    public final SpindexerSubsystem spindexer = new SpindexerSubsystem();
+    public final KickerSubsystem kicker = new KickerSubsystem();
+    public final IntakeSubsystem intake = new IntakeSubsystem();
+    public final PivotSubsystem pivot = new PivotSubsystem();
+
+    public final BlinkyBlinkyOrchestrator blinkyBlinkyOrchestrator;
+    public final CannonOrchestrator cannonOrchestrator;
+    public final FiringOrchestrator firingOrchestrator;
+    public final HubOrchestrator hubOrchestrator;
+    public final HungerOrchestrator hungerOrchestrator;
+
+    public final Conductor conductor;
+
+    public double shootSpeed = 0.2;
 
     private final HubOrchestrator hubOrchestrator = new HubOrchestrator(
         shooter
@@ -71,13 +101,44 @@ public class Robot extends TimedRobot {
         );
 
         driverController.y().whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
-        // driverController.rightBumper().onTrue(shooter.shoot()).onFalse(shooter.stopShoot()); // right bumper toggle shooter motor
+
+        // driverController.leftBumper().onTrue(shooter.turretToPosition(drivetrain::hubLockTurretAngle));
+        // driverController.rightBumper().onTrue(shooter.preheat()).onFalse(shooter.stopShooter()); // right bumper toggle shooter motor
 
         driverController.start().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
         driverController.start().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
         driverController.back().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
         driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
-        // drivetrain.registerTelemetry(logger::telemeterize);
+        // drivetrain.registerTelemetry(logger::telemeterize);}
+
+        blinkyBlinkyOrchestrator = new BlinkyBlinkyOrchestrator(this);
+        cannonOrchestrator = new CannonOrchestrator(this);
+        firingOrchestrator = new FiringOrchestrator(this);
+        hubOrchestrator = new HubOrchestrator(this);
+        hungerOrchestrator = new HungerOrchestrator(this);
+
+        conductor = new Conductor(this);
+
+        auxController.a().onTrue(kicker.playSoccer());
+        auxController.a().onFalse(kicker.halt());
+
+        auxController.a().onTrue(shooter.manual_shooter(() -> shootSpeed));
+        auxController.a().onFalse(shooter.stopShooter());
+
+        auxController.b().onTrue(new CommandBuilder()
+            .onExecute(() -> {
+                shootSpeed += .05;
+            })
+            .isFinished(true)
+            .ignoringDisable(true)
+        );
+        auxController.x().onTrue(new CommandBuilder()
+            .onExecute(() -> {
+                shootSpeed -= .05;
+            })
+            .isFinished(true)
+            .ignoringDisable(true)
+        );
 
         ThunderAutoProject autoProject = AutoLoader.load(conductor);
 
@@ -107,9 +168,13 @@ public class Robot extends TimedRobot {
             Alert.error("Battery voltage dipped below 10v");
         }
 
+        // DataLogManager.start();
+        Alert.info(String.format("Last build time: %s, on branch %s", BuildConstants.BUILD_DATE, BuildConstants.GIT_BRANCH));
+
         m_timeAndJoystickReplay.update();
         SmartDashboard.putData(CommandScheduler.getInstance());
-
+        SmartDashboard.putNumber("Speed", shootSpeed);
+        SmartDashboard.putNumber("RPM", shootSpeed * Constants.Shooter.kTargetShooterRPM);
         CommandScheduler.getInstance().run();
     }
 

@@ -257,7 +257,7 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
     }
 
-    private Pose2d currentPose() {
+    public Pose2d currentPose() {
         return getState().Pose;
     }
 

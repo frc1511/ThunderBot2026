@@ -62,6 +62,11 @@ public class Constants {
         *    +======================================+
         */
 
+        public class Intake {
+            public static final int pivotMotor = 24;
+            public static final int chompMotor = 25;
+        }
+      
         public class Swerve {
             public static final int kFLEncoder = 7;
             public static final int kFLDrive = 8;
@@ -84,9 +89,15 @@ public class Constants {
       
         public interface Shooter {
             //TODO: actual can ids
-            int shooterMotor = 20;
-            int hoodMotor = 21;
-            int turretMotor = 22;
+            int kShooterMotorA = 21;
+            int kShooterMotorB = 22;
+            int kHoodMotor = 23;
+            int kturretMotor = 24;
+        }
+
+        public interface Storage {
+            int kSpindexerMotor = 41;
+            int kKickerMotor = 42;
         }
     }
 
@@ -95,15 +106,91 @@ public class Constants {
         double kI = 0.0d;
         double kD = 0.0d;
     }
+
+    public interface BlinkyBlinky {
+        int kPort = 0;
+
+        int kLength = 40;
+
+        enum Mode {
+            NONE, INTAKING, HUNG, FIRE_READY, HOME, TRENCH_SAFE
+        }
+    }
+
+    public interface Storage {
+        interface Spindexer {
+           double kSpeed = 1;
+
+            /** Seconds */
+            enum Duration {
+                FULL_BAY(4), PARTIAL_BAY(2), AUTO_BAY(1), INTAKE(1.0E9);
+
+                private double m_value;
+                private Duration(double value) {
+                    this.m_value = value;
+                }
+
+                public double get() {
+                    return this.m_value;
+                }
+            }
+        }
+
+        interface Kicker {
+            double kSpeed = 1.0;
+        }
+    }
     
     public interface Shooter {
         double kMaxShooterSpeed = 0.5d;
+        double kShooterAtSpeedTolerance = 0.1d;
         double kTurretTolerance = 0.5d;
         double kHoodTolerance = 0.5d;
 
         public interface TurretPID extends BasePID {}
         public interface HoodPID extends BasePID {}
 
+        double kTargetShooterRPM = 3000;
+
+        public interface ShooterPID extends BasePID {
+            double kP = 0.2;
+            double kI = .6;
+            double kD = 0.01;
+        }
+    }
+
+    public class Hunger {
+        public interface Intake {
+            double kEatSpeed = 0.3;
+
+            String intakeCommandName = "intake";
+        }
+
+        public interface Pivot {
+            interface PivotPID extends BasePID { }
+
+            enum Position {
+                TOP(31), BOTTOM(40); // TODO: these aren't real
+
+                private double m_value;
+
+                private Position(double value) {
+                    this.m_value = value;
+                }
+
+                public double get() {
+                    return this.m_value;
+                }
+            }
+
+            double kTolerance = 0.5d;
+        }
+    }
+
+    public interface Cannon {
+        interface Hood {
+            double kBottomPosition = 0;
+        }
     }
   
     public class Swerve {
