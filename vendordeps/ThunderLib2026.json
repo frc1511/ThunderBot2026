@@ -1,7 +1,7 @@
 {
     "fileName": "ThunderLib2026.json",
     "name": "ThunderLib",
-    "version": "2026.0.0",
+    "version": "2026.0.2",
     "frcYear": "2026",
     "uuid": "e5b81076-0ebf-42de-b028-41b49cacbcbe",
     "mavenUrls": [
@@ -12,14 +12,14 @@
         {
             "groupId": "com.thunder.lib",
             "artifactId": "ThunderLib-java",
-            "version": "2026.0.0"
+            "version": "2026.0.2"
         }
     ],
     "jniDependencies": [
         {
             "groupId": "com.thunder.lib",
             "artifactId": "ThunderLib-core",
-            "version": "2026.0.0",
+            "version": "2026.0.2",
             "skipInvalidPlatforms": true,
             "isJar": false,
             "validPlatforms": [
@@ -34,7 +34,7 @@
         {
             "groupId": "com.thunder.lib",
             "artifactId": "ThunderLib-driver",
-            "version": "2026.0.0",
+            "version": "2026.0.2",
             "skipInvalidPlatforms": true,
             "isJar": false,
             "validPlatforms": [
@@ -51,7 +51,7 @@
         {
             "groupId": "com.thunder.lib",
             "artifactId": "ThunderLib-cpp",
-            "version": "2026.0.0",
+            "version": "2026.0.2",
             "libName": "ThunderLib",
             "headerClassifier": "headers",
             "sharedLibrary": false,
@@ -68,7 +68,7 @@
         {
             "groupId": "com.thunder.lib",
             "artifactId": "ThunderLib-core",
-            "version": "2026.0.0",
+            "version": "2026.0.2",
             "libName": "ThunderLibCore",
             "headerClassifier": "headers",
             "sharedLibrary": true,
@@ -85,7 +85,7 @@
         {
             "groupId": "com.thunder.lib",
             "artifactId": "ThunderLib-driver",
-            "version": "2026.0.0",
+            "version": "2026.0.2",
             "libName": "ThunderLibDriver",
             "headerClassifier": "headers",
             "sharedLibrary": true,

@@ -6,23 +6,31 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
 
 public class IntakeSubsystem extends SubsystemBase {
-    private SparkMax m_chompMotor;
+    private SparkMax m_motor;
 
     public IntakeSubsystem() {
-        m_chompMotor = new SparkMax(Constants.IOMap.Intake.chompMotor, MotorType.kBrushless);
+        if (!Broken.intakeFull) {
+            m_motor = new SparkMax(Constants.IOMap.Intake.chompMotor, MotorType.kBrushless);
+        } else {
+            m_motor = null;
+        }
     }
 
     /**
      * Intake
      */
     public Command eat() {
+        if (!Broken.intakeFull) return Commands.none();
+
         return new CommandBuilder(this)
-            .onExecute(() -> m_chompMotor.set(Constants.Hunger.Intake.kEatSpeed))
+            .onExecute(() -> m_motor.set(Constants.Hunger.Intake.kEatSpeed))
             .isFinished(true)
             .withName(Constants.Hunger.Intake.intakeCommandName);
     }
@@ -31,13 +39,17 @@ public class IntakeSubsystem extends SubsystemBase {
      * Stop Intake
      */
     public Command stopEating() {
+        if (!Broken.intakeFull) return Commands.none();
+
         return new CommandBuilder(this)
-            .onExecute(m_chompMotor::stopMotor)
+            .onExecute(m_motor::stopMotor)
             .isFinished(true);
     }
 
     public Command manual_eating(DoubleSupplier speed) {
+        if (!Broken.intakeFull) return Commands.none();
+
         return new CommandBuilder(this)
-            .onExecute(() -> m_chompMotor.set(speed.getAsDouble()));
+            .onExecute(() -> m_motor.set(speed.getAsDouble()));
     }
 }

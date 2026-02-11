@@ -47,7 +47,7 @@ public class Robot extends TimedRobot {
         .withTimestampReplay()
         .withJoystickReplay();
   
-    public final SwerveSubsystem drivetrain = Broken.drivetrain ? null : new SwerveSubsystem();
+    public final SwerveSubsystem drivetrain = new SwerveSubsystem();
 
     public final ShooterSubsystem shooter = new ShooterSubsystem();
     public final HoodSubsystem hood = new HoodSubsystem();
@@ -73,6 +73,8 @@ public class Robot extends TimedRobot {
     public Robot() {
         // DataLogManager.start();
         Alert.info("The robot has restarted");
+
+        Broken.autoShooterFullDisable();
 
         driverController.leftTrigger(.1).onTrue(drivetrain.toggleFieldCentric());
 
@@ -145,6 +147,7 @@ public class Robot extends TimedRobot {
         autoChooser.setTrajectoryRunnerProperties(drivetrain.getTrajectoryRunnerProperties());
     }
 
+    @SuppressWarnings("all") // Identical Expressions Warning Suppression (BuildConsts)
     @Override
     public void robotInit() {
         Alert.info(String.format("Last build time: %s, on branch %s.", BuildConstants.BUILD_DATE, BuildConstants.GIT_BRANCH) + (BuildConstants.DIRTY == 1 ? "Modified" : ""));

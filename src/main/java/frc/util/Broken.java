@@ -4,26 +4,27 @@ public class Broken {
 
     /** Disable everything drive related */
     public static boolean drivetrainFull = false;
-    /** Disable swerve modules */
-    public static boolean drivetrain = false;
-    /** Disable just the pigeon */
-    public static boolean pigeon = false;
 
     /** Disable everything shooter related */
-    public static boolean shooterFull = true;
-
+    public static boolean shooterFull = false;
     /** Disable shooter motor A */
-    public static boolean shooterA = true;
+    public static boolean shooterA = false;
     /** Disable shooter motor B */
-    public static boolean shooterB = true;
+    public static boolean shooterB = false;
+
+    public static void autoShooterFullDisable() {
+        shooterFull = shooterA && shooterB; // Fully disable if both motors are disabled
+    }
 
     /** Disable everything hood related */
     public static boolean hood = true;
 
+    public static final boolean turret = true;
+
     /** Disable everything intake related */
     public static boolean intakeFull = true;
-    /** Disable just the encoder for intake */
-    public static boolean intakeEncoder = true;
+    /** Disable just the pivot for intake */
+    public static boolean pivotFull = true;
 
     /** Disable everything hang related */
     public static boolean hangFull = true;

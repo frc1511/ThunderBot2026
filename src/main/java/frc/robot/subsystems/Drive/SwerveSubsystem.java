@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.util.Alert;
+import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants.Swerve;
 import frc.util.LimelightHelpers;
@@ -167,10 +168,11 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
      */
     public Command applyRequest(Supplier<SwerveRequest> request) {
         return run(() -> {
-            if (isCANSafe()) {
+            if (isCANSafe() && Broken.drivetrainFull) {
                 this.setControl(request.get());
             } else {
-                Alert.critical("DRIVE DISABLED | CAN DISCONNECT");
+                if (!Broken.drivetrainFull)
+                    Alert.critical("DRIVE DISABLED | CAN DISCONNECT");
                 this.setControl(m_idleRequest);
             }
         });
