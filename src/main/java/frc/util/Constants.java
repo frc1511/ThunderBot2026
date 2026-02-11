@@ -13,6 +13,7 @@ import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -41,7 +42,7 @@ import edu.wpi.first.units.measure.Voltage;
 public class Constants {
     public static boolean kUseSignalLogger = false;
 
-    public static final double kCANChainDisconectTimout = 0.4; // in seconds
+    public static final double kCANChainDisconnectTimeout = 0.4; // in seconds
 
     public static final double kAntiSpamAlertTimeout = 5; // in seconds
 
@@ -232,18 +233,18 @@ public class Constants {
 
         public static final double kMaxSpeed = 0.25 * kSpeedAt12Volts.in(MetersPerSecond); // % Multiplier | kSpeedAt12Volts desired top speed
         public static final double kMaxAngularRate = .5 * RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-        public static final double kMaxAngularAcceleration = .5 * RotationsPerSecondPerSecond.of(1).in(RadiansPerSecondPerSecond);
+        public static final double kMaxAngularAcceleration = .5 * RotationsPerSecondPerSecond.of(.75).in(RadiansPerSecondPerSecond);
 
         public static final double kVelocityDeadband = 0.40 * kMaxSpeed; // % Multiplier 
         public static final double kAngularVelocityDeadband = 0.10 * kMaxAngularRate; // % Multiplier
 
         private interface XYPID extends BasePID {
-            double kP = 3.25;
+            double kP = 3;
             double kI = .1;
         }
         private interface ThetaPID extends BasePID {
-            double kP = 5;
-            double kD = 0.1;
+            double kP = 6;
+            double kD = 0.101;
         }
         public static final PIDController kHolonomicXPIDController = new PIDController(XYPID.kP, XYPID.kI, XYPID.kD);
         public static final PIDController kHolonomicYPIDController = new PIDController(XYPID.kP, XYPID.kI, XYPID.kD);
@@ -253,6 +254,18 @@ public class Constants {
             11.887319 - 1,
             7.41196,
             new Rotation2d(-Math.PI / 2.0d)
+        );
+
+        // These are welded
+        public static Pose2d redHubCenterPose = new Pose2d(
+            11.887319,
+            4.034631,
+            new Rotation2d()
+        );
+        public static Pose2d blueHubCenterPose = new Pose2d(
+            4.5998835,
+            4.034631,
+            new Rotation2d()
         );
 
         // Steer PID
@@ -287,7 +300,9 @@ public class Constants {
                 new CurrentLimitsConfigs()
                     .withStatorCurrentLimit(Amps.of(60))
                     .withStatorCurrentLimitEnable(true)
-            );
+            ).withClosedLoopRamps(
+                new ClosedLoopRampsConfigs()
+                    .withVoltageClosedLoopRampPeriod(0.2));
         private static final CANcoderConfiguration encoderInitialConfigs = new CANcoderConfiguration();
 
         // Configs for the Pigeon 2; leave this null to skip applying Pigeon 2 configs

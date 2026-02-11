@@ -8,6 +8,12 @@ import frc.util.Elastic.Notification;
 import frc.util.Elastic.NotificationLevel;
 
 public class Alert {
+    enum AlertLevel {
+        INFO,
+        WARNING,
+        ERROR,
+        CRITICAL
+    }
 
     private static HashMap<Integer, Double> notifications = new HashMap<Integer, Double>();
 
@@ -21,6 +27,10 @@ public class Alert {
 
     public static void error(String desc) {
         auto(NotificationLevel.ERROR, desc);
+    }
+
+    public static void critical(String desc) {
+        auto(NotificationLevel.CRITICAL, desc);
     }
 
     public static void auto(NotificationLevel notificationLevel, String desc) {
@@ -40,9 +50,10 @@ public class Alert {
     }
 
     public static void full(NotificationLevel notificationLevel, String title, String desc) {
-        int displayTime = 2000;
-        if (notificationLevel == NotificationLevel.WARNING) displayTime = 3000;
-        if (notificationLevel == NotificationLevel.ERROR) displayTime = 5000;
+        int displayTime = 4000;
+        if (notificationLevel == NotificationLevel.WARNING) displayTime = 7000;
+        if (notificationLevel == NotificationLevel.ERROR) displayTime = 10000;
+        if (notificationLevel == NotificationLevel.CRITICAL) displayTime = 60000;
         sendNotification(notificationLevel, title, desc, displayTime);
     }
 
@@ -59,10 +70,13 @@ public class Alert {
 
         if (notificationLevel == NotificationLevel.INFO) {
             System.out.println(String.format("[INFO] %s: %s", title, desc));
+            // DriverStation.reportWarning(String.format("[INFO] %s: %s", title, desc), false);
         } else if (notificationLevel == NotificationLevel.WARNING) {
             DriverStation.reportWarning(String.format("[WARN] %s: %s", title, desc), false);
-        } else {
+        } else if (notificationLevel == NotificationLevel.ERROR) {
             DriverStation.reportError(String.format("[ERROR] %s: %s", title, desc), false);
+        } else {
+            DriverStation.reportError(String.format("[CRITICAL] %s: %s", title, desc), false);
         }
 
         Elastic.sendNotification(new Notification(notificationLevel, title, desc, displayTimeMillis));

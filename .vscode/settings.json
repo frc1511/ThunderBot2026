@@ -63,5 +63,18 @@
     "intaking",
     "Spindexer",
     "spintake"
+  ],
+  "cSpell.words": [
+    "Deadband",
+    "Feedforward",
+    "Holonomic",
+    "Kalman",
+    "spindexer",
+    "telemeterize",
+    "teleop",
+    "wpilibj",
+    "XPID",
+    "XYPID",
+    "YPID"
   ]
 }

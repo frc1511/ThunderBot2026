@@ -1,0 +1,103 @@
+{
+    "fileName": "ThunderLib2026.json",
+    "name": "ThunderLib",
+    "version": "2026.0.2",
+    "frcYear": "2026",
+    "uuid": "e5b81076-0ebf-42de-b028-41b49cacbcbe",
+    "mavenUrls": [
+        "https://frc1511.github.io/thunderlib/repo"
+    ],
+    "jsonUrl": "https://frc1511.github.io/thunderlib/ThunderLib2026.json",
+    "javaDependencies": [
+        {
+            "groupId": "com.thunder.lib",
+            "artifactId": "ThunderLib-java",
+            "version": "2026.0.2"
+        }
+    ],
+    "jniDependencies": [
+        {
+            "groupId": "com.thunder.lib",
+            "artifactId": "ThunderLib-core",
+            "version": "2026.0.2",
+            "skipInvalidPlatforms": true,
+            "isJar": false,
+            "validPlatforms": [
+                "windowsx86-64",
+                "linuxarm64",
+                "linuxx86-64",
+                "linuxathena",
+                "linuxarm32",
+                "osxuniversal"
+            ]
+        },
+        {
+            "groupId": "com.thunder.lib",
+            "artifactId": "ThunderLib-driver",
+            "version": "2026.0.2",
+            "skipInvalidPlatforms": true,
+            "isJar": false,
+            "validPlatforms": [
+                "windowsx86-64",
+                "linuxarm64",
+                "linuxx86-64",
+                "linuxathena",
+                "linuxarm32",
+                "osxuniversal"
+            ]
+        }
+    ],
+    "cppDependencies": [
+        {
+            "groupId": "com.thunder.lib",
+            "artifactId": "ThunderLib-cpp",
+            "version": "2026.0.2",
+            "libName": "ThunderLib",
+            "headerClassifier": "headers",
+            "sharedLibrary": false,
+            "skipInvalidPlatforms": true,
+            "binaryPlatforms": [
+                "windowsx86-64",
+                "linuxarm64",
+                "linuxx86-64",
+                "linuxathena",
+                "linuxarm32",
+                "osxuniversal"
+            ]
+        },
+        {
+            "groupId": "com.thunder.lib",
+            "artifactId": "ThunderLib-core",
+            "version": "2026.0.2",
+            "libName": "ThunderLibCore",
+            "headerClassifier": "headers",
+            "sharedLibrary": true,
+            "skipInvalidPlatforms": true,
+            "binaryPlatforms": [
+                "windowsx86-64",
+                "linuxarm64",
+                "linuxx86-64",
+                "linuxathena",
+                "linuxarm32",
+                "osxuniversal"
+            ]
+        },
+        {
+            "groupId": "com.thunder.lib",
+            "artifactId": "ThunderLib-driver",
+            "version": "2026.0.2",
+            "libName": "ThunderLibDriver",
+            "headerClassifier": "headers",
+            "sharedLibrary": true,
+            "skipInvalidPlatforms": true,
+            "binaryPlatforms": [
+                "windowsx86-64",
+                "linuxarm64",
+                "linuxx86-64",
+                "linuxathena",
+                "linuxarm32",
+                "osxuniversal"
+            ]
+        }
+    ]
+}

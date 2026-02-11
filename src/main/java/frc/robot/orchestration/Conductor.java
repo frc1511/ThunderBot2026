@@ -5,10 +5,13 @@ import frc.robot.Robot;
 import frc.util.Constants;
 
 public class Conductor {
+    public HubOrchestrator hub;
+    
     private Robot m_robot;
 
     public Conductor(Robot robot) {
         m_robot = robot;
+        hub = robot.hubOrchestrator;
 
         new Trigger(m_robot.hungerOrchestrator::isIntaking).onTrue(m_robot.blinkyBlinkyOrchestrator.set(Constants.BlinkyBlinky.Mode.INTAKING));
 
