@@ -3,39 +3,39 @@ package frc.util;
 public class Broken {
 
     /** Disable everything drive related */
-    public static boolean drivetrainFull = false;
+    public static boolean drivetrainFullyDisabled = false;
 
     /** Disable everything shooter related */
-    public static boolean shooterFull = false;
+    public static boolean shooterFullyDisabled = false;
     /** Disable shooter motor A */
-    public static boolean shooterA = false;
+    public static boolean shooterADisabled = false;
     /** Disable shooter motor B */
-    public static boolean shooterB = false;
+    public static boolean shooterBDisabled = false;
 
     public static void autoShooterFullDisable() {
-        shooterFull = shooterA && shooterB; // Fully disable if both motors are disabled
+        shooterFullyDisabled = shooterADisabled && shooterBDisabled; // Fully disable if both motors are disabled
     }
 
     /** Disable everything hood related */
-    public static boolean hood = true;
+    public static boolean hoodDisabled = true;
 
-    public static final boolean turret = true;
+    public static final boolean turretDisable = true;
 
     /** Disable everything intake related */
-    public static boolean intakeFull = true;
+    public static boolean intakeDisabled = true;
     /** Disable just the pivot for intake */
-    public static boolean pivotFull = true;
+    public static boolean pivotDisabled = true;
 
     /** Disable everything hang related */
-    public static boolean hangFull = true;
+    public static boolean hangFullyDisabled = true;
     /** Disable the upper hang mag limit */
-    public static boolean hangUpper = true;
+    public static boolean hangUpperLimitDisabled = true;
     /** Disable the lower hang mag limit */
-    public static boolean hangLower = true;
+    public static boolean hangLowerLimitDisabled = true;
 
     /** Disable everything kicker related */
-    public static boolean kicker = true;
+    public static boolean kickerDisabled = true;
 
     /** Disable everything spindexer related */
-    public static boolean spindexer = true;
+    public static boolean spindexerDisabled = true;
 }

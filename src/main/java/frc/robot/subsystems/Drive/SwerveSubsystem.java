@@ -168,10 +168,10 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
      */
     public Command applyRequest(Supplier<SwerveRequest> request) {
         return run(() -> {
-            if (isCANSafe() && Broken.drivetrainFull) {
+            if (isCANSafe() && Broken.drivetrainFullyDisabled) {
                 this.setControl(request.get());
             } else {
-                if (!Broken.drivetrainFull)
+                if (!Broken.drivetrainFullyDisabled)
                     Alert.critical("DRIVE DISABLED | CAN DISCONNECT");
                 this.setControl(m_idleRequest);
             }

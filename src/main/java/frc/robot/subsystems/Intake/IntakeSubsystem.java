@@ -16,7 +16,7 @@ public class IntakeSubsystem extends SubsystemBase {
     private SparkMax m_motor;
 
     public IntakeSubsystem() {
-        if (!Broken.intakeFull) {
+        if (!Broken.intakeDisabled) {
             m_motor = new SparkMax(Constants.IOMap.Intake.chompMotor, MotorType.kBrushless);
         } else {
             m_motor = null;
@@ -27,7 +27,7 @@ public class IntakeSubsystem extends SubsystemBase {
      * Intake
      */
     public Command eat() {
-        if (!Broken.intakeFull) return Commands.none();
+        if (!Broken.intakeDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.set(Constants.Hunger.Intake.kEatSpeed))
@@ -39,7 +39,7 @@ public class IntakeSubsystem extends SubsystemBase {
      * Stop Intake
      */
     public Command stopEating() {
-        if (!Broken.intakeFull) return Commands.none();
+        if (!Broken.intakeDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(m_motor::stopMotor)
@@ -47,7 +47,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public Command manual_eating(DoubleSupplier speed) {
-        if (!Broken.intakeFull) return Commands.none();
+        if (!Broken.intakeDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.set(speed.getAsDouble()));

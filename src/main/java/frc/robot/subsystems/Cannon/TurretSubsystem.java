@@ -23,7 +23,7 @@ public class TurretSubsystem extends SubsystemBase {
         turretConfig.Slot0 = new Slot0Configs()
             .withKP(Constants.Shooter.TurretPID.kP).withKI(Constants.Shooter.TurretPID.kI).withKD(Constants.Shooter.TurretPID.kD);
 
-        if (!Broken.turret) {
+        if (!Broken.turretDisable) {
             m_turretMotor = new TalonFX(Constants.IOMap.Shooter.kturretMotor);
             m_turretMotor.getConfigurator().apply(turretConfig);
         } else {
@@ -32,7 +32,7 @@ public class TurretSubsystem extends SubsystemBase {
     }
         
     public Command toPosition(Supplier<Double> targetPosition) {
-        if (Broken.turret) return Commands.none();
+        if (Broken.turretDisable) return Commands.none();
 
         return new CommandBuilder(this) 
             .onExecute(() -> m_turretMotor.setControl(new PositionVoltage(targetPosition.get())))
@@ -40,7 +40,7 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public boolean turretAtPosition() {
-        if (Broken.turret) return true;
+        if (Broken.turretDisable) return true;
         
         return m_turretMotor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kTurretTolerance;
     }

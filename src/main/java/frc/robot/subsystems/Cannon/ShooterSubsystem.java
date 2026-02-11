@@ -30,16 +30,16 @@ public class ShooterSubsystem extends SubsystemBase {
         shooterConfig.Slot0 = new Slot0Configs()
             .withKP(Constants.Shooter.ShooterPID.kP).withKI(Constants.Shooter.ShooterPID.kI).withKD(Constants.Shooter.ShooterPID.kD);
         
-        if (!Broken.shooterFull) {
-            if (!Broken.shooterA) {
+        if (!Broken.shooterFullyDisabled) {
+            if (!Broken.shooterADisabled) {
                 m_shooterMotorA = new TalonFX(Constants.IOMap.Shooter.kShooterMotorA);
                 m_shooterMotorA.getConfigurator().apply(shooterConfig);
             }
     
-            if (!Broken.shooterB) {
+            if (!Broken.shooterBDisabled) {
                 m_shooterMotorB = new TalonFX(Constants.IOMap.Shooter.kShooterMotorB);
                 m_shooterMotorB.getConfigurator().apply(shooterConfig);
-                if (Broken.shooterA) {
+                if (Broken.shooterADisabled) {
                     // Where A is broken, B needs to be the primary motor
                     m_primaryMotor = m_shooterMotorB;
                 } else {
@@ -53,7 +53,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public boolean shooterAtSpeed() {
-        if (Broken.shooterFull) return true;
+        if (Broken.shooterFullyDisabled) return true;
 
         return m_primaryMotor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kShooterAtSpeedTolerance;
         // return Math.abs(Constants.Shooter.kMaxShooterSpeed - m_primaryMotor.getVelocity().getValueAsDouble()) < Constants.Shooter.kShooterAtSpeedTolerance;
@@ -64,7 +64,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public Command stopShooter() {
-        if (Broken.shooterFull) return Commands.none();
+        if (Broken.shooterFullyDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(m_primaryMotor::stopMotor)
@@ -72,7 +72,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public Command preheat() {
-        if (Broken.shooterFull) return Commands.none();
+        if (Broken.shooterFullyDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(() -> m_primaryMotor.setControl(new VelocityVoltage(Constants.Shooter.kTargetShooterRPM / 60)))
@@ -80,7 +80,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public Command manual_shooter(DoubleSupplier speed) {
-        if (Broken.shooterFull) return Commands.none();
+        if (Broken.shooterFullyDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -90,11 +90,11 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public Command shoot() {
-        if (Broken.shooterFull) return Commands.none();
+        if (Broken.shooterFullyDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(() -> {
-                if (Broken.shooterFull) return;
+                if (Broken.shooterFullyDisabled) return;
                 m_primaryMotor.set(Constants.Shooter.kMaxShooterSpeed);
             })
             .isFinished(true);

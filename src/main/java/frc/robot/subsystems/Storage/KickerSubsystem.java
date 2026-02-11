@@ -15,7 +15,7 @@ public class KickerSubsystem extends SubsystemBase {
     private TalonFX m_motor;
 
     public KickerSubsystem() {
-        if (!Broken.kicker) {
+        if (!Broken.kickerDisabled) {
             m_motor = new TalonFX(Constants.IOMap.Storage.kKickerMotor);
         } else {
             m_motor = null;
@@ -23,7 +23,7 @@ public class KickerSubsystem extends SubsystemBase {
     }
 
     public Command playSoccer() {
-        if (Broken.kicker) return Commands.none();
+        if (Broken.kickerDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.set(Constants.Storage.Kicker.kSpeed))
@@ -31,14 +31,14 @@ public class KickerSubsystem extends SubsystemBase {
     }
 
     public Command halt() {
-        if (Broken.kicker) return Commands.none();
+        if (Broken.kickerDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(m_motor::stopMotor);
     }
 
     public Command manual(DoubleSupplier speed) {
-        if (Broken.kicker) return Commands.none();
+        if (Broken.kickerDisabled) return Commands.none();
         
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.set(speed.getAsDouble()));

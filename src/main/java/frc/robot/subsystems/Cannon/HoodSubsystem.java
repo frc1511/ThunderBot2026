@@ -23,7 +23,7 @@ public class HoodSubsystem extends SubsystemBase {
         hoodConfig.Slot0 = new Slot0Configs()
             .withKP(Constants.Shooter.HoodPID.kP).withKI(Constants.Shooter.HoodPID.kI).withKD(Constants.Shooter.HoodPID.kD);
 
-        if (!Broken.hood) {
+        if (!Broken.hoodDisabled) {
             m_hoodMotor = new TalonFX(Constants.IOMap.Shooter.kHoodMotor);
             m_hoodMotor.getConfigurator().apply(hoodConfig);
         } else {
@@ -32,13 +32,13 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     public boolean atPosition() {
-        if (Broken.hood) return true;
+        if (Broken.hoodDisabled) return true;
 
         return m_hoodMotor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kHoodTolerance;
     }
 
     public Command toPosition(Supplier<Double> targetPosition) {
-        if (Broken.hood) return Commands.none();
+        if (Broken.hoodDisabled) return Commands.none();
         
         return new CommandBuilder(this) 
             .onExecute(() -> m_hoodMotor.setControl(new PositionVoltage(targetPosition.get())))
@@ -46,7 +46,7 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     public Command manual_hood(DoubleSupplier speed) {
-        if (Broken.hood) return Commands.none();
+        if (Broken.hoodDisabled) return Commands.none();
         
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -55,7 +55,7 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     public boolean safeForTrench() {
-        if (Broken.hood) return false;
+        if (Broken.hoodDisabled) return false;
         
         return m_hoodMotor.getClosedLoopReference().getValueAsDouble() == Constants.Cannon.Hood.kBottomPosition && atPosition();
     }

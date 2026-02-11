@@ -17,7 +17,7 @@ public class SpindexerSubsystem extends SubsystemBase {
     private TalonFX m_motor;
 
     public SpindexerSubsystem() {
-        if (!Broken.spindexer) {
+        if (!Broken.spindexerDisabled) {
             m_motor = new TalonFX(Constants.IOMap.Storage.kSpindexerMotor);
             m_motor.getConfigurator().apply(new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Coast));
         } else {
@@ -29,7 +29,7 @@ public class SpindexerSubsystem extends SubsystemBase {
      * PLEASE use {@code SpinDuration} for the duration
     */
     public Command spin(double duration) {
-        if (Broken.spindexer) return Commands.none();
+        if (Broken.spindexerDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -40,7 +40,7 @@ public class SpindexerSubsystem extends SubsystemBase {
     }
 
     public Command manual_spindexer(DoubleSupplier speed) {
-        if (Broken.spindexer) return Commands.none();
+        if (Broken.spindexerDisabled) return Commands.none();
         
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.set(speed.getAsDouble()));

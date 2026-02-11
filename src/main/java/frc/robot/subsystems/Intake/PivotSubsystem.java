@@ -20,7 +20,7 @@ public class PivotSubsystem extends SubsystemBase {
         Slot0Configs pivotConfig = new Slot0Configs()
             .withKP(Constants.Hunger.Pivot.PivotPID.kP).withKI(Constants.Hunger.Pivot.PivotPID.kI).withKD(Constants.Hunger.Pivot.PivotPID.kD);
 
-        if (!Broken.pivotFull) {
+        if (!Broken.pivotDisabled) {
             m_motor = new TalonFX(Constants.IOMap.Intake.pivotMotor);
             m_motor.getConfigurator().apply(pivotConfig);
         } else {
@@ -29,7 +29,7 @@ public class PivotSubsystem extends SubsystemBase {
     }
 
     public Command pivotDown() {
-        if (Broken.pivotFull) return Commands.none();
+        if (Broken.pivotDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.setControl(new PositionVoltage(Constants.Hunger.Pivot.Position.BOTTOM.get())))
@@ -37,7 +37,7 @@ public class PivotSubsystem extends SubsystemBase {
     }
 
     public Command pivotUp() {
-        if (Broken.pivotFull) return Commands.none();
+        if (Broken.pivotDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.setControl(new PositionVoltage(Constants.Hunger.Pivot.Position.TOP.get())))
@@ -45,7 +45,7 @@ public class PivotSubsystem extends SubsystemBase {
     }
 
     public Command manual_pivot(DoubleSupplier speed) {
-        if (Broken.pivotFull) return Commands.none();
+        if (Broken.pivotDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.set(speed.getAsDouble()));
