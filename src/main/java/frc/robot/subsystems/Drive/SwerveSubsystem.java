@@ -15,6 +15,7 @@ import com.thunder.lib.trajectory.ThunderTrajectoryRunnerProperties;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
@@ -30,6 +31,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.robot.Robot;
 import frc.util.Alert;
 import frc.util.CommandBuilder;
 import frc.util.Constants.Swerve;
@@ -64,6 +66,8 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
     private Pose2d m_arcLockCenter;
     private double m_arcLockDistance;
     private double m_arcLockTheta;
+
+    private Pose2d m_lastPose;
 
     public SwerveSubsystem() {
         super();
@@ -178,6 +182,8 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
 
     @Override
     public void periodic() {
+        m_lastPose = currentPose();
+
         /*
          * Periodically try to apply the operator perspective.
          * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
@@ -416,5 +422,9 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
             speeds -> setSpeeds(speeds),
             m_driveController
         );
+    }
+
+    public boolean crossedBump() {
+        
     }
 }

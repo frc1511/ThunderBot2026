@@ -31,7 +31,9 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -164,6 +166,16 @@ public class Constants {
             4.5998835,
             4.034631,
             new Rotation2d()
+        );
+
+        public static Rectangle2d blueTrenchRight = new Rectangle2d(
+            new Translation2d(4.009232, 0),
+            new Translation2d(5.199063, 1.297781)
+        );
+
+        public static Rectangle2d blueTrenchLeft = new Rectangle2d(
+            new Translation2d(4.009232, kWheelRadius), 
+            new Translation2d(5.199063, kWheelRadius)
         );
 
         // Steer PID
