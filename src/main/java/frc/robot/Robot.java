@@ -70,15 +70,16 @@ public class Robot extends TimedRobot {
     public final HungerOrchestrator hungerOrchestrator;
 
     public final Conductor conductor;
+
     private ThunderAutoSendableChooser autoChooser;
 
-    public ThunderSwitch trevorDisable = switchBoard.button(0); // Drive controller disable
-    public ThunderSwitch emmaDisable = switchBoard.button(1); // Aux controller disable
+    public ThunderSwitch trevorDisable = switchBoard.button(0);
+    public ThunderSwitch emmaDisable = switchBoard.button(1);
     public ThunderSwitch auxManual = switchBoard.button(2);
     public ThunderSwitch fieldCentric = switchBoard.button(3);
     public ThunderSwitch ledDisable = switchBoard.button(4);
     public ThunderSwitch limelightDisable = switchBoard.button(5);
-    public ThunderSwitch hangDisable = switchBoard.button(6);
+    public ThunderSwitch climberDisable = switchBoard.button(6);
     public ThunderSwitch placeHolder8 = switchBoard.button(7); // Yes, the placeholder switches have different slots than their names. This is because drive team is 1-based rather than 0-based and this aligns with the controller map.
     public ThunderSwitch placeHolder9 = switchBoard.button(8);
     public ThunderSwitch placeHolder10 = switchBoard.button(9);
@@ -87,6 +88,8 @@ public class Robot extends TimedRobot {
     public Robot() {
         // DataLogManager.start();
         Alert.info("The robot has restarted");
+
+        Broken.autoShooterFullDisable();
 
         // driverController.leftTrigger(.1).and(trevorDisable::getOff).onTrue(drivetrain.toggleFieldCentric());
 
@@ -119,21 +122,21 @@ public class Robot extends TimedRobot {
             .whileTrue(
                 hang.zeroHang()
                 .onlyIf(auxManual::isOff)
-                .onlyIf(hangDisable::isOff)
+                .onlyIf(climberDisable::isOff)
             )
             .onFalse(hang.halt());
         auxController.a().and(emmaDisable::isOff)
             .whileTrue(
                 hang.retract()
                 .onlyIf(auxManual::isOff)
-                .onlyIf(hangDisable::isOff)
+                .onlyIf(climberDisable::isOff)
             )
             .onFalse(hang.halt());
         auxController.b().and(emmaDisable::isOff)
             .whileTrue(
                 hang.extend()
                 .onlyIf(auxManual::isOff)
-                .onlyIf(hangDisable::isOff)
+                .onlyIf(climberDisable::isOff)
             )
             .onFalse(hang.halt());
 
@@ -141,7 +144,7 @@ public class Robot extends TimedRobot {
             .onTrue(
                 hang.manual(() -> auxController.getLeftY())
                 .onlyIf(auxManual::isOn)
-                .onlyIf(hangDisable::isOff)
+                .onlyIf(climberDisable::isOff)
             )
             .onFalse(hang.halt());
 
@@ -173,8 +176,6 @@ public class Robot extends TimedRobot {
         autoChooser.addTrajectoryFromProject(autoProject.getName(), "ShootFromStart");
         autoChooser.addTrajectoryFromProject(autoProject.getName(), "teehee");
         autoChooser.setTrajectoryRunnerProperties(drivetrain.getTrajectoryRunnerProperties());
-
-        hangDisable.get().onChange();
     }
 
     @SuppressWarnings("all") // Identical Expressions Warning Suppression (BuildConsts)
