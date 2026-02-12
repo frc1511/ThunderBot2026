@@ -2,11 +2,13 @@ package frc.robot.subsystems.Cannon;
 
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -39,11 +41,12 @@ public class ShooterSubsystem extends SubsystemBase {
             if (!Broken.shooterBDisabled) {
                 m_shooterMotorB = new TalonFX(Constants.IOMap.Shooter.kShooterMotorB);
                 m_shooterMotorB.getConfigurator().apply(shooterConfig);
+                m_shooterMotorB.setControl(new Follower(Constants.IOMap.Shooter.kShooterMotorA, MotorAlignmentValue.Opposed));
+                
                 if (Broken.shooterADisabled) {
                     // Where A is broken, B needs to be the primary motor
                     m_primaryMotor = m_shooterMotorB;
                 } else {
-                    m_shooterMotorB.setControl(new Follower(Constants.IOMap.Shooter.kShooterMotorA, MotorAlignmentValue.Opposed));
                     m_primaryMotor = m_shooterMotorA;
                 }
             }
