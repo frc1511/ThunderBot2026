@@ -372,10 +372,7 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
             )
             .onInitialize(
                 () -> {
-                    Alliance alliance;
-                    if (DriverStation.getAlliance().isEmpty()) alliance = DriverStation.Alliance.Blue;
-                    else alliance = DriverStation.getAlliance().get();
-                    m_arcLockCenter = alliance == DriverStation.Alliance.Blue ? Constants.Swerve.blueHubCenterPose : Constants.Swerve.redHubCenterPose;
+                    m_arcLockCenter = Constants.allianceHub();
 
                     Pose2d currentPose = currentPose();
 

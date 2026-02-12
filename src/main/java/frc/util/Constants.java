@@ -38,6 +38,8 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 public class Constants {
     public static boolean kUseSignalLogger = false;
@@ -207,7 +209,21 @@ public class Constants {
         double kMaxDeployDistanceRotations = 33;
         double kMaxPullDistanceRotations = 8; // This is not a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down
     }
-  
+    
+    public static Pose2d allianceHub() {
+        Alliance alliance;
+        if (DriverStation.getAlliance().isEmpty()) {
+            alliance = DriverStation.Alliance.Blue;
+        } else {
+            alliance = DriverStation.getAlliance().get();
+        }
+
+        if (alliance == DriverStation.Alliance.Blue) {
+            return Swerve.blueHubCenterPose;
+        }
+        return Swerve.redHubCenterPose;
+    }
+
     public class Swerve {
         // Max Speed
         public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(5.76); // DON"T TOUCH, USE MULTIPLIER FOR MAX SPEED INSTEAD
@@ -267,6 +283,7 @@ public class Constants {
             4.034631,
             new Rotation2d()
         );
+
 
         // Steer PID
         public static final Slot0Configs steerGains = new Slot0Configs()
