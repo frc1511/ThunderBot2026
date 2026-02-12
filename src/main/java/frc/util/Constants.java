@@ -230,6 +230,8 @@ public class Constants {
         // Max Speed
         public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(5.76); // DON"T TOUCH, USE MULTIPLIER FOR MAX SPEED INSTEAD
 
+        public static final double kSpeedStep = 0.1; // Amount to step speed for the inc/dec btns
+
         private static final double kCoupleRatio = 3.125;
 
         private static final double kDriveGearRatio = 5.357142857142857;

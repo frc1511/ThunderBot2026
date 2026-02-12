@@ -68,6 +68,7 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
 
     private boolean m_limelightDisable;
 
+    private double m_speedMultipler = 1.0; // 0% - 100% of max speed
 
     public SwerveSubsystem() {
         super();
@@ -122,6 +123,16 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         m_limelightDisable = isDisabled;
     }
 
+    public Command increaseSpeed() {
+        return new CommandBuilder()
+            .onExecute(() -> m_speedMultipler = Math.max(m_speedMultipler + Swerve.kSpeedStep, 1));
+    }
+    
+    public Command decreaseSpeed() {
+        return new CommandBuilder()
+            .onExecute(() -> m_speedMultipler = Math.min(m_speedMultipler - Swerve.kSpeedStep, 0));
+    }
+
     public Command setHubLock(Boolean isOn) {
         return new CommandBuilder().onExecute(() -> {
             m_hubLock = isOn;
@@ -131,9 +142,9 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
     public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX) {
         return applyRequest(() -> {
             // YES! The y and x are swapped on purpose, it has to do with coordinate systems in the library so just leave it like this please!
-            double vx = -leftY.getAsDouble() * Constants.Swerve.kMaxSpeed;
-            double vy = -leftX.getAsDouble() * Constants.Swerve.kMaxSpeed;
-            double vRot = -rightX.getAsDouble() * Constants.Swerve.kMaxAngularRate;
+            double vx = -leftY.getAsDouble() * Constants.Swerve.kMaxSpeed * m_speedMultipler;
+            double vy = -leftX.getAsDouble() * Constants.Swerve.kMaxSpeed * m_speedMultipler;
+            double vRot = -rightX.getAsDouble() * Constants.Swerve.kMaxAngularRate * m_speedMultipler;
 
             if (m_hubLock) {
                 m_arcLockCenter = Constants.allianceHub();

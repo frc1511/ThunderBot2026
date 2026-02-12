@@ -1,6 +1,7 @@
 package frc.robot.orchestration;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.Robot;
 import frc.robot.subsystems.Cannon.ShooterSubsystem;
 import frc.robot.subsystems.Storage.SpindexerSubsystem;
@@ -20,8 +21,11 @@ public class FiringOrchestrator {
 
     public Command fire() {
         return shooter.preheat()
-            .alongWith(kicker.playSoccer())
-            .alongWith(spindexer.spin(Constants.Storage.Spindexer.Duration.PARTIAL_BAY.get()))
-            .onlyIf(shooter::shooterAtSpeed);
+            .alongWith(
+                new ParallelCommandGroup(
+                    kicker.playSoccer(), 
+                    spindexer.spin(Constants.Storage.Spindexer.Duration.PARTIAL_BAY.get())
+                )
+                .onlyIf(shooter::shooterAtSpeed));
     }
 }

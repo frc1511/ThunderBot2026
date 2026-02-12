@@ -107,12 +107,10 @@ public class Robot extends TimedRobot {
         driverController.b().and(trevorDisable::isOff).whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
 
         // Reset the field-centric heading on left bumper press.
-        driverController.leftBumper().and(trevorDisable::isOff).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        driverController.x().and(trevorDisable::isOff).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-        driverController.rightBumper().and(trevorDisable::isOff).onTrue(
-            drivetrain.driveToPose()
-                .withTarget(Swerve.targetPose)
-        );
+        driverController.leftBumper().and(trevorDisable::isOff).onTrue(drivetrain.decreaseSpeed());
+        driverController.rightBumper().and(trevorDisable::isOff).onTrue(drivetrain.increaseSpeed());
 
         driverController.y().and(trevorDisable::isOff).whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
         new Trigger(() -> 
@@ -146,7 +144,7 @@ public class Robot extends TimedRobot {
             )
             .onFalse(hang.halt());
 
-        new Trigger(() -> Math.abs(auxController.getLeftY()) > .1)
+        new Trigger(() -> Math.abs(auxController.getLeftY()) > Constants.kControllerDeadzone)
             .onTrue(
                 hang.manual(() -> auxController.getLeftY())
                 .onlyIf(auxManual::isOn)
