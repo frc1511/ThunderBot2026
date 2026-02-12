@@ -37,6 +37,7 @@ import frc.robot.subsystems.Storage.KickerSubsystem;
 import frc.robot.subsystems.Storage.SpindexerSubsystem;
 import frc.util.Alert;
 import frc.util.Broken;
+import frc.util.Constants;
 import frc.util.ThunderSwitchboard;
 import frc.util.Constants.Swerve;
 import frc.util.ThunderSwitchboard.ThunderSwitch;
@@ -114,6 +115,11 @@ public class Robot extends TimedRobot {
         );
 
         driverController.y().and(trevorDisable::isOff).whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
+        new Trigger(() -> 
+            Math.abs(driverController.getRightTriggerAxis()) > Constants.kControllerDeadzone)
+            .and(trevorDisable::isOff)
+            .onTrue(drivetrain.setHubLock(true))
+            .onFalse(drivetrain.setHubLock(false));
 
         // driverController.leftBumper().onTrue(shooter.turretToPosition(drivetrain::hubLockTurretAngle));
 

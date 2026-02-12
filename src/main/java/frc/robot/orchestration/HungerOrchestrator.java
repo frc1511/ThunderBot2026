@@ -31,18 +31,21 @@ public class HungerOrchestrator {
      * Retract intake from ground and stop intaking FUEL
      */
     public Command excuseYourself() {
-        return pivot.pivotUp().alongWith(intake.stopEating());
+        return pivot.pivotUp()
+            .alongWith(intake.stopEating());
     }
 
     public Command spintake() {
-        return intake.eat().alongWith(spindexer.spin(Constants.Storage.Spindexer.Duration.INTAKE.get()));
+        return intake.eat()
+            .alongWith(spindexer.spin(Constants.Storage.Spindexer.Duration.INTAKE.get()));
     }
 
     /**
      * Intake the FUEL and spin the SPINDEXER
     */
     public Command feast() {
-        return spintake().alongWith(pivot.pivotDown());
+        return spintake()
+            .alongWith(pivot.pivotDown());
     }
 
     public boolean isIntaking() {

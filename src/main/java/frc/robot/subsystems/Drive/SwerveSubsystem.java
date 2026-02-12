@@ -63,8 +63,11 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
     private Pose2d m_arcLockCenter;
     private double m_arcLockDistance;
     private double m_arcLockTheta;
+    
+    private boolean m_hubLock = false;
 
     private boolean m_limelightDisable;
+
 
     public SwerveSubsystem() {
         super();
@@ -119,12 +122,28 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         m_limelightDisable = isDisabled;
     }
 
+    public Command setHubLock(Boolean isOn) {
+        return new CommandBuilder().onExecute(() -> {
+            m_hubLock = isOn;
+        });
+    }
+
     public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX) {
         return applyRequest(() -> {
             // YES! The y and x are swapped on purpose, it has to do with coordinate systems in the library so just leave it like this please!
             double vx = -leftY.getAsDouble() * Constants.Swerve.kMaxSpeed;
             double vy = -leftX.getAsDouble() * Constants.Swerve.kMaxSpeed;
             double vRot = -rightX.getAsDouble() * Constants.Swerve.kMaxAngularRate;
+
+            if (m_hubLock) {
+                m_arcLockCenter = Constants.allianceHub();
+
+                double dX = currentPose().getX() - m_arcLockCenter.getX();
+                double dY = currentPose().getY() - m_arcLockCenter.getY();
+
+                vRot = m_driveController.getThetaController().calculate(currentPose().getRotation().getDegrees(), Math.atan2(dY, dX));
+            }
+
             if (m_fieldCentric) {
                 return m_fieldCentricRequest
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
