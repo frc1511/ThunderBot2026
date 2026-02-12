@@ -7,7 +7,6 @@ import frc.robot.Robot;
 import frc.robot.orchestration.CannonOrchestrator.Orientation;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
 
-
 public class HubOrchestrator {
     CannonOrchestrator cannonOrchestrator;
     SwerveSubsystem swerveSubsystem;

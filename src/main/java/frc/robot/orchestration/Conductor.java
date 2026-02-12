@@ -35,4 +35,8 @@ public class Conductor {
     public boolean trenchSafe() {
         return m_robot.cannonOrchestrator.hood.safeForTrench();
     }
+
+    public void periodic() {
+        if (m_robot.ledDisable.getOff()) m_robot.blinkyBlinkyOrchestrator.sparkle();
+    }
 }

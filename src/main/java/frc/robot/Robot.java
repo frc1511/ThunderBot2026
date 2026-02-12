@@ -37,11 +37,14 @@ import frc.robot.subsystems.Storage.KickerSubsystem;
 import frc.robot.subsystems.Storage.SpindexerSubsystem;
 import frc.util.Alert;
 import frc.util.Broken;
+import frc.util.ThunderSwitchboard;
 import frc.util.Constants.Swerve;
+import frc.util.ThunderSwitchboard.ThunderSwitch;
 
 public class Robot extends TimedRobot {
     private final CommandXboxController driverController = new CommandXboxController(0);
     private final CommandXboxController auxController = new CommandXboxController(1);
+    private final ThunderSwitchboard switchBoard = new ThunderSwitchboard(2);
 
     // private final Telemetry logger = new Telemetry(Constants.SwerveConstants.kMaxSpeed);
     private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
@@ -69,50 +72,88 @@ public class Robot extends TimedRobot {
     public final Conductor conductor;
 
     private ThunderAutoSendableChooser autoChooser;
-  
+
+    public ThunderSwitch trevorDisable = switchBoard.button(0);
+    public ThunderSwitch emmaDisable = switchBoard.button(1);
+    public ThunderSwitch auxManual = switchBoard.button(2);
+    public ThunderSwitch fieldCentric = switchBoard.button(3);
+    public ThunderSwitch ledDisable = switchBoard.button(4);
+    public ThunderSwitch limelightDisable = switchBoard.button(5);
+    public ThunderSwitch climberDisable = switchBoard.button(6);
+    public ThunderSwitch placeHolder8 = switchBoard.button(7); // Yes, the placeholder switches have different slots than their names. This is because drive team is 1-based rather than 0-based and this aligns with the controller map.
+    public ThunderSwitch placeHolder9 = switchBoard.button(8);
+    public ThunderSwitch placeHolder10 = switchBoard.button(9);
+    public ThunderSwitch pitMode = switchBoard.button(10);
+
     public Robot() {
         // DataLogManager.start();
         Alert.info("The robot has restarted");
 
         Broken.autoShooterFullDisable();
 
-        driverController.leftTrigger(.1).onTrue(drivetrain.toggleFieldCentric());
+        // driverController.leftTrigger(.1).and(trevorDisable::getOff).onTrue(drivetrain.toggleFieldCentric());
 
         drivetrain.setDefaultCommand(
             drivetrain
-                .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX).onlyIf(() -> !driverController.y().getAsBoolean())
+                .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
+                .onlyIf(() -> !driverController.y().getAsBoolean())
+                .onlyIf(trevorDisable::getOff)
         );
 
         RobotModeTriggers.disabled().whileTrue(drivetrain.idle());
 
-        driverController.a().whileTrue(drivetrain.brick());
-        driverController.b().whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
+        driverController.a().and(trevorDisable::getOff).whileTrue(drivetrain.brick());
+        driverController.b().and(trevorDisable::getOff).whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
 
         // Reset the field-centric heading on left bumper press.
-        driverController.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        driverController.leftBumper().and(trevorDisable::getOff).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-        driverController.rightBumper().onTrue(
+        driverController.rightBumper().and(trevorDisable::getOff).onTrue(
             drivetrain.driveToPose()
                 .withTarget(Swerve.targetPose)
         );
 
-        driverController.y().whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
+        driverController.y().and(trevorDisable::getOff).whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
 
         // driverController.leftBumper().onTrue(shooter.turretToPosition(drivetrain::hubLockTurretAngle));
-      
-        hang.setDefaultCommand(hang.halt());
-        auxController.y().whileTrue(hang.zeroHang()).onFalse(hang.halt());
-        auxController.a().whileTrue(hang.retract()).onFalse(hang.halt());
-        auxController.b().whileTrue(hang.extend()).onFalse(hang.halt());
 
-        new Trigger(() -> Math.abs(auxController.getLeftY()) > .1).onTrue(hang.manual(() -> auxController.getLeftY())).onFalse(hang.halt());
+        hang.setDefaultCommand(hang.halt());
+        auxController.y().and(emmaDisable::getOff)
+            .whileTrue(
+                hang.zeroHang()
+                .onlyIf(auxManual::getOff)
+                .onlyIf(climberDisable::getOff)
+            )
+            .onFalse(hang.halt());
+        auxController.a().and(emmaDisable::getOff)
+            .whileTrue(
+                hang.retract()
+                .onlyIf(auxManual::getOff)
+                .onlyIf(climberDisable::getOff)
+            )
+            .onFalse(hang.halt());
+        auxController.b().and(emmaDisable::getOff)
+            .whileTrue(
+                hang.extend()
+                .onlyIf(auxManual::getOff)
+                .onlyIf(climberDisable::getOff)
+            )
+            .onFalse(hang.halt());
+
+        new Trigger(() -> Math.abs(auxController.getLeftY()) > .1)
+            .onTrue(
+                hang.manual(() -> auxController.getLeftY())
+                .onlyIf(auxManual::getOn)
+                .onlyIf(climberDisable::getOff)
+            )
+            .onFalse(hang.halt());
 
         // driverController.rightBumper().onTrue(shooter.preheat()).onFalse(shooter.stopShooter()); // right bumper toggle shooter motor
 
-        driverController.start().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
-        driverController.start().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
-        driverController.back().and(driverController.y()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
-        driverController.back().and(driverController.x()).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
+        driverController.start().and(driverController.y()).and(trevorDisable::getOff).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
+        driverController.start().and(driverController.x()).and(trevorDisable::getOff).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
+        driverController.back().and(driverController.y()).and(trevorDisable::getOff).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
+        driverController.back().and(driverController.x()).and(trevorDisable::getOff).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
         // drivetrain.registerTelemetry(logger::telemeterize);
 
         blinkyBlinkyOrchestrator = new BlinkyBlinkyOrchestrator(this);
@@ -123,8 +164,8 @@ public class Robot extends TimedRobot {
 
         conductor = new Conductor(this);
 
-        auxController.a().onTrue(kicker.playSoccer());
-        auxController.a().onFalse(kicker.halt());
+        auxController.a().and(emmaDisable::getOff).onTrue(kicker.playSoccer());
+        auxController.a().and(emmaDisable::getOff).onFalse(kicker.halt());
 
         ThunderAutoProject autoProject = AutoLoader.load(this);
 
@@ -142,20 +183,22 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         Alert.info(String.format("Last build time: %s, on branch %s.", BuildConstants.BUILD_DATE, BuildConstants.GIT_BRANCH) + (BuildConstants.DIRTY == 1 ? "Modified" : ""));
     }
-    
+
     private int i = 0;
-  
+
     @Override
     public void robotPeriodic() {
-        if (!driverController.isConnected()) {
-            Alert.error("Drive Controller Disconnected");
-        }
-
         if (RobotController.getBatteryVoltage() < 9) {
             Alert.critical(String.format("Battery voltage dipped below 9v, reached %.2f", RobotController.getBatteryVoltage()));
         } else if (RobotController.getBatteryVoltage() < 10) {
             Alert.error("Battery voltage dipped below 10v");
         }
+
+        if (!driverController.isConnected()) {
+            Alert.error("Drive Controller Disconnected");
+        }
+
+        conductor.periodic();
 
         // DataLogManager.start();
         Alert.info(String.format("Last build time: %s, on branch %s", BuildConstants.BUILD_DATE, BuildConstants.GIT_BRANCH));
@@ -164,7 +207,10 @@ public class Robot extends TimedRobot {
 
         m_timeAndJoystickReplay.update();
         SmartDashboard.putData(CommandScheduler.getInstance());
-      
+
+        drivetrain.setFieldCentric(fieldCentric.getOn());
+        drivetrain.setLimelightDisable(limelightDisable.getOn());
+
         CommandScheduler.getInstance().run();
     }
 

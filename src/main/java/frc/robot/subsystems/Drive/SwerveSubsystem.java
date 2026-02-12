@@ -64,6 +64,8 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
     private double m_arcLockDistance;
     private double m_arcLockTheta;
 
+    private boolean m_limelightDisable;
+
     public SwerveSubsystem() {
         super();
 
@@ -109,12 +111,12 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         }
     }
 
-    public Command toggleFieldCentric() {
-        return new CommandBuilder()
-            .onExecute(() -> {
-                m_fieldCentric = !m_fieldCentric;
-            })
-            .isFinished(() -> true);
+    public void setFieldCentric(boolean isOn) {
+        m_fieldCentric = isOn;
+    }
+
+    public void setLimelightDisable(boolean isDisabled) {
+        m_limelightDisable = isDisabled;
     }
 
     public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX) {
@@ -196,13 +198,15 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
             });
         }
 
-        LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
-        if (limelightMeasurement != null) {
-            if (limelightMeasurement.tagCount >= 1) {
-                addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
+        if (!m_limelightDisable) {
+            LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+            if (limelightMeasurement != null) {
+                if (limelightMeasurement.tagCount >= 1) {
+                    addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
+                }
+            } else {
+                Alert.warning("Couldn't find limelight");
             }
-        } else {
-            Alert.warning("Couldn't find limelight");
         }
 
         m_currentField.setRobotPose(currentPose());
