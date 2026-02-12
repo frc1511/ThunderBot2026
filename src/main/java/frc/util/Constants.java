@@ -168,14 +168,24 @@ public class Constants {
             new Rotation2d()
         );
 
+        public static Rectangle2d blueTrenchLeft = new Rectangle2d(
+            new Translation2d(4.009232, 6.79688125),
+            new Translation2d(5.199063, 8.0756125)
+        );
+
         public static Rectangle2d blueTrenchRight = new Rectangle2d(
             new Translation2d(4.009232, 0),
             new Translation2d(5.199063, 1.297781)
         );
 
-        public static Rectangle2d blueTrenchLeft = new Rectangle2d(
-            new Translation2d(4.009232, kWheelRadius), 
-            new Translation2d(5.199063, kWheelRadius)
+        public static Rectangle2d redTrenchLeft = new Rectangle2d(
+            new Translation2d(11.299032012, 6.79688125),
+            new Translation2d(12.4994007314, 8.0756125)
+        );
+
+        public static Rectangle2d redTrenchRight = new Rectangle2d(
+            new Translation2d(11.299032012, 0),
+            new Translation2d(12.4994007314, 1.297781)
         );
 
         // Steer PID

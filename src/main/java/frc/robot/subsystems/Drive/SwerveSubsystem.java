@@ -67,7 +67,8 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
     private double m_arcLockDistance;
     private double m_arcLockTheta;
 
-    private Pose2d m_lastPose;
+    private Pose2d m_lastPose = null;
+    private Pose2d m_currentPose = null;
 
     public SwerveSubsystem() {
         super();
@@ -220,6 +221,13 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         SmartDashboard.putData(m_driveController.getXController());
         SmartDashboard.putData(m_driveController.getYController());
         SmartDashboard.putData(m_driveController.getThetaController());
+
+        // Update poses for bump detection
+        if (m_currentPose != null) {
+            m_lastPose = m_currentPose;
+        }
+
+        m_currentPose = currentPose();
     }
 
     private void startSimThread() {
@@ -424,7 +432,19 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         );
     }
 
-    public boolean crossedBump() {
-        
+    public boolean crossedBlueTrenchLeft() {
+        return Constants.Swerve.blueTrenchLeft.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.blueTrenchLeft.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
+    }
+
+    public boolean crossedBlueTrenchRight() {
+        return Constants.Swerve.blueTrenchRight.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.blueTrenchRight.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
+    }
+
+    public boolean crossedRedTrenchLeft() {
+        return Constants.Swerve.redTrenchLeft.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.redTrenchLeft.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
+    }
+
+    public boolean crossedRedTrenchRight() {
+        return Constants.Swerve.redTrenchRight.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.redTrenchRight.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
     }
 }
