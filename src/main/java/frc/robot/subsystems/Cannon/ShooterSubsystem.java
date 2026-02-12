@@ -17,6 +17,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
+import frc.util.Helpers;
+import frc.util.Constants.Status;
 
 public class ShooterSubsystem extends SubsystemBase {
     private TalonFX m_shooterMotorA;
@@ -48,6 +50,7 @@ public class ShooterSubsystem extends SubsystemBase {
                 }
             }
         } else {
+            Broken.shooterFullyDisabled = true;
             m_primaryMotor = null;
         }
     }
@@ -98,5 +101,12 @@ public class ShooterSubsystem extends SubsystemBase {
                 m_primaryMotor.set(Constants.Shooter.kMaxShooterSpeed);
             })
             .isFinished(true);
+    }
+
+    public Status status() {
+        if (Broken.shooterFullyDisabled) return Status.DISABLED;
+        if (!Helpers.onCANChain(m_primaryMotor)) return Status.DISCONNECTED;
+        if (Helpers.isRunning(m_primaryMotor)) return Status.ACTIVE;
+        return Status.IDLE;
     }
 }

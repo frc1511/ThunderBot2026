@@ -14,9 +14,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
+import frc.util.Helpers;
+import frc.util.Constants.Status;
 
 public class HoodSubsystem extends SubsystemBase {
-    private TalonFX m_hoodMotor;
+    private TalonFX m_motor;
 
     public HoodSubsystem() {
         TalonFXConfiguration hoodConfig = new TalonFXConfiguration(); 
@@ -24,24 +26,24 @@ public class HoodSubsystem extends SubsystemBase {
             .withKP(Constants.Shooter.HoodPID.kP).withKI(Constants.Shooter.HoodPID.kI).withKD(Constants.Shooter.HoodPID.kD);
 
         if (!Broken.hoodDisabled) {
-            m_hoodMotor = new TalonFX(Constants.IOMap.Shooter.kHoodMotor);
-            m_hoodMotor.getConfigurator().apply(hoodConfig);
+            m_motor = new TalonFX(Constants.IOMap.Shooter.kHoodMotor);
+            m_motor.getConfigurator().apply(hoodConfig);
         } else {
-            m_hoodMotor = null;
+            m_motor = null;
         }
     }
 
     public boolean atPosition() {
         if (Broken.hoodDisabled) return true;
 
-        return m_hoodMotor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kHoodTolerance;
+        return m_motor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kHoodTolerance;
     }
 
     public Command toPosition(Supplier<Double> targetPosition) {
         if (Broken.hoodDisabled) return Commands.none();
         
         return new CommandBuilder(this) 
-            .onExecute(() -> m_hoodMotor.setControl(new PositionVoltage(targetPosition.get())))
+            .onExecute(() -> m_motor.setControl(new PositionVoltage(targetPosition.get())))
             .isFinished(this::atPosition);
     }
 
@@ -50,13 +52,20 @@ public class HoodSubsystem extends SubsystemBase {
         
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_hoodMotor.set(speed.getAsDouble());
+                m_motor.set(speed.getAsDouble());
             });
     }
 
     public boolean safeForTrench() {
         if (Broken.hoodDisabled) return false;
         
-        return m_hoodMotor.getClosedLoopReference().getValueAsDouble() == Constants.Cannon.Hood.kBottomPosition && atPosition();
+        return m_motor.getClosedLoopReference().getValueAsDouble() == Constants.Cannon.Hood.kBottomPosition && atPosition();
+    }
+
+    public Status status() {
+        if (Broken.hoodDisabled) return Status.DISABLED;
+        if (!m_motor.isConnected(Constants.kCANChainDisconnectTimeout)) return Status.DISCONNECTED;
+        if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
+        return Status.IDLE;
     }
 }

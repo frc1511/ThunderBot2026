@@ -31,9 +31,11 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.util.Alert;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
+import frc.util.Constants.Status;
 import frc.util.Constants.Swerve;
 import frc.util.LimelightHelpers;
 import frc.util.Constants;
+import frc.util.Helpers;
 
 public class SwerveSubsystem extends SwerveBase implements Subsystem {
     private static final double kSimLoopPeriod = 0.004; // 4 ms
@@ -65,6 +67,8 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
     private double m_arcLockTheta;
     
     private boolean m_hubLock = false;
+
+    private boolean m_isMoving = false;
 
     private boolean m_limelightDisable;
 
@@ -147,7 +151,7 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
             double vRot = -rightX.getAsDouble() * Constants.Swerve.kMaxAngularRate * m_speedMultipler;
 
             if (m_hubLock) {
-                m_arcLockCenter = Constants.allianceHub();
+                m_arcLockCenter = Helpers.allianceHub();
 
                 double dX = currentPose().getX() - m_arcLockCenter.getX();
                 double dY = currentPose().getY() - m_arcLockCenter.getY();
@@ -198,7 +202,10 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
      */
     public Command applyRequest(Supplier<SwerveRequest> request) {
         return run(() -> {
+            m_isMoving = false;
             if (isCANSafe() && Broken.drivetrainFullyDisabled) {
+                SwerveRequest req = request.get();
+                m_isMoving = req.equals(m_idleRequest);
                 this.setControl(request.get());
             } else {
                 if (!Broken.drivetrainFullyDisabled)
@@ -375,7 +382,7 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
 
     public boolean isCANSafe() {
         for (int i = 0; i < getModules().length; i++) {
-            if (!getModule(i).getDriveMotor().isConnected(Constants.kCANChainDisconnectTimeout) || !getModule(i).getSteerMotor().isConnected(Constants.kCANChainDisconnectTimeout)) {
+            if (!Helpers.onCANChain(getModule(i).getDriveMotor()) || !Helpers.onCANChain(getModule(i).getSteerMotor()) || !Helpers.onCANChain(getModule(i).getEncoder())) {
                 return false;
             }
         }
@@ -402,7 +409,7 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
             )
             .onInitialize(
                 () -> {
-                    m_arcLockCenter = Constants.allianceHub();
+                    m_arcLockCenter = Helpers.allianceHub();
 
                     Pose2d currentPose = currentPose();
 
@@ -447,5 +454,12 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
             speeds -> setSpeeds(speeds),
             m_driveController
         );
+    }
+
+    public Status status() {
+        if (Broken.drivetrainFullyDisabled) return Status.DISABLED;
+        if (!isCANSafe()) return Status.DISCONNECTED;
+        if (m_isMoving) return Status.ACTIVE;
+        return Status.ACTIVE;
     }
 }

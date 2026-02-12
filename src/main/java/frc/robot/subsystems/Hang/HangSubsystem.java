@@ -21,8 +21,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
+import frc.util.Helpers;
 import frc.util.Constants.HangConstants;
 import frc.util.Constants.IOMap;
+import frc.util.Constants.Status;
 
 public class HangSubsystem extends SubsystemBase {
     private SparkMax m_motor;
@@ -186,5 +188,12 @@ public class HangSubsystem extends SubsystemBase {
             })
             .isFinished(true)
             .repeatedly();
+    }
+    
+    public Status status() {
+        if (Broken.hangFullyDisabled) return Status.DISABLED;
+        if (!Helpers.onCANChain(m_motor)) return Status.DISCONNECTED;
+        if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
+        return Status.ACTIVE;
     }
 }

@@ -50,6 +50,13 @@ public class Constants {
 
     public static final double kControllerDeadzone = 0.3;
 
+    public static enum Status {
+        IDLE,
+        ACTIVE,
+        DISABLED,
+        DISCONNECTED
+    }
+
     public class IOMap {
         /*
         *    +======================================+
@@ -210,20 +217,6 @@ public class Constants {
         double kMaxPullSpeed = -0.3;  // TODO: DOUBLE FOR LATER TESTING // Retracting Hanger (pulling the robot up on the bar)
         double kMaxDeployDistanceRotations = 33;
         double kMaxPullDistanceRotations = 8; // This is not a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down
-    }
-    
-    public static Pose2d allianceHub() {
-        Alliance alliance;
-        if (DriverStation.getAlliance().isEmpty()) {
-            alliance = DriverStation.Alliance.Blue;
-        } else {
-            alliance = DriverStation.getAlliance().get();
-        }
-
-        if (alliance == DriverStation.Alliance.Blue) {
-            return Swerve.blueHubCenterPose;
-        }
-        return Swerve.redHubCenterPose;
     }
 
     public class Swerve {

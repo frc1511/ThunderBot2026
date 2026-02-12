@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
+import frc.util.Constants.Status;
+import frc.util.Helpers;
 
 public class PivotSubsystem extends SubsystemBase {
     private TalonFX m_motor;
@@ -49,5 +51,12 @@ public class PivotSubsystem extends SubsystemBase {
 
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.set(speed.getAsDouble()));
+    }
+
+    public Status status() {
+        if (Broken.pivotDisabled) return Status.DISABLED;
+        if (!Helpers.onCANChain(m_motor)) return Status.DISCONNECTED;
+        if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
+        return Status.ACTIVE;
     }
 }

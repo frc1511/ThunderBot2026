@@ -13,10 +13,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
+import frc.util.Constants.Status;
+import frc.util.Helpers;
 
 
 public class TurretSubsystem extends SubsystemBase {
-    private TalonFX m_turretMotor;
+    private TalonFX m_motor;
     
     public TurretSubsystem() {
         TalonFXConfiguration turretConfig = new TalonFXConfiguration(); 
@@ -24,10 +26,10 @@ public class TurretSubsystem extends SubsystemBase {
             .withKP(Constants.Shooter.TurretPID.kP).withKI(Constants.Shooter.TurretPID.kI).withKD(Constants.Shooter.TurretPID.kD);
 
         if (!Broken.turretDisable) {
-            m_turretMotor = new TalonFX(Constants.IOMap.Shooter.kturretMotor);
-            m_turretMotor.getConfigurator().apply(turretConfig);
+            m_motor = new TalonFX(Constants.IOMap.Shooter.kturretMotor);
+            m_motor.getConfigurator().apply(turretConfig);
         } else {
-            m_turretMotor = null;
+            m_motor = null;
         }
     }
         
@@ -35,14 +37,21 @@ public class TurretSubsystem extends SubsystemBase {
         if (Broken.turretDisable) return Commands.none();
 
         return new CommandBuilder(this) 
-            .onExecute(() -> m_turretMotor.setControl(new PositionVoltage(targetPosition.get())))
+            .onExecute(() -> m_motor.setControl(new PositionVoltage(targetPosition.get())))
             .isFinished(this::turretAtPosition);
     }
 
     public boolean turretAtPosition() {
         if (Broken.turretDisable) return true;
         
-        return m_turretMotor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kTurretTolerance;
+        return m_motor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kTurretTolerance;
+    }
+
+    public Status status() {
+        if (Broken.turretDisable) return Status.DISABLED;
+        if (!Helpers.onCANChain(m_motor)) return Status.DISCONNECTED;
+        if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
+        return Status.IDLE;
     }
 }
 

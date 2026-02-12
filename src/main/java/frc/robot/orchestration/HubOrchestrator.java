@@ -5,7 +5,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.Robot;
 import frc.robot.orchestration.CannonOrchestrator.Orientation;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
-import frc.util.Constants;
+import frc.util.Helpers;
 
 public class HubOrchestrator {
     CannonOrchestrator cannonOrchestrator;
@@ -17,7 +17,7 @@ public class HubOrchestrator {
     }
 
     public double hubLockTurretAngle() {
-        Pose2d nearestHub = Constants.allianceHub();
+        Pose2d nearestHub = Helpers.allianceHub();
 
         Pose2d currentPose = swerveSubsystem.currentPose();
 
