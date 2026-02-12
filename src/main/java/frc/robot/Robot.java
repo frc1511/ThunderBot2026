@@ -97,63 +97,63 @@ public class Robot extends TimedRobot {
             drivetrain
                 .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
                 .onlyIf(() -> !driverController.y().getAsBoolean())
-                .onlyIf(trevorDisable::getOff)
+                .onlyIf(trevorDisable::isOff)
         );
 
         RobotModeTriggers.disabled().whileTrue(drivetrain.idle());
 
-        driverController.a().and(trevorDisable::getOff).whileTrue(drivetrain.brick());
-        driverController.b().and(trevorDisable::getOff).whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
+        driverController.a().and(trevorDisable::isOff).whileTrue(drivetrain.brick());
+        driverController.b().and(trevorDisable::isOff).whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
 
         // Reset the field-centric heading on left bumper press.
-        driverController.leftBumper().and(trevorDisable::getOff).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        driverController.leftBumper().and(trevorDisable::isOff).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-        driverController.rightBumper().and(trevorDisable::getOff).onTrue(
+        driverController.rightBumper().and(trevorDisable::isOff).onTrue(
             drivetrain.driveToPose()
                 .withTarget(Swerve.targetPose)
         );
 
-        driverController.y().and(trevorDisable::getOff).whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
+        driverController.y().and(trevorDisable::isOff).whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
 
         // driverController.leftBumper().onTrue(shooter.turretToPosition(drivetrain::hubLockTurretAngle));
 
         hang.setDefaultCommand(hang.halt());
-        auxController.y().and(emmaDisable::getOff)
+        auxController.y().and(emmaDisable::isOff)
             .whileTrue(
                 hang.zeroHang()
-                .onlyIf(auxManual::getOff)
-                .onlyIf(climberDisable::getOff)
+                .onlyIf(auxManual::isOff)
+                .onlyIf(climberDisable::isOff)
             )
             .onFalse(hang.halt());
-        auxController.a().and(emmaDisable::getOff)
+        auxController.a().and(emmaDisable::isOff)
             .whileTrue(
                 hang.retract()
-                .onlyIf(auxManual::getOff)
-                .onlyIf(climberDisable::getOff)
+                .onlyIf(auxManual::isOff)
+                .onlyIf(climberDisable::isOff)
             )
             .onFalse(hang.halt());
-        auxController.b().and(emmaDisable::getOff)
+        auxController.b().and(emmaDisable::isOff)
             .whileTrue(
                 hang.extend()
-                .onlyIf(auxManual::getOff)
-                .onlyIf(climberDisable::getOff)
+                .onlyIf(auxManual::isOff)
+                .onlyIf(climberDisable::isOff)
             )
             .onFalse(hang.halt());
 
         new Trigger(() -> Math.abs(auxController.getLeftY()) > .1)
             .onTrue(
                 hang.manual(() -> auxController.getLeftY())
-                .onlyIf(auxManual::getOn)
-                .onlyIf(climberDisable::getOff)
+                .onlyIf(auxManual::isOn)
+                .onlyIf(climberDisable::isOff)
             )
             .onFalse(hang.halt());
 
         // driverController.rightBumper().onTrue(shooter.preheat()).onFalse(shooter.stopShooter()); // right bumper toggle shooter motor
 
-        driverController.start().and(driverController.y()).and(trevorDisable::getOff).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
-        driverController.start().and(driverController.x()).and(trevorDisable::getOff).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
-        driverController.back().and(driverController.y()).and(trevorDisable::getOff).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
-        driverController.back().and(driverController.x()).and(trevorDisable::getOff).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
+        driverController.start().and(driverController.y()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
+        driverController.start().and(driverController.x()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
+        driverController.back().and(driverController.y()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
+        driverController.back().and(driverController.x()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
         // drivetrain.registerTelemetry(logger::telemeterize);
 
         blinkyBlinkyOrchestrator = new BlinkyBlinkyOrchestrator(this);
@@ -164,8 +164,8 @@ public class Robot extends TimedRobot {
 
         conductor = new Conductor(this);
 
-        auxController.a().and(emmaDisable::getOff).onTrue(kicker.playSoccer());
-        auxController.a().and(emmaDisable::getOff).onFalse(kicker.halt());
+        auxController.a().and(emmaDisable::isOff).onTrue(kicker.playSoccer());
+        auxController.a().and(emmaDisable::isOff).onFalse(kicker.halt());
 
         ThunderAutoProject autoProject = AutoLoader.load(this);
 
@@ -208,8 +208,8 @@ public class Robot extends TimedRobot {
         m_timeAndJoystickReplay.update();
         SmartDashboard.putData(CommandScheduler.getInstance());
 
-        drivetrain.setFieldCentric(fieldCentric.getOn());
-        drivetrain.setLimelightDisable(limelightDisable.getOn());
+        drivetrain.setFieldCentric(fieldCentric.isOn());
+        drivetrain.setLimelightDisable(limelightDisable.isOn());
 
         CommandScheduler.getInstance().run();
     }

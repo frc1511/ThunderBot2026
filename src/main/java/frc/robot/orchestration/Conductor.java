@@ -37,6 +37,6 @@ public class Conductor {
     }
 
     public void periodic() {
-        if (m_robot.ledDisable.getOff()) m_robot.blinkyBlinkyOrchestrator.sparkle();
+        if (m_robot.ledDisable.isOff()) m_robot.blinkyBlinkyOrchestrator.sparkle();
     }
 }

@@ -36,11 +36,11 @@ public class ThunderSwitchboard {
             return m_trigger;
         }
 
-        public boolean getOn() {
+        public boolean isOn() {
             return m_value;
         }
 
-        public boolean getOff() {
+        public boolean isOff() {
             return !m_value;
         }
     }
