@@ -17,16 +17,18 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
 import frc.util.Helpers;
+import frc.util.ThunderSubsystem;
 import frc.util.Constants.HangConstants;
 import frc.util.Constants.IOMap;
 import frc.util.Constants.Status;
 
-public class HangSubsystem extends SubsystemBase {
+public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
     private SparkMax m_motor;
     private RelativeEncoder m_encoder;
     private SparkClosedLoopController m_pidController;
@@ -64,6 +66,7 @@ public class HangSubsystem extends SubsystemBase {
     }
 
     public void periodic() {
+        if (Broken.hangFullyDisabled) return;
         SmartDashboard.putBoolean("Hang_atLower", isAtLowerLimit());
         SmartDashboard.putBoolean("Hang_atUpper", isAtUpperLimit());
         SmartDashboard.putBoolean("Hang_isZeroed", isZeroed());
@@ -166,7 +169,7 @@ public class HangSubsystem extends SubsystemBase {
     }
 
     public Command halt() {
-        if (Broken.hangFullyDisabled) return Commands.none();
+        if (Broken.hangFullyDisabled) return new InstantCommand(()->{}, this);
 
         return new CommandBuilder(this)
             .onExecute(() -> {

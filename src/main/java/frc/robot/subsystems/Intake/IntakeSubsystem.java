@@ -13,8 +13,9 @@ import frc.util.CommandBuilder;
 import frc.util.Constants;
 import frc.util.Constants.Status;
 import frc.util.Helpers;
+import frc.util.ThunderSubsystem;
 
-public class IntakeSubsystem extends SubsystemBase {
+public class IntakeSubsystem extends SubsystemBase implements ThunderSubsystem {
     private SparkMax m_motor;
 
     public IntakeSubsystem() {

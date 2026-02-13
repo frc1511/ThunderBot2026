@@ -34,10 +34,11 @@ import frc.util.CommandBuilder;
 import frc.util.Constants.Status;
 import frc.util.Constants.Swerve;
 import frc.util.LimelightHelpers;
+import frc.util.ThunderSubsystem;
 import frc.util.Constants;
 import frc.util.Helpers;
 
-public class SwerveSubsystem extends SwerveBase implements Subsystem {
+public class SwerveSubsystem extends SwerveBase implements ThunderSubsystem {
     private static final double kSimLoopPeriod = 0.004; // 4 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;

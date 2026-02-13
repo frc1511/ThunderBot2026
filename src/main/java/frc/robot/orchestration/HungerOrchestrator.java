@@ -49,6 +49,11 @@ public class HungerOrchestrator {
     }
 
     public boolean isIntaking() {
-        return intake.getCurrentCommand().getName().equals(Constants.Hunger.Intake.intakeCommandName);
+        Command currentCommand = intake.getCurrentCommand();
+        if (currentCommand == null) {
+            return false;
+        }
+
+        return currentCommand.getName().equals(Constants.Hunger.Intake.intakeCommandName);
     }
 }

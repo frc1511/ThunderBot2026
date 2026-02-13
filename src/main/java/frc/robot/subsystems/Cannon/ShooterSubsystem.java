@@ -18,9 +18,10 @@ import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
 import frc.util.Helpers;
+import frc.util.ThunderSubsystem;
 import frc.util.Constants.Status;
 
-public class ShooterSubsystem extends SubsystemBase {
+public class ShooterSubsystem extends SubsystemBase implements ThunderSubsystem {
     private TalonFX m_shooterMotorA;
     private TalonFX m_shooterMotorB;
 
@@ -63,6 +64,7 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void periodic() {
+        if (Broken.shooterFullyDisabled) return;
         SmartDashboard.putNumber("Actual Output", m_primaryMotor.getVelocity().getValueAsDouble() * 60);
     }
 

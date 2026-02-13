@@ -14,8 +14,9 @@ import frc.util.CommandBuilder;
 import frc.util.Constants;
 import frc.util.Constants.Status;
 import frc.util.Helpers;
+import frc.util.ThunderSubsystem;
 
-public class PivotSubsystem extends SubsystemBase {
+public class PivotSubsystem extends SubsystemBase implements ThunderSubsystem {
     private TalonFX m_motor;
 
     public PivotSubsystem() {

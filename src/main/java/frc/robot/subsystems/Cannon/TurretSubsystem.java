@@ -15,9 +15,10 @@ import frc.util.CommandBuilder;
 import frc.util.Constants;
 import frc.util.Constants.Status;
 import frc.util.Helpers;
+import frc.util.ThunderSubsystem;
 
 
-public class TurretSubsystem extends SubsystemBase {
+public class TurretSubsystem extends SubsystemBase implements ThunderSubsystem {
     private TalonFX m_motor;
     
     public TurretSubsystem() {

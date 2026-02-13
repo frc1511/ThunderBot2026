@@ -48,6 +48,8 @@ public class Constants {
 
     public static final double kControllerDeadzone = 0.3;
 
+    public static final boolean kDisconecctOnCANBroken = true; // TODO: THIS NEEDS TO BE OFF FOR COMPETITION, ONLY FOR AT HOME
+
     public static enum Status {
         IDLE,
         ACTIVE,

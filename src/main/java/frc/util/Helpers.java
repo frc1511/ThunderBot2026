@@ -11,22 +11,27 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 public class Helpers {
     public static boolean onCANChain(TalonFX motor) {
+        if (motor == null) return false;
         return motor.isConnected(Constants.kCANChainDisconnectTimeout);
     }
     
     public static boolean onCANChain(SparkMax motor) {
+        if (motor == null) return false;
         return motor.getLastError() != REVLibError.kCANDisconnected;
     }
     
     public static boolean onCANChain(CANcoder encoder) {
+        if (encoder == null) return false;
         return encoder.isConnected(Constants.kCANChainDisconnectTimeout);
     }
 
     public static boolean isRunning(TalonFX motor) {
+        if (motor == null) return false;
         return Math.abs(motor.get()) > 0.1;
     }
 
     public static boolean isRunning(SparkMax motor) {
+        if (motor == null) return false;
         return Math.abs(motor.get()) > 0.1;
     }
     

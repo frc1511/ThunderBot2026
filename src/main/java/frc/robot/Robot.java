@@ -35,7 +35,6 @@ import frc.robot.subsystems.Intake.PivotSubsystem;
 import frc.robot.subsystems.Storage.KickerSubsystem;
 import frc.robot.subsystems.Storage.SpindexerSubsystem;
 import frc.util.Alert;
-import frc.util.Broken;
 import frc.util.Constants;
 import frc.util.ThunderSwitchboard;
 import frc.util.ThunderSwitchboard.ThunderSwitch;
@@ -62,6 +61,8 @@ public class Robot extends TimedRobot {
     public final PivotSubsystem pivot = new PivotSubsystem();   
     public final HangSubsystem hang = new HangSubsystem();
 
+    public final SafetyWatchdog safetyWatchdog;
+
     public final BlinkyBlinkyOrchestrator blinkyBlinkyOrchestrator;
     public final CannonOrchestrator cannonOrchestrator;
     public final FiringOrchestrator firingOrchestrator;
@@ -87,8 +88,6 @@ public class Robot extends TimedRobot {
     public Robot() {
         // DataLogManager.start(); //* Uncomment for logs
         Alert.info("The robot has restarted");
-
-        Broken.autoShooterFullDisable();
 
         // MARK: Drive
 
@@ -181,6 +180,8 @@ public class Robot extends TimedRobot {
         autoChooser.addTrajectoryFromProject(autoProject.getName(), "ShootFromStart");
         autoChooser.addTrajectoryFromProject(autoProject.getName(), "teehee");
         autoChooser.setTrajectoryRunnerProperties(drivetrain.getTrajectoryRunnerProperties());
+
+        safetyWatchdog = new SafetyWatchdog(this);
     }
 
     @SuppressWarnings("all") // Identical Expressions Warning Suppression (BuildConsts)
@@ -204,8 +205,6 @@ public class Robot extends TimedRobot {
         }
 
         conductor.periodic();
-
-        Alert.info(String.format("Last build time: %s, on branch %s", BuildConstants.BUILD_DATE, BuildConstants.GIT_BRANCH));
 
         SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);
 
