@@ -28,7 +28,6 @@ import frc.robot.orchestration.Autonomous.AutoLoader;
 import frc.robot.subsystems.Cannon.HoodSubsystem;
 import frc.robot.subsystems.Cannon.ShooterSubsystem;
 import frc.robot.subsystems.Cannon.TurretSubsystem;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
 import frc.robot.subsystems.Hang.HangSubsystem;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
@@ -39,7 +38,6 @@ import frc.util.Alert;
 import frc.util.Broken;
 import frc.util.Constants;
 import frc.util.ThunderSwitchboard;
-import frc.util.Constants.Swerve;
 import frc.util.ThunderSwitchboard.ThunderSwitch;
 
 public class Robot extends TimedRobot {
@@ -87,12 +85,12 @@ public class Robot extends TimedRobot {
     public ThunderSwitch pitMode = switchBoard.button(10);
 
     public Robot() {
-        // DataLogManager.start();
+        // DataLogManager.start(); //* Uncomment for logs
         Alert.info("The robot has restarted");
 
         Broken.autoShooterFullDisable();
 
-        // driverController.leftTrigger(.1).and(trevorDisable::getOff).onTrue(drivetrain.toggleFieldCentric());
+        // MARK: Drive
 
         drivetrain.setDefaultCommand(
             drivetrain
@@ -119,7 +117,14 @@ public class Robot extends TimedRobot {
             .onTrue(drivetrain.setHubLock(true))
             .onFalse(drivetrain.setHubLock(false));
 
-        // driverController.leftBumper().onTrue(shooter.turretToPosition(drivetrain::hubLockTurretAngle));
+        // SysID
+        // driverController.start().and(driverController.y()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
+        // driverController.start().and(driverController.x()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
+        // driverController.back().and(driverController.y()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
+        // driverController.back().and(driverController.x()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
+        // drivetrain.registerTelemetry(logger::telemeterize);
+
+        // MARK: Aux
 
         hang.setDefaultCommand(hang.halt());
         auxController.y().and(emmaDisable::isOff)
@@ -152,13 +157,10 @@ public class Robot extends TimedRobot {
             )
             .onFalse(hang.halt());
 
-        // driverController.rightBumper().onTrue(shooter.preheat()).onFalse(shooter.stopShooter()); // right bumper toggle shooter motor
+        auxController.a().and(emmaDisable::isOff).onTrue(kicker.playSoccer());
+        auxController.a().and(emmaDisable::isOff).onFalse(kicker.halt());
 
-        driverController.start().and(driverController.y()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
-        driverController.start().and(driverController.x()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
-        driverController.back().and(driverController.y()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
-        driverController.back().and(driverController.x()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
-        // drivetrain.registerTelemetry(logger::telemeterize);
+        // MARK: Orchestration
 
         blinkyBlinkyOrchestrator = new BlinkyBlinkyOrchestrator(this);
         cannonOrchestrator = new CannonOrchestrator(this);
@@ -168,8 +170,7 @@ public class Robot extends TimedRobot {
 
         conductor = new Conductor(this);
 
-        auxController.a().and(emmaDisable::isOff).onTrue(kicker.playSoccer());
-        auxController.a().and(emmaDisable::isOff).onFalse(kicker.halt());
+        // MARK: Auto
 
         ThunderAutoProject autoProject = AutoLoader.load(this);
 
@@ -188,7 +189,7 @@ public class Robot extends TimedRobot {
         Alert.info(String.format("Last build time: %s, on branch %s.", BuildConstants.BUILD_DATE, BuildConstants.GIT_BRANCH) + (BuildConstants.DIRTY == 1 ? "Modified" : ""));
     }
 
-    private int i = 0;
+    private int i = 0; // For the Frozen Dashboard Detector 2000
 
     @Override
     public void robotPeriodic() {
@@ -204,7 +205,6 @@ public class Robot extends TimedRobot {
 
         conductor.periodic();
 
-        // DataLogManager.start();
         Alert.info(String.format("Last build time: %s, on branch %s", BuildConstants.BUILD_DATE, BuildConstants.GIT_BRANCH));
 
         SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);
