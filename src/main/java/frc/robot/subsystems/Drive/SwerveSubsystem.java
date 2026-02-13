@@ -440,11 +440,27 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         return Constants.Swerve.blueTrenchRight.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.blueTrenchRight.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
     }
 
+    public boolean crossedBlueBumpLeft() {
+        return Constants.Swerve.blueBumpLeft.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.blueBumpLeft.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
+    }
+
+    public boolean crossedBlueBumpRight() {
+        return Constants.Swerve.blueBumpRight.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.blueBumpRight.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
+    }
+
     public boolean crossedRedTrenchLeft() {
         return Constants.Swerve.redTrenchLeft.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.redTrenchLeft.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
     }
 
     public boolean crossedRedTrenchRight() {
         return Constants.Swerve.redTrenchRight.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.redTrenchRight.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
+    }
+
+    public boolean crossedRedBumpLeft() {
+        return Constants.Swerve.redBumpLeft.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.redBumpLeft.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
+    }
+
+    public boolean crossedRedBumpRight() {
+        return Constants.Swerve.redBumpRight.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.redBumpRight.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
     }
 }

@@ -178,6 +178,16 @@ public class Constants {
             new Translation2d(5.199063, 1.297781)
         );
 
+        public static Rectangle2d blueBumpLeft = new Rectangle2d(
+            new Translation2d(4.009232, 4.643485633),
+            new Translation2d(5.199063, 6.4703013342)
+        );
+
+        public static Rectangle2d blueBumpRight = new Rectangle2d(
+            new Translation2d(4.009232, 1.59064325),
+            new Translation2d(5.199063, 3.4444840178)
+        );
+
         public static Rectangle2d redTrenchLeft = new Rectangle2d(
             new Translation2d(11.299032012, 6.79688125),
             new Translation2d(12.4994007314, 8.0756125)
@@ -186,6 +196,16 @@ public class Constants {
         public static Rectangle2d redTrenchRight = new Rectangle2d(
             new Translation2d(11.299032012, 0),
             new Translation2d(12.4994007314, 1.297781)
+        );
+
+        public static Rectangle2d redBumpLeft = new Rectangle2d(
+            new Translation2d(11.299032012, 4.643485633),
+            new Translation2d(12.4994007314, 6.4703013342)
+        );
+
+        public static Rectangle2d redBumpRight = new Rectangle2d(
+            new Translation2d(11.299032012, 1.59064325),
+            new Translation2d(12.4994007314, 3.4444840178)
         );
 
         // Steer PID
