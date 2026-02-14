@@ -19,13 +19,13 @@ public class Robot extends TimedRobot {
 
     public Robot() {
         moving = new Moving();
-        m_SW_2 = new DigitalInput(2);
-        m_SW_3 = new DigitalInput(3);
+        m_SW_2 = new DigitalInput(1);
+        m_SW_3 = new DigitalInput(2);
 
-        // new Trigger(() -> m_SW_2.get()).onFalse(moving.runForward()).onTrue(moving.stop());  
-        // new Trigger(() -> m_SW_3.get()).onFalse(moving.runBackward()).onTrue(moving.stop());
+        new Trigger(() -> m_SW_2.get()).onFalse(moving.runForward()).onTrue(moving.stop());  
+        new Trigger(() -> m_SW_3.get()).onFalse(moving.runBackward()).onTrue(moving.stop());
 
-        new Trigger(() -> m_SW_2.get()).onTrue(new InstantCommand(() -> Alert.critical("DRIVE SAFETY", "SECONDARY SAFETY TRIPPED")).ignoringDisable(true));
+        // new Trigger(() -> m_SW_2.get()).onTrue(new InstantCommand(() -> Alert.critical("DRIVE SAFETY", "SECONDARY SAFETY TRIPPED")).ignoringDisable(true));
     }
 
     @Override

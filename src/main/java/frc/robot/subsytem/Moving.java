@@ -13,7 +13,7 @@ public class Moving extends SubsystemBase {
     private AnalogInput m_potentiomiter;
 
     public Moving() {
-        m_motor = new TalonFX(41);
+        m_motor = new TalonFX(42);
         m_potentiomiter = new AnalogInput(0);
     }
 
