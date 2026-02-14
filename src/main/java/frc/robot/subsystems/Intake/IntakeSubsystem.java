@@ -61,6 +61,6 @@ public class IntakeSubsystem extends SubsystemBase implements ThunderSubsystem {
         if (Broken.intakeDisabled) return Status.DISABLED;
         if (!Helpers.onCANChain(m_motor)) return Status.DISCONNECTED;
         if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
-        return Status.ACTIVE;
+        return Status.IDLE;
     }
 }

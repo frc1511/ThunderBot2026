@@ -197,6 +197,6 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
         if (Broken.hangFullyDisabled) return Status.DISABLED;
         if (!Helpers.onCANChain(m_motor)) return Status.DISCONNECTED;
         if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
-        return Status.ACTIVE;
+        return Status.IDLE;
     }
 }

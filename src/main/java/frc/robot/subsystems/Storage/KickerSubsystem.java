@@ -4,6 +4,7 @@ import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -42,7 +43,7 @@ public class KickerSubsystem extends SubsystemBase implements ThunderSubsystem {
 
     public Command manual(DoubleSupplier speed) {
         if (Broken.kickerDisabled) return Commands.none();
-        
+
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.set(speed.getAsDouble()));
     }
@@ -51,6 +52,6 @@ public class KickerSubsystem extends SubsystemBase implements ThunderSubsystem {
         if (Broken.kickerDisabled) return Status.DISABLED;
         if (!Helpers.onCANChain(m_motor)) return Status.DISCONNECTED;
         if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
-        return Status.ACTIVE;
+        return Status.IDLE;
     }
 }

@@ -461,6 +461,6 @@ public class SwerveSubsystem extends SwerveBase implements ThunderSubsystem {
         if (Broken.drivetrainFullyDisabled) return Status.DISABLED;
         if (!isCANSafe()) return Status.DISCONNECTED;
         if (m_isMoving) return Status.ACTIVE;
-        return Status.ACTIVE;
+        return Status.IDLE;
     }
 }

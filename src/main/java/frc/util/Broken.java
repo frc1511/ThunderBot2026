@@ -29,7 +29,7 @@ public class Broken {
     public static boolean hangLowerLimitDisabled = true;
 
     /** Disable everything kicker related */
-    public static boolean kickerDisabled = true;
+    public static boolean kickerDisabled = false;
 
     /** Disable everything spindexer related */
     public static boolean spindexerDisabled = true;

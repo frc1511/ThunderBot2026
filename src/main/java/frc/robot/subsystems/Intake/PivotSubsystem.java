@@ -58,6 +58,6 @@ public class PivotSubsystem extends SubsystemBase implements ThunderSubsystem {
         if (Broken.pivotDisabled) return Status.DISABLED;
         if (!Helpers.onCANChain(m_motor)) return Status.DISCONNECTED;
         if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
-        return Status.ACTIVE;
+        return Status.IDLE;
     }
 }

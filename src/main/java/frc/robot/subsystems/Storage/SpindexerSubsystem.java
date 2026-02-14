@@ -53,6 +53,6 @@ public class SpindexerSubsystem extends SubsystemBase implements ThunderSubsyste
         if (Broken.spindexerDisabled) return Status.DISABLED;
         if (!Helpers.onCANChain(m_motor)) return Status.DISCONNECTED;
         if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
-        return Status.ACTIVE;
+        return Status.IDLE;
     }
 }
