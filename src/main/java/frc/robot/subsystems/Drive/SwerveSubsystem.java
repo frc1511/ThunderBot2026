@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.opencsv.CSVWriter;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.thunder.lib.auto.ThunderAutoMode;
 import com.thunder.lib.auto.ThunderAutoTrajectory;
@@ -37,6 +38,13 @@ import frc.util.CommandBuilder;
 import frc.util.Constants.Swerve;
 import frc.util.LimelightHelpers;
 import frc.util.Constants;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class SwerveSubsystem extends SwerveBase implements Subsystem {
     private static final double kSimLoopPeriod = 0.004; // 4 ms
@@ -69,6 +77,8 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
 
     private Pose2d m_lastPose = null;
     private Pose2d m_currentPose = null;
+
+    File file = new File("./src/main/java/frc/robot/logs/log.csv");
 
     public SwerveSubsystem() {
         super();
@@ -112,6 +122,20 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
 
         if (Utils.isSimulation()) {
             startSimThread();
+        }
+
+        try {
+            FileWriter outputfile = new FileWriter(file);
+
+            CSVWriter writer = new CSVWriter(outputfile);
+
+            String[] header = {"Area", "Orientation"};
+            writer.writeNext(header);
+
+            writer.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -228,6 +252,47 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         }
 
         m_currentPose = currentPose();
+
+        // Write to log
+        String[] line = {null, m_currentPose.getRotation().toString()};
+
+        if (crossedBlueTrenchLeft()) {
+            line[0] = "Blue Trench Left";
+        }
+        else if (crossedBlueTrenchRight()) {
+            line[0] = "Blue Trench Right";
+        }
+        else if (crossedBlueBumpLeft()) {
+            line[0] = "Blue Bump Left";
+        }
+        else if (crossedBlueBumpRight()) {
+            line[0] = "Blue Bump Right";
+        }
+        else if (crossedRedTrenchLeft()) {
+            line[0] = "Red Trench Left";
+        }
+        else if (crossedRedTrenchRight()) {
+            line[0] = "Red Trench Right";
+        }
+        else if (crossedRedBumpLeft()) {
+            line[0] = "Red Bump Left";
+        }
+        else if (crossedRedBumpRight()) {
+            line[0] = "Red Bump Right";
+        }
+
+        if (line[0] != null) {
+            try {
+                FileWriter outputfile = new FileWriter(file, true);
+                CSVWriter writer = new CSVWriter(outputfile);
+                
+                writer.writeNext(line);
+                writer.close();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void startSimThread() {
