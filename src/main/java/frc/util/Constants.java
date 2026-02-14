@@ -153,7 +153,13 @@ public class Constants {
         }
 
         interface Kicker {
-            double kSpeed = 1.0;
+            double kSpeed = 30;
+
+            public interface KickerPID extends BasePID {
+                double kP = 1.0;
+                double kI = 1.2;
+                double kD = 0.0;
+            }
         }
     }
     
@@ -170,7 +176,7 @@ public class Constants {
 
         public interface ShooterPID extends BasePID {
             double kP = 0.2;
-            double kI = .6;
+            double kI = 0.6;
             double kD = 0.01;
         }
     }

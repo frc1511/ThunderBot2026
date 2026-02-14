@@ -2,6 +2,8 @@ package frc.robot.subsystems.Storage;
 
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -12,6 +14,7 @@ import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
 import frc.util.Constants.Status;
+import frc.util.Constants.Storage.Kicker.KickerPID;
 import frc.util.Helpers;
 import frc.util.ThunderSubsystem;
 
@@ -19,18 +22,27 @@ public class KickerSubsystem extends SubsystemBase implements ThunderSubsystem {
     private TalonFX m_motor;
 
     public KickerSubsystem() {
+        Slot0Configs pidConfig = new Slot0Configs().withKP(KickerPID.kP).withKI(KickerPID.kI).withKD(KickerPID.kD);
         if (!Broken.kickerDisabled) {
             m_motor = new TalonFX(Constants.IOMap.Storage.kKickerMotor);
+            m_motor.getConfigurator().apply(pidConfig);
         } else {
             m_motor = null;
         }
+    }
+
+    public void periodic() {
+        if (Broken.kickerDisabled) return;
+        SmartDashboard.putNumber("kicker_vel_rps", m_motor.getVelocity().getValueAsDouble());
+        SmartDashboard.putNumber("kicker_target_rps", m_motor.getClosedLoopReference().getValueAsDouble());
+        SmartDashboard.putNumber("kicker_pid_out", m_motor.getClosedLoopOutput().getValueAsDouble());
     }
 
     public Command playSoccer() {
         if (Broken.kickerDisabled) return Commands.none();
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motor.set(Constants.Storage.Kicker.kSpeed))
+            .onExecute(() -> m_motor.setControl(new VelocityVoltage(Constants.Storage.Kicker.kSpeed)))
             .onEnd(m_motor::stopMotor);
     }
 
