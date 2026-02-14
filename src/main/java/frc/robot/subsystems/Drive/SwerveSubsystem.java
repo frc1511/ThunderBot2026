@@ -254,7 +254,7 @@ public class SwerveSubsystem extends SwerveBase implements Subsystem {
         m_currentPose = currentPose();
 
         // Write to log
-        String[] line = {null, m_currentPose.getRotation().toString()};
+        String[] line = {null, String.valueOf(m_currentPose.getRotation().getDegrees())};
 
         if (crossedBlueTrenchLeft()) {
             line[0] = "Blue Trench Left";
