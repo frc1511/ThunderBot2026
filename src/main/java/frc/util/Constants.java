@@ -178,7 +178,7 @@ public class Constants {
         }
         double kHoodSetpointMaxVelocity = 0.01d; // Prevents flybys
 
-        double kTargetShooterRPM = 3000;
+        double kTargetShooterRPM = 4500;
 
         public interface ShooterPID extends BasePID {
             double kP = 0.2;

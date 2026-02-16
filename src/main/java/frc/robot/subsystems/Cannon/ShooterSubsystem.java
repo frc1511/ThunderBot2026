@@ -65,10 +65,12 @@ public class ShooterSubsystem extends SubsystemBase implements ThunderSubsystem 
 
     public void periodic() {
         if (Broken.shooterFullyDisabled) return;
-        SmartDashboard.putNumber("Actual Output", m_primaryMotor.getVelocity().getValueAsDouble() * 60);
+
+        SmartDashboard.putNumber("shooter_rpm", m_primaryMotor.getVelocity().getValueAsDouble() * 60);
+        SmartDashboard.putNumber("shooter_output_V", m_primaryMotor.getMotorVoltage().getValueAsDouble());
     }
 
-    public Command stopShooter() {
+    public Command halt() {
         if (Broken.shooterFullyDisabled) return Commands.none();
 
         return new CommandBuilder(this)
@@ -92,17 +94,6 @@ public class ShooterSubsystem extends SubsystemBase implements ThunderSubsystem 
                 m_primaryMotor.setControl(new VelocityVoltage(speed.getAsDouble() * Constants.Shooter.kTargetShooterRPM / 60));
             })
             .isFinished(() -> false);
-    }
-
-    public Command shoot() {
-        if (Broken.shooterFullyDisabled) return Commands.none();
-
-        return new CommandBuilder(this)
-            .onExecute(() -> {
-                if (Broken.shooterFullyDisabled) return;
-                m_primaryMotor.set(Constants.Shooter.kMaxShooterSpeed);
-            })
-            .isFinished(true);
     }
 
     public Status status() {

@@ -170,8 +170,12 @@ public class Robot extends TimedRobot {
             )
             .onFalse(hood.halt());
 
-        auxController.a().and(emmaDisable::isOff).onTrue(kicker.playSoccer());
-        auxController.a().and(emmaDisable::isOff).onFalse(kicker.halt());
+        auxController.a()
+            .whileTrue(shooter.preheat().repeatedly())
+            .onFalse(shooter.halt());
+
+        // auxController.a().and(emmaDisable::isOff).onTrue(kicker.playSoccer());
+        // auxController.a().and(emmaDisable::isOff).onFalse(kicker.halt());
 
         // MARK: Orchestration
 

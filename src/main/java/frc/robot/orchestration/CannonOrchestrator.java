@@ -37,7 +37,7 @@ public class CannonOrchestrator {
         return new CommandBuilder()
             .onExecute(() -> {
                 if (ready()) {
-                    shooter.shoot();
+                    shooter.preheat();
                 }
             })
             .isFinished(true);
