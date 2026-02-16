@@ -130,7 +130,6 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
         return (atSetpoint() && m_pidController.getSetpoint() == HangConstants.kMaxDeployDistanceRotations) || isAtUpperLimit();
     }
 
-    // TODO: Use PID to automatically extend to the proper height with proper speeds and error correction
     public Command extend() { //hang will die if it goes past the upper limit
         if (Broken.hangFullyDisabled) return Commands.none();
         
@@ -152,7 +151,6 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
         return (atSetpoint() && m_pidController.getSetpoint() == HangConstants.kMaxPullDistanceRotations) || isAtLowerLimit();
     }
 
-    // TODO: Use PID to automatically pull to the proper height with proper speeds and error correction
     public Command retract() {
         if (Broken.hangFullyDisabled) return Commands.none();
 

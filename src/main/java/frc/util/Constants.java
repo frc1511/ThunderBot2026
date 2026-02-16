@@ -108,6 +108,7 @@ public class Constants {
             int kShooterMotorA = 21;
             int kShooterMotorB = 22;
             int kHoodMotor = 23;
+            int kCANCoder = 43;
             int kturretMotor = 24;
         }
 
@@ -167,10 +168,15 @@ public class Constants {
         double kMaxShooterSpeed = 0.5d;
         double kShooterAtSpeedTolerance = 0.1d;
         double kTurretTolerance = 0.5d;
-        double kHoodTolerance = 0.5d;
+        double kHoodTolerance = 0.005d;
 
         public interface TurretPID extends BasePID {}
-        public interface HoodPID extends BasePID {}
+        public interface HoodPID extends BasePID {
+            double kP = 23;
+            double kI = 10;
+            double kD = 0;
+        }
+        double kHoodSetpointMaxVelocity = 0.01d; // Prevents flybys
 
         double kTargetShooterRPM = 3000;
 

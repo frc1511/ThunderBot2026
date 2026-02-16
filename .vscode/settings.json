@@ -59,13 +59,8 @@
   ],
   "java.dependency.enableDependencyCheckup": false,
   "cSpell.words": [
-    "Brushless",
-    "intaking",
-    "Spindexer",
-    "spintake"
-  ],
-  "cSpell.words": [
     "Deadband",
+    "Deadzone",
     "Feedforward",
     "Holonomic",
     "Kalman",
@@ -76,5 +71,5 @@
     "XPID",
     "XYPID",
     "YPID"
-  ]
+  ],
 }

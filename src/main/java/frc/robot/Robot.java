@@ -129,37 +129,46 @@ public class Robot extends TimedRobot {
         // drivetrain.registerTelemetry(logger::telemeterize);
 
         // MARK: Aux
+        // hang.setDefaultCommand(hang.halt());
+        // auxController.y().and(emmaDisable::isOff)
+        //     .whileTrue(
+        //         hang.zeroHang()
+        //         .onlyIf(auxManual::isOff)
+        //         .onlyIf(climberDisable::isOff)
+        //     )
+        //     .onFalse(hang.halt());
+        // auxController.a().and(emmaDisable::isOff)
+        //     .whileTrue(
+        //         hang.retract()
+        //         .onlyIf(auxManual::isOff)
+        //         .onlyIf(climberDisable::isOff)
+        //     )
+        //     .onFalse(hang.halt());
+        // auxController.b().and(emmaDisable::isOff)
+        //     .whileTrue(
+        //         hang.extend()
+        //         .onlyIf(auxManual::isOff)
+        //         .onlyIf(climberDisable::isOff)
+        //     )
+        //     .onFalse(hang.halt());
 
-        hang.setDefaultCommand(hang.halt());
-        auxController.y().and(emmaDisable::isOff)
-            .whileTrue(
-                hang.zeroHang()
-                .onlyIf(auxManual::isOff)
-                .onlyIf(climberDisable::isOff)
-            )
-            .onFalse(hang.halt());
-        auxController.a().and(emmaDisable::isOff)
-            .whileTrue(
-                hang.retract()
-                .onlyIf(auxManual::isOff)
-                .onlyIf(climberDisable::isOff)
-            )
-            .onFalse(hang.halt());
-        auxController.b().and(emmaDisable::isOff)
-            .whileTrue(
-                hang.extend()
-                .onlyIf(auxManual::isOff)
-                .onlyIf(climberDisable::isOff)
-            )
-            .onFalse(hang.halt());
+        hood.setDefaultCommand(hood.halt());
 
-        new Trigger(() -> Math.abs(auxController.getLeftY()) > Constants.kControllerDeadzone)
+        auxController.x()
+            .whileTrue(hood.toPosition(() -> 1.0d).repeatedly())
+            .onFalse(hood.halt());
+
+        
+        auxController.y()
+            .whileTrue(hood.toPosition(() -> 1.5d).repeatedly())
+            .onFalse(hood.halt());
+        
+            
+        auxController.b()
             .onTrue(
-                hang.manual(() -> auxController.getLeftY())
-                .onlyIf(auxManual::isOn)
-                .onlyIf(climberDisable::isOff)
+                hood.zero()
             )
-            .onFalse(hang.halt());
+            .onFalse(hood.halt());
 
         auxController.a().and(emmaDisable::isOff).onTrue(kicker.playSoccer());
         auxController.a().and(emmaDisable::isOff).onFalse(kicker.halt());
