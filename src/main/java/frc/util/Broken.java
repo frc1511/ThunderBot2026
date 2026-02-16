@@ -5,7 +5,7 @@ public class Broken {
     public static boolean drivetrainFullyDisabled = true;
 
     /** Disable everything shooter related */
-    public static boolean shooterFullyDisabled = true; // NOTE: YOU MUST BE CAREFUL NOT TO HAVE THIS FALSE WHEN A & B ARE TRUE
+    public static boolean shooterFullyDisabled = false; // NOTE: YOU MUST BE CAREFUL NOT TO HAVE THIS FALSE WHEN A & B ARE TRUE
     /** Disable shooter motor A */
     public static boolean shooterADisabled = false;
     /** Disable shooter motor B */
@@ -29,7 +29,7 @@ public class Broken {
     public static boolean hangLowerLimitDisabled = true;
 
     /** Disable everything kicker related */
-    public static boolean kickerDisabled = false;
+    public static boolean kickerDisabled = true;
 
     /** Disable everything spindexer related */
     public static boolean spindexerDisabled = true;

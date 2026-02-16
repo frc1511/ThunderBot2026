@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 public class SysID {
-    private final SwerveSubsystem m_Subsystem;
+    private final RealSwerveSubsystem m_Subsystem;
     
     // Swerve requests to apply during SysId characterization
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -26,7 +26,7 @@ public class SysID {
 
     private SysIdRoutine m_sysIdRoutineToApply;
 
-    public SysID(SwerveSubsystem subsystem) {
+    public SysID(RealSwerveSubsystem subsystem) {
         m_Subsystem = subsystem;
 
         // SysId routine for characterizing translation. This is used to find PID gains for the drive motors.

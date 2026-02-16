@@ -7,6 +7,7 @@ package frc.robot;
 import com.ctre.phoenix6.HootAutoReplay;
 import com.thunder.lib.auto.ThunderAutoProject;
 import com.thunder.lib.auto.ThunderAutoSendableChooser;
+import com.thunder.lib.trajectory.ThunderTrajectoryRunnerProperties;
 
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -28,6 +29,7 @@ import frc.robot.orchestration.Autonomous.AutoLoader;
 import frc.robot.subsystems.Cannon.HoodSubsystem;
 import frc.robot.subsystems.Cannon.ShooterSubsystem;
 import frc.robot.subsystems.Cannon.TurretSubsystem;
+import frc.robot.subsystems.Drive.FakeSwerveSubsystem;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
 import frc.robot.subsystems.Hang.HangSubsystem;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
@@ -35,6 +37,7 @@ import frc.robot.subsystems.Intake.PivotSubsystem;
 import frc.robot.subsystems.Storage.KickerSubsystem;
 import frc.robot.subsystems.Storage.SpindexerSubsystem;
 import frc.util.Alert;
+import frc.util.Broken;
 import frc.util.Constants;
 import frc.util.ThunderSwitchboard;
 import frc.util.ThunderSwitchboard.ThunderSwitch;
@@ -49,7 +52,7 @@ public class Robot extends TimedRobot {
         .withTimestampReplay()
         .withJoystickReplay();
   
-    public final SwerveSubsystem drivetrain = new SwerveSubsystem();
+    public final SwerveSubsystem drivetrain = Broken.drivetrainFullyDisabled ? new FakeSwerveSubsystem() : new FakeSwerveSubsystem();
 
     public final ShooterSubsystem shooter = new ShooterSubsystem();
     public final HoodSubsystem hood = new HoodSubsystem();
@@ -73,17 +76,17 @@ public class Robot extends TimedRobot {
 
     private ThunderAutoSendableChooser autoChooser;
 
-    public ThunderSwitch trevorDisable = switchBoard.button(0);
-    public ThunderSwitch emmaDisable = switchBoard.button(1);
-    public ThunderSwitch auxManual = switchBoard.button(2);
-    public ThunderSwitch fieldCentric = switchBoard.button(3);
-    public ThunderSwitch ledDisable = switchBoard.button(4);
-    public ThunderSwitch limelightDisable = switchBoard.button(5);
-    public ThunderSwitch climberDisable = switchBoard.button(6);
-    public ThunderSwitch placeHolder8 = switchBoard.button(7); // Yes, the placeholder switches have different slots than their names. This is because drive team is 1-based rather than 0-based and this aligns with the controller map.
-    public ThunderSwitch placeHolder9 = switchBoard.button(8);
-    public ThunderSwitch placeHolder10 = switchBoard.button(9);
-    public ThunderSwitch pitMode = switchBoard.button(10);
+    public ThunderSwitch trevorDisable = switchBoard.button(1);
+    public ThunderSwitch emmaDisable = switchBoard.button(2);
+    public ThunderSwitch auxManual = switchBoard.button(3);
+    public ThunderSwitch fieldCentric = switchBoard.button(4);
+    public ThunderSwitch ledDisable = switchBoard.button(5);
+    public ThunderSwitch limelightDisable = switchBoard.button(6);
+    public ThunderSwitch climberDisable = switchBoard.button(7);
+    public ThunderSwitch placeHolder8 = switchBoard.button(8); // Yes, the placeholder switches have different slots than their names. This is because drive team is 1-based rather than 0-based and this aligns with the controller map.
+    public ThunderSwitch placeHolder9 = switchBoard.button(9);
+    public ThunderSwitch placeHolder10 = switchBoard.button(10);
+    public ThunderSwitch pitMode = switchBoard.button(11);
 
     public Robot() {
         // DataLogManager.start(); //* Uncomment for logs
@@ -91,12 +94,14 @@ public class Robot extends TimedRobot {
 
         // MARK: Drive
 
-        drivetrain.setDefaultCommand(
-            drivetrain
-                .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
-                .onlyIf(() -> !driverController.y().getAsBoolean())
-                .onlyIf(trevorDisable::isOff)
-        );
+        if (!Broken.drivetrainFullyDisabled) {
+            drivetrain.setDefaultCommand(
+                drivetrain
+                    .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
+                    .onlyIf(() -> !driverController.y().getAsBoolean())
+                    .onlyIf(trevorDisable::isOff)
+            );
+        }
 
         RobotModeTriggers.disabled().whileTrue(drivetrain.idle());
 
@@ -179,7 +184,10 @@ public class Robot extends TimedRobot {
         autoChooser.addAllAutoModesFromProject(autoProject.getName());
         autoChooser.addTrajectoryFromProject(autoProject.getName(), "ShootFromStart");
         autoChooser.addTrajectoryFromProject(autoProject.getName(), "teehee");
-        autoChooser.setTrajectoryRunnerProperties(drivetrain.getTrajectoryRunnerProperties());
+        ThunderTrajectoryRunnerProperties props = drivetrain.getTrajectoryRunnerProperties();
+        if (props != null) {
+            autoChooser.setTrajectoryRunnerProperties(drivetrain.getTrajectoryRunnerProperties());
+        }
 
         safetyWatchdog = new SafetyWatchdog(this);
     }
