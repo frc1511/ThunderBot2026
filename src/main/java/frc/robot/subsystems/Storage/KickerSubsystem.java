@@ -38,9 +38,12 @@ public class KickerSubsystem extends SubsystemBase implements ThunderSubsystem {
         SmartDashboard.putNumber("kicker_pid_out", m_motor.getClosedLoopOutput().getValueAsDouble());
     }
 
+    // todo: choose a better name for this method.
     public Command playSoccer() {
         if (Broken.kickerDisabled) return Commands.none();
-
+        
+        
+        // make this number format consistent with the shooter, which stores this constant as RPMs
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.setControl(new VelocityVoltage(Constants.Storage.Kicker.kSpeed)))
             .onEnd(m_motor::stopMotor);

@@ -25,6 +25,9 @@ import frc.util.ThunderSubsystem;
 import frc.util.Constants.Status;
 
 public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
+
+    // add limit switch for zero sensor
+
     private TalonFX m_motor;
     private CANcoder m_encoder;
 
@@ -40,6 +43,7 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
         
         if (!Broken.hoodDisabled) {
             m_encoder = new CANcoder(Constants.IOMap.Shooter.kCANCoder);
+            // please comment this line (what is that constant????)
             m_encoder.getConfigurator().apply(new MagnetSensorConfigs().withMagnetOffset(0.20849609375+0.105224609375));
             
             hoodConfig.Feedback.withFusedCANcoder(m_encoder);
@@ -51,6 +55,7 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
         }
     }
 
+    @Override
     public void periodic() {
         if (Broken.hoodDisabled) return;
         SmartDashboard.putNumber("hood_cancoder_rots", m_encoder.getPosition().getValueAsDouble());
@@ -112,7 +117,8 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
     }
 
     public Command halt() {
-        if (Broken.hoodDisabled) return new InstantCommand(()->{}, this);
+        // why does this not return an empty command like Commands.none()?
+        if (Broken.hoodDisabled) return new InstantCommand(()->{}, this); 
 
         return new CommandBuilder(this)
             .onExecute(() -> {

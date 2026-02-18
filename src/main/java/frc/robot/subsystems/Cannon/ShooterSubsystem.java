@@ -66,6 +66,7 @@ public class ShooterSubsystem extends SubsystemBase implements ThunderSubsystem 
     public void periodic() {
         if (Broken.shooterFullyDisabled) return;
 
+        // store RPM/RPS as a constant (or create a helper method to handle the conversions)
         SmartDashboard.putNumber("shooter_rpm", m_primaryMotor.getVelocity().getValueAsDouble() * 60);
         SmartDashboard.putNumber("shooter_output_V", m_primaryMotor.getMotorVoltage().getValueAsDouble());
     }

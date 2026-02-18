@@ -88,7 +88,7 @@ public class Robot extends TimedRobot {
     public ThunderSwitch placeHolder10 = switchBoard.button(10);
     public ThunderSwitch pitMode = switchBoard.button(11);
 
-    public Robot() {
+    public Robot() 
         // DataLogManager.start(); //* Uncomment for logs
         Alert.info("The robot has restarted");
 
@@ -174,6 +174,8 @@ public class Robot extends TimedRobot {
             .whileTrue(shooter.preheat().repeatedly())
             .onFalse(shooter.halt());
 
+        // add spindexer controls and kicker controls
+
         // auxController.a().and(emmaDisable::isOff).onTrue(kicker.playSoccer());
         // auxController.a().and(emmaDisable::isOff).onFalse(kicker.halt());
 
@@ -203,7 +205,7 @@ public class Robot extends TimedRobot {
         }
 
         safetyWatchdog = new SafetyWatchdog(this);
-    }
+    
 
     @SuppressWarnings("all") // Identical Expressions Warning Suppression (BuildConsts)
     @Override
