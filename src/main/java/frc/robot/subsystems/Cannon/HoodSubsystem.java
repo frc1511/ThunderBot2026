@@ -12,23 +12,29 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
 import frc.util.Helpers;
 import frc.util.ThunderSubsystem;
+import frc.util.Constants.Hood;
 import frc.util.Constants.Status;
 
 public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
     private TalonFX m_motor;
     private CANcoder m_encoder;
+    private DigitalInput m_beamBreakZero;
 
     private boolean isUsingInbuiltEncoder = false;
+    private boolean isConfimedZeroed = false;
 
     public HoodSubsystem() {
         TalonFXConfiguration hoodConfig = new TalonFXConfiguration(); 
@@ -46,6 +52,22 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
             
             m_motor = new TalonFX(Constants.IOMap.Hood.kHoodMotor);
             m_motor.getConfigurator().apply(hoodConfig);
+
+            m_beamBreakZero = new DigitalInput(Constants.IOMap.Hood.kBeamBreak);
+            if (!Broken.hoodBeamBreakDisabled) {
+                isConfimedZeroed = isAtZero();
+            } else {
+                isConfimedZeroed = true;
+            }
+            new Trigger(this::isAtZero).onTrue(new InstantCommand(() -> {
+                isConfimedZeroed = true;
+                double currentPosition = m_encoder.getPosition().getValueAsDouble();
+                m_encoder.setPosition(currentPosition - Math.floor(currentPosition)); // Remove the full digit; i.e 1.2489 -> 0.2489
+            }));
+
+            if (!Helpers.onCANChain(m_encoder)) {
+                isConfimedZeroed = true;
+            }
         } else {
             m_motor = null;
         }
@@ -63,6 +85,10 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
             halt();
         }
 
+        if (!isZeroed()) {
+            CommandScheduler.getInstance().schedule(zero());
+        }
+
         if (!Helpers.onCANChain(m_encoder)) {
             m_motor.getConfigurator().apply(new FeedbackConfigs()
                 .withRotorToSensorRatio(1)
@@ -77,10 +103,32 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
         }
     }
 
+    public boolean isAtZero() {
+        if (Broken.hoodBeamBreakDisabled) return false;
+        return m_beamBreakZero.get();
+    }
+
+    public boolean isZeroed() {
+        return isConfimedZeroed;
+    }
+
     public boolean atPosition() {
         if (Broken.hoodDisabled) return true;
 
         return m_motor.getClosedLoopError().getValueAsDouble() < Constants.Hood.kHoodTolerance && Math.abs(m_motor.getClosedLoopOutput().getValueAsDouble()) < Constants.Hood.kHoodSetpointMaxVelocity;
+    }
+
+    public Command zero() {
+        if (Broken.hoodDisabled) return Commands.none();
+        if (Broken.hoodBeamBreakDisabled) {
+            isConfimedZeroed = true;
+            return Commands.none();
+        }
+
+        return new CommandBuilder(this)
+            .onExecute(() -> m_motor.set(-Hood.kZeroingSpeed))
+            .isFinished(this::isZeroed)
+            .onEnd(() -> m_motor.stopMotor());
     }
 
     public Command toPosition(Supplier<Double> targetPosition) {
@@ -89,7 +137,8 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
         return new CommandBuilder(this) 
             .onExecute(() -> m_motor.setControl(new PositionVoltage(targetPosition.get())))
             .isFinished(this::atPosition)
-            .onEnd(this::halt);
+            .onEnd(this::halt)
+            .onlyIf(this::isZeroed);
     }
 
     public Command manual_hood(DoubleSupplier speed) {
@@ -104,10 +153,10 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
     public boolean safeForTrench() {
         if (Broken.hoodDisabled) return false;
         
-        return m_motor.getClosedLoopReference().getValueAsDouble() == Constants.Hood.kBottomPosition && atPosition();
+        return (m_motor.getClosedLoopReference().getValueAsDouble() == Constants.Hood.kBottomPosition && atPosition()) || isAtZero();
     }
 
-    public Command zero() {
+    public Command forceZeroEncoders() {
         if (Broken.hoodDisabled) return Commands.none();
 
         return new CommandBuilder(this)

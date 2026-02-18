@@ -166,7 +166,7 @@ public class Robot extends TimedRobot {
             
         auxController.b()
             .onTrue(
-                hood.zero()
+                hood.forceZeroEncoders()
             )
             .onFalse(hood.halt());
 
@@ -223,6 +223,10 @@ public class Robot extends TimedRobot {
 
         if (!driverController.isConnected()) {
             Alert.error("Drive Controller Disconnected");
+        }
+
+        if (!auxController.isConnected()) {
+            Alert.error("Aux Controller Disconnected");
         }
 
         SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);

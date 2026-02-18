@@ -114,6 +114,7 @@ public class Constants {
         public class Hood {
             public static final int kHoodMotor = 23;
             public static final int kCANCoder = 43;
+            public static final int kBeamBreak = 3;
         }
 
         public class Storage {
@@ -190,6 +191,7 @@ public class Constants {
 
     public interface Hood {
         double kHoodTolerance = 0.005d;
+        double kZeroingSpeed = 0.1d; // Just know that zeroing doesn't need to be precise, just needs to see it within a rotation
         public interface HoodPID extends BasePID {
             double kP = 23;
             double kI = 10;

@@ -13,6 +13,7 @@ public class Broken {
 
     /** Disable everything hood related */
     public static boolean hoodDisabled = true;
+    public static boolean hoodBeamBreakDisabled = true;
 
     public static final boolean turretDisable = true;
 
