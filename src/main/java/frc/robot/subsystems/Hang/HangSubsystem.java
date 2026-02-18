@@ -66,6 +66,7 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
         }
     }
 
+    @Override
     public void periodic() {
         if (Broken.hangFullyDisabled) return;
         SmartDashboard.putBoolean("Hang_atLower", isAtLowerLimit());

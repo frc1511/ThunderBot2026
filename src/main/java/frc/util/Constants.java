@@ -108,9 +108,12 @@ public class Constants {
             //TODO: actual can ids
             public static final int kShooterMotorA = 21;
             public static final int kShooterMotorB = 22;
+            public static final int kTurretMotor = 24;
+        }
+        
+        public class Hood {
             public static final int kHoodMotor = 23;
             public static final int kCANCoder = 43;
-            public static final int kturretMotor = 24;
         }
 
         public class Storage {
@@ -160,7 +163,7 @@ public class Constants {
         }
 
         interface Kicker {
-            double kSpeed = 30;
+            double kTargetKickerRPM = 180;
 
             public interface KickerPID extends BasePID {
                 double kP = 1.0;
@@ -173,24 +176,30 @@ public class Constants {
     public interface Shooter {
         double kMaxShooterSpeed = 0.5d;
         double kShooterAtSpeedTolerance = 0.1d;
-        double kTurretTolerance = 0.5d;
-        double kHoodTolerance = 0.005d;
-
-        public interface TurretPID extends BasePID {}
-        public interface HoodPID extends BasePID {
-            double kP = 23;
-            double kI = 10;
-            double kD = 0;
-        }
-        double kHoodSetpointMaxVelocity = 0.01d; // Prevents flybys
-
         double kTargetShooterRPM = 4500;
+        
+        public interface TurretPID extends BasePID {}
+        double kTurretTolerance = 0.5d;
 
         public interface ShooterPID extends BasePID {
             double kP = 0.2;
             double kI = 0.6;
             double kD = 0.01;
         }
+    }
+
+    public interface Hood {
+        double kHoodTolerance = 0.005d;
+        public interface HoodPID extends BasePID {
+            double kP = 23;
+            double kI = 10;
+            double kD = 0;
+        }
+        double kBottomPosition = 0d;
+        double kTopPosition = 2d;
+        double kHoodSetpointMaxVelocity = 0.01d; // Prevents flybys
+        double kCANcoderOffset = 0.313720703125d;
+        double kGearing = 9/1;
     }
 
     public class Hunger {
@@ -224,12 +233,6 @@ public class Constants {
             }
 
             double kTolerance = 0.5d;
-        }
-    }
-
-    public interface Cannon {
-        interface Hood {
-            double kBottomPosition = 0;
         }
     }
  

@@ -27,7 +27,7 @@ public class TurretSubsystem extends SubsystemBase implements ThunderSubsystem {
             .withKP(Constants.Shooter.TurretPID.kP).withKI(Constants.Shooter.TurretPID.kI).withKD(Constants.Shooter.TurretPID.kD);
 
         if (!Broken.turretDisable) {
-            m_motor = new TalonFX(Constants.IOMap.Shooter.kturretMotor);
+            m_motor = new TalonFX(Constants.IOMap.Shooter.kTurretMotor);
             m_motor.getConfigurator().apply(turretConfig);
         } else {
             m_motor = null;

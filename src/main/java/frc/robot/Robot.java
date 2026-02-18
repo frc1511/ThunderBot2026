@@ -225,16 +225,15 @@ public class Robot extends TimedRobot {
             Alert.error("Drive Controller Disconnected");
         }
 
-        conductor.periodic();
-
         SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);
-
+        
         m_timeAndJoystickReplay.update();
         SmartDashboard.putData(CommandScheduler.getInstance());
-
+        
         drivetrain.setFieldCentric(fieldCentric.isOn());
         drivetrain.setLimelightDisable(limelightDisable.isOn());
-
+        
+        conductor.periodic();
         CommandScheduler.getInstance().run();
     }
 

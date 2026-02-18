@@ -63,10 +63,12 @@ public class ShooterSubsystem extends SubsystemBase implements ThunderSubsystem 
         // return Math.abs(Constants.Shooter.kMaxShooterSpeed - m_primaryMotor.getVelocity().getValueAsDouble()) < Constants.Shooter.kShooterAtSpeedTolerance;
     }
 
+    @Override
     public void periodic() {
         if (Broken.shooterFullyDisabled) return;
 
-        SmartDashboard.putNumber("shooter_rpm", m_primaryMotor.getVelocity().getValueAsDouble() * 60);
+        SmartDashboard.putNumber("shooter_rpm", Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()));
+        SmartDashboard.putNumber("shooter_target_rpm", Helpers.RPStoRPM(m_primaryMotor.getClosedLoopReference().getValueAsDouble()));
         SmartDashboard.putNumber("shooter_output_V", m_primaryMotor.getMotorVoltage().getValueAsDouble());
     }
 
@@ -82,7 +84,7 @@ public class ShooterSubsystem extends SubsystemBase implements ThunderSubsystem 
         if (Broken.shooterFullyDisabled) return Commands.none();
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_primaryMotor.setControl(new VelocityVoltage(Constants.Shooter.kTargetShooterRPM / 60)))
+            .onExecute(() -> m_primaryMotor.setControl(new VelocityVoltage(Helpers.RPMtoRPS(Constants.Shooter.kTargetShooterRPM))))
             .isFinished(this::shooterAtSpeed);
     }
 
@@ -91,7 +93,7 @@ public class ShooterSubsystem extends SubsystemBase implements ThunderSubsystem 
 
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_primaryMotor.setControl(new VelocityVoltage(speed.getAsDouble() * Constants.Shooter.kTargetShooterRPM / 60));
+                m_primaryMotor.setControl(new VelocityVoltage(speed.getAsDouble() * Helpers.RPMtoRPS(Constants.Shooter.kTargetShooterRPM)));
             })
             .isFinished(() -> false);
     }

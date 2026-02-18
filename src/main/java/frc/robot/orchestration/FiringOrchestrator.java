@@ -23,7 +23,7 @@ public class FiringOrchestrator {
         return shooter.preheat()
             .alongWith(
                 new ParallelCommandGroup(
-                    kicker.playSoccer(), 
+                    kicker.run(), 
                     spindexer.spin(Constants.Storage.Spindexer.Duration.PARTIAL_BAY.get())
                 )
                 .onlyIf(shooter::shooterAtSpeed));

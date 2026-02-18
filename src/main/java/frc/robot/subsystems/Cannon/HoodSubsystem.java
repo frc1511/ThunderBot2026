@@ -33,24 +33,25 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
     public HoodSubsystem() {
         TalonFXConfiguration hoodConfig = new TalonFXConfiguration(); 
         hoodConfig.Slot0 = new Slot0Configs()
-            .withKP(Constants.Shooter.HoodPID.kP).withKI(Constants.Shooter.HoodPID.kI).withKD(Constants.Shooter.HoodPID.kD);
-        hoodConfig.Feedback.RotorToSensorRatio = 9/1;
+            .withKP(Constants.Hood.HoodPID.kP).withKI(Constants.Hood.HoodPID.kI).withKD(Constants.Hood.HoodPID.kD);
+        hoodConfig.Feedback.RotorToSensorRatio = Constants.Hood.kGearing;
         hoodConfig.Feedback.SensorToMechanismRatio = 1;
         hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         
         if (!Broken.hoodDisabled) {
-            m_encoder = new CANcoder(Constants.IOMap.Shooter.kCANCoder);
-            m_encoder.getConfigurator().apply(new MagnetSensorConfigs().withMagnetOffset(0.20849609375+0.105224609375));
+            m_encoder = new CANcoder(Constants.IOMap.Hood.kCANCoder);
+            m_encoder.getConfigurator().apply(new MagnetSensorConfigs().withMagnetOffset(Constants.Hood.kCANcoderOffset));
             
             hoodConfig.Feedback.withFusedCANcoder(m_encoder);
             
-            m_motor = new TalonFX(Constants.IOMap.Shooter.kHoodMotor);
+            m_motor = new TalonFX(Constants.IOMap.Hood.kHoodMotor);
             m_motor.getConfigurator().apply(hoodConfig);
         } else {
             m_motor = null;
         }
     }
 
+    @Override
     public void periodic() {
         if (Broken.hoodDisabled) return;
         SmartDashboard.putNumber("hood_cancoder_rots", m_encoder.getPosition().getValueAsDouble());
@@ -58,15 +59,20 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
         SmartDashboard.putNumber("hood_vel", m_encoder.getVelocity().getValueAsDouble());
         SmartDashboard.putBoolean("hood_atPos", atPosition());
 
-        if (m_motor.getPosition().getValueAsDouble() < 0 || m_motor.getPosition().getValueAsDouble() > 2) {
+        if (m_motor.getPosition().getValueAsDouble() < Constants.Hood.kBottomPosition || m_motor.getPosition().getValueAsDouble() > Constants.Hood.kTopPosition) {
             halt();
         }
 
         if (!Helpers.onCANChain(m_encoder)) {
-            m_motor.getConfigurator().apply(new FeedbackConfigs().withRotorToSensorRatio(1).withSensorToMechanismRatio(9/1));
+            m_motor.getConfigurator().apply(new FeedbackConfigs()
+                .withRotorToSensorRatio(1)
+                .withSensorToMechanismRatio(Constants.Hood.kGearing));
             isUsingInbuiltEncoder = true;
         } else if (isUsingInbuiltEncoder && Helpers.onCANChain(m_encoder)) {
-            m_motor.getConfigurator().apply(new FeedbackConfigs().withFusedCANcoder(m_encoder).withRotorToSensorRatio(9/1).withSensorToMechanismRatio(1));
+            m_motor.getConfigurator().apply(new FeedbackConfigs()
+                .withFusedCANcoder(m_encoder)
+                .withRotorToSensorRatio(Constants.Hood.kGearing)
+                .withSensorToMechanismRatio(1));
             isUsingInbuiltEncoder = false;
         }
     }
@@ -74,7 +80,7 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
     public boolean atPosition() {
         if (Broken.hoodDisabled) return true;
 
-        return m_motor.getClosedLoopError().getValueAsDouble() < Constants.Shooter.kHoodTolerance && Math.abs(m_motor.getClosedLoopOutput().getValueAsDouble()) < Constants.Shooter.kHoodSetpointMaxVelocity;
+        return m_motor.getClosedLoopError().getValueAsDouble() < Constants.Hood.kHoodTolerance && Math.abs(m_motor.getClosedLoopOutput().getValueAsDouble()) < Constants.Hood.kHoodSetpointMaxVelocity;
     }
 
     public Command toPosition(Supplier<Double> targetPosition) {
@@ -98,7 +104,7 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
     public boolean safeForTrench() {
         if (Broken.hoodDisabled) return false;
         
-        return m_motor.getClosedLoopReference().getValueAsDouble() == Constants.Cannon.Hood.kBottomPosition && atPosition();
+        return m_motor.getClosedLoopReference().getValueAsDouble() == Constants.Hood.kBottomPosition && atPosition();
     }
 
     public Command zero() {

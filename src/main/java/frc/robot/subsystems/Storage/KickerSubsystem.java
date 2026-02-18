@@ -31,18 +31,19 @@ public class KickerSubsystem extends SubsystemBase implements ThunderSubsystem {
         }
     }
 
+    @Override
     public void periodic() {
         if (Broken.kickerDisabled) return;
-        SmartDashboard.putNumber("kicker_vel_rps", m_motor.getVelocity().getValueAsDouble());
-        SmartDashboard.putNumber("kicker_target_rps", m_motor.getClosedLoopReference().getValueAsDouble());
+        SmartDashboard.putNumber("kicker_vel_rpm", Helpers.RPStoRPM(m_motor.getVelocity().getValueAsDouble()));
+        SmartDashboard.putNumber("kicker_target_rpm", Helpers.RPStoRPM(m_motor.getClosedLoopReference().getValueAsDouble()));
         SmartDashboard.putNumber("kicker_pid_out", m_motor.getClosedLoopOutput().getValueAsDouble());
     }
 
-    public Command playSoccer() {
+    public Command run() {
         if (Broken.kickerDisabled) return Commands.none();
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motor.setControl(new VelocityVoltage(Constants.Storage.Kicker.kSpeed)))
+            .onExecute(() -> m_motor.setControl(new VelocityVoltage(Helpers.RPMtoRPS(Constants.Storage.Kicker.kTargetKickerRPM))))
             .onEnd(m_motor::stopMotor);
     }
 

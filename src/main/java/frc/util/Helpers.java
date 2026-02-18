@@ -48,4 +48,12 @@ public class Helpers {
         }
         return Constants.Swerve.redHubCenterPose;
     }
+
+    public static double RPMtoRPS(double RPM) {
+        return RPM / 60;
+    }
+
+    public static double RPStoRPM(double RPS) {
+        return RPS * 60;
+    }
 }
