@@ -39,7 +39,7 @@ public class PivotSubsystem extends SubsystemBase implements ThunderSubsystem {
                 .kCos(Constants.Hunger.Pivot.PivotPID.kCos);
 
         pivotConfig.encoder
-            .positionConversionFactor(1/90);
+            .positionConversionFactor(1/96);
 
         if (!Broken.pivotDisabled) {
             m_CANcoder = new CANcoder(Constants.IOMap.Intake.kCANCoder);
@@ -93,6 +93,13 @@ public class PivotSubsystem extends SubsystemBase implements ThunderSubsystem {
 
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.set(speed.getAsDouble()));
+    }
+
+    public Command manual_voltage(DoubleSupplier voltage) {
+        if (Broken.pivotDisabled) return Commands.none();
+
+        return new CommandBuilder(this)
+            .onExecute(() -> m_motor.setVoltage(voltage.getAsDouble()));
     }
 
     public Status status() {
