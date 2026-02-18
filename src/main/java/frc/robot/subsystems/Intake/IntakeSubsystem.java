@@ -5,6 +5,7 @@ import java.util.function.DoubleSupplier;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -24,6 +25,14 @@ public class IntakeSubsystem extends SubsystemBase implements ThunderSubsystem {
         } else {
             m_motor = null;
         }
+    }
+
+    @Override
+    public void periodic() {
+        if (Broken.intakeDisabled) return;
+
+        SmartDashboard.putNumber("Intake_output_%", m_motor.getAppliedOutput());
+        SmartDashboard.putNumber("Intake_output_A", m_motor.getOutputCurrent());
     }
 
     /**
@@ -49,7 +58,7 @@ public class IntakeSubsystem extends SubsystemBase implements ThunderSubsystem {
             .isFinished(true);
     }
 
-    public Command manual_eating(DoubleSupplier speed) {
+    public Command manual_intake(DoubleSupplier speed) {
         if (!Broken.intakeDisabled) return Commands.none();
 
         return new CommandBuilder(this)

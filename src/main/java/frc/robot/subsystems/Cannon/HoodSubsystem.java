@@ -34,7 +34,7 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
     private DigitalInput m_beamBreakZero;
 
     private boolean isUsingInbuiltEncoder = false;
-    private boolean isConfimedZeroed = false;
+    private boolean isConfirmedZeroed = false;
 
     public HoodSubsystem() {
         TalonFXConfiguration hoodConfig = new TalonFXConfiguration(); 
@@ -55,18 +55,18 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
 
             m_beamBreakZero = new DigitalInput(Constants.IOMap.Hood.kBeamBreak);
             if (!Broken.hoodBeamBreakDisabled) {
-                isConfimedZeroed = isAtZero();
+                isConfirmedZeroed = isAtZero();
             } else {
-                isConfimedZeroed = true;
+                isConfirmedZeroed = true;
             }
             new Trigger(this::isAtZero).onTrue(new InstantCommand(() -> {
-                isConfimedZeroed = true;
+                isConfirmedZeroed = true;
                 double currentPosition = m_encoder.getPosition().getValueAsDouble();
                 m_encoder.setPosition(currentPosition - Math.floor(currentPosition)); // Remove the full digit; i.e 1.2489 -> 0.2489
             }));
 
             if (!Helpers.onCANChain(m_encoder)) {
-                isConfimedZeroed = true;
+                isConfirmedZeroed = true;
             }
         } else {
             m_motor = null;
@@ -76,10 +76,13 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
     @Override
     public void periodic() {
         if (Broken.hoodDisabled) return;
+        
         SmartDashboard.putNumber("hood_cancoder_rots", m_encoder.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("hood_motor_rots", m_motor.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("hood_vel", m_encoder.getVelocity().getValueAsDouble());
         SmartDashboard.putBoolean("hood_atPos", atPosition());
+        SmartDashboard.putNumber("hood_output_V", m_motor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putBoolean("hood_isZeroed", isZeroed());
 
         if (m_motor.getPosition().getValueAsDouble() < Constants.Hood.kBottomPosition || m_motor.getPosition().getValueAsDouble() > Constants.Hood.kTopPosition) {
             halt();
@@ -109,7 +112,7 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
     }
 
     public boolean isZeroed() {
-        return isConfimedZeroed;
+        return isConfirmedZeroed;
     }
 
     public boolean atPosition() {
@@ -121,7 +124,7 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
     public Command zero() {
         if (Broken.hoodDisabled) return Commands.none();
         if (Broken.hoodBeamBreakDisabled) {
-            isConfimedZeroed = true;
+            isConfirmedZeroed = true;
             return Commands.none();
         }
 

@@ -69,13 +69,15 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
     @Override
     public void periodic() {
         if (Broken.hangFullyDisabled) return;
+        
         SmartDashboard.putBoolean("Hang_atLower", isAtLowerLimit());
         SmartDashboard.putBoolean("Hang_atUpper", isAtUpperLimit());
         SmartDashboard.putBoolean("Hang_isZeroed", isZeroed());
         SmartDashboard.putNumber("Hang_position", m_encoder.getPosition());
-        SmartDashboard.putNumber("Hang_out", m_motor.getAppliedOutput());
+        SmartDashboard.putNumber("Hang_output_%", m_motor.getAppliedOutput());
         SmartDashboard.putNumber("Hang_pidSetpoint", m_pidController.getSetpoint());
         SmartDashboard.putBoolean("Hang_atSetpoint", atSetpoint());
+        SmartDashboard.putNumber("Hang_output_A", m_motor.getOutputCurrent());
     }
 
     private boolean isAtLowerLimit() {

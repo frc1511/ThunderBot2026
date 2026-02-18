@@ -13,6 +13,7 @@ import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -62,7 +63,15 @@ public class PivotSubsystem extends SubsystemBase implements ThunderSubsystem {
     @Override
     public void periodic() {
         if (Broken.pivotDisabled) return;
+        
         m_builtinEncoder.setPosition(m_CANcoder.getPosition().getValueAsDouble());
+        
+        SmartDashboard.putNumber("Pivot_builtin_position", m_builtinEncoder.getPosition());
+        SmartDashboard.putNumber("Pivot_CANcoder_position", m_CANcoder.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Pivot_pidSetpoint", m_pidController.getSetpoint());
+        SmartDashboard.putBoolean("Pivot_atSetpoint", m_pidController.isAtSetpoint());
+        SmartDashboard.putNumber("Pivot_output_%", m_motor.getAppliedOutput());
+        SmartDashboard.putNumber("Pivot_output_A", m_motor.getOutputCurrent());
     }
 
     public Command halt() {

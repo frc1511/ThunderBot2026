@@ -34,8 +34,10 @@ public class KickerSubsystem extends SubsystemBase implements ThunderSubsystem {
     @Override
     public void periodic() {
         if (Broken.kickerDisabled) return;
+        
         SmartDashboard.putNumber("kicker_vel_rpm", Helpers.RPStoRPM(m_motor.getVelocity().getValueAsDouble()));
         SmartDashboard.putNumber("kicker_target_rpm", Helpers.RPStoRPM(m_motor.getClosedLoopReference().getValueAsDouble()));
+        SmartDashboard.putNumber("kicker_pid_setpoint", m_motor.getClosedLoopReference().getValueAsDouble());
         SmartDashboard.putNumber("kicker_pid_out", m_motor.getClosedLoopOutput().getValueAsDouble());
     }
 
@@ -54,7 +56,7 @@ public class KickerSubsystem extends SubsystemBase implements ThunderSubsystem {
             .onExecute(m_motor::stopMotor);
     }
 
-    public Command manual(DoubleSupplier speed) {
+    public Command manual_kicker(DoubleSupplier speed) {
         if (Broken.kickerDisabled) return Commands.none();
 
         return new CommandBuilder(this)

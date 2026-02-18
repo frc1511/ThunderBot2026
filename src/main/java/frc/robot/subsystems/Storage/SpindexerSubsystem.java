@@ -6,6 +6,7 @@ import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -26,6 +27,15 @@ public class SpindexerSubsystem extends SubsystemBase implements ThunderSubsyste
         } else {
             m_motor = null;
         }
+    }
+
+    @Override
+    public void periodic() {
+        if (Broken.spindexerDisabled) return;
+        
+        SmartDashboard.putNumber("Spindexer_output_%", m_motor.get());
+        SmartDashboard.putNumber("Spindexer_output_A", m_motor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Spindexer_velocity", m_motor.getVelocity().getValueAsDouble());
     }
 
     /**
