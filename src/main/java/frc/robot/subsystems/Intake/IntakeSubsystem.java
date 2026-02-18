@@ -20,7 +20,7 @@ public class IntakeSubsystem extends SubsystemBase implements ThunderSubsystem {
 
     public IntakeSubsystem() {
         if (!Broken.intakeDisabled) {
-            m_motor = new SparkMax(Constants.IOMap.Intake.chompMotor, MotorType.kBrushless);
+            m_motor = new SparkMax(Constants.IOMap.Intake.kChompMotor, MotorType.kBrushless);
         } else {
             m_motor = null;
         }

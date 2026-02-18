@@ -2,9 +2,16 @@ package frc.robot.subsystems.Intake;
 
 import java.util.function.DoubleSupplier;
 
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.PersistMode;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.ResetMode;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -17,34 +24,68 @@ import frc.util.Helpers;
 import frc.util.ThunderSubsystem;
 
 public class PivotSubsystem extends SubsystemBase implements ThunderSubsystem {
-    private TalonFX m_motor;
+    private SparkMax m_motor;
+    private CANcoder m_CANcoder;
+    private RelativeEncoder m_builtinEncoder;
+    private SparkClosedLoopController m_pidController;
 
     public PivotSubsystem() {
-        Slot0Configs pivotConfig = new Slot0Configs()
-            .withKP(Constants.Hunger.Pivot.PivotPID.kP).withKI(Constants.Hunger.Pivot.PivotPID.kI).withKD(Constants.Hunger.Pivot.PivotPID.kD);
+        SparkMaxConfig pivotConfig = new SparkMaxConfig(); 
+        pivotConfig.closedLoop
+            .pid(Constants.Hunger.Pivot.PivotPID.kP, Constants.Hunger.Pivot.PivotPID.kI, Constants.Hunger.Pivot.PivotPID.kD)
+            .allowedClosedLoopError(Constants.Hunger.Pivot.kTolerance, ClosedLoopSlot.kSlot0)
+            .feedForward
+                .kCosRatio(Constants.Hunger.Pivot.kCosRatio)
+                .kCos(Constants.Hunger.Pivot.PivotPID.kCos);
+
+        pivotConfig.encoder
+            .positionConversionFactor(1/90);
 
         if (!Broken.pivotDisabled) {
-            m_motor = new TalonFX(Constants.IOMap.Intake.pivotMotor);
-            m_motor.getConfigurator().apply(pivotConfig);
+            m_CANcoder = new CANcoder(Constants.IOMap.Intake.kCANCoder);
+
+            m_motor = new SparkMax(Constants.IOMap.Intake.kPivotMotor, MotorType.kBrushless);
+            m_motor.configure(pivotConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+            m_builtinEncoder = m_motor.getEncoder();
+            m_builtinEncoder.setPosition(m_CANcoder.getPosition().getValueAsDouble());
+
+            m_pidController = m_motor.getClosedLoopController();
         } else {
             m_motor = null;
+            m_CANcoder = null;
+            m_builtinEncoder = null;
+            m_pidController = null;
         }
+    }
+
+    @Override
+    public void periodic() {
+        if (Broken.pivotDisabled) return;
+        m_builtinEncoder.setPosition(m_CANcoder.getPosition().getValueAsDouble());
+    }
+
+    public Command halt() {
+        if (Broken.pivotDisabled) return Commands.none();
+
+        return new CommandBuilder(this)
+            .onExecute(m_motor::stopMotor);
     }
 
     public Command pivotDown() {
         if (Broken.pivotDisabled) return Commands.none();
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motor.setControl(new PositionVoltage(Constants.Hunger.Pivot.Position.BOTTOM.get())))
-            .isFinished(() -> m_motor.getClosedLoopError().getValueAsDouble() < Constants.Hunger.Pivot.kTolerance);
+            .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.BOTTOM.get(), ControlType.kPosition))
+            .isFinished(m_pidController::isAtSetpoint);
     }
 
     public Command pivotUp() {
         if (Broken.pivotDisabled) return Commands.none();
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motor.setControl(new PositionVoltage(Constants.Hunger.Pivot.Position.TOP.get())))
-            .isFinished(() -> m_motor.getClosedLoopError().getValueAsDouble() < Constants.Hunger.Pivot.kTolerance);
+            .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.TOP.get(), ControlType.kPosition))
+            .isFinished(m_pidController::isAtSetpoint);
     }
 
     public Command manual_pivot(DoubleSupplier speed) {

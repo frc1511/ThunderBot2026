@@ -27,6 +27,7 @@ import frc.util.ThunderSubsystem;
 import frc.util.Constants.HangConstants;
 import frc.util.Constants.IOMap;
 import frc.util.Constants.Status;
+import frc.util.Constants.HangConstants.HangPID;
 
 public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
     private SparkMax m_motor;
@@ -43,21 +44,21 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
             .idleMode(IdleMode.kBrake)
             .inverted(true);
         motorConfig.closedLoop
-            .pid(0.09, 0, 0) // TODO: Move to Constants when we merge back 
+            .pid(HangPID.kP, HangPID.kI, HangPID.kD)
             .allowedClosedLoopError(Constants.HangConstants.kSetpointPositionTolerance, ClosedLoopSlot.kSlot0)
             .outputRange(Constants.HangConstants.kMaxPullSpeed, Constants.HangConstants.kMaxDeploySpeed);
         
         m_isZeroed = false;
 
         if (!Broken.hangFullyDisabled) {
-            m_motor = new SparkMax(IOMap.Hang.hangMotor, MotorType.kBrushless);
+            m_motor = new SparkMax(IOMap.Hang.kHangMotor, MotorType.kBrushless);
             m_motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
             m_encoder = m_motor.getEncoder();
             m_pidController = m_motor.getClosedLoopController();
             
             // For broken functionality, these still "work" when the sensors are disconnected so we don't have to null them to avoid errors
-            m_lowerLimitSensor = new DigitalInput(IOMap.Hang.lowerLimit);
-            m_upperLimitSensor = new DigitalInput(IOMap.Hang.upperLimit);
+            m_lowerLimitSensor = new DigitalInput(IOMap.Hang.kLowerLimit);
+            m_upperLimitSensor = new DigitalInput(IOMap.Hang.kUpperLimit);
         }
 
         if (Broken.hangLowerLimitDisabled) {

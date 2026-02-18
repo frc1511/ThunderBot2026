@@ -73,14 +73,15 @@ public class Constants {
         *    +======================================+
         */
         public class Hang {
-            public static final int hangMotor = 2;
-            public static final int lowerLimit = 0;
-            public static final int upperLimit = 1;
+            public static final int kHangMotor = 2;
+            public static final int kLowerLimit = 0;
+            public static final int kUpperLimit = 1;
         }
       
         public class Intake {
-            public static final int pivotMotor = 24;
-            public static final int chompMotor = 25;
+            public static final int kPivotMotor = 25;
+            public static final int kChompMotor = 26;
+            public static final int kCANCoder = 27;
         }
       
         public class Swerve {
@@ -103,18 +104,18 @@ public class Constants {
             public static final int kPigeon = 13;
         }
       
-        public interface Shooter {
+        public class Shooter {
             //TODO: actual can ids
-            int kShooterMotorA = 21;
-            int kShooterMotorB = 22;
-            int kHoodMotor = 23;
-            int kCANCoder = 43;
-            int kturretMotor = 24;
+            public static final int kShooterMotorA = 21;
+            public static final int kShooterMotorB = 22;
+            public static final int kHoodMotor = 23;
+            public static final int kCANCoder = 43;
+            public static final int kturretMotor = 24;
         }
 
-        public interface Storage {
-            int kSpindexerMotor = 41;
-            int kKickerMotor = 42;
+        public class Storage {
+            public static final int kSpindexerMotor = 41;
+            public static final int kKickerMotor = 42;
         }
     }
 
@@ -122,6 +123,11 @@ public class Constants {
         double kP = 0.0d;
         double kI = 0.0d;
         double kD = 0.0d;
+        double kS = 0.0d;
+        double kV = 0.0d;
+        double kA = 0.0d;
+        double kG = 0.0d;
+        double kCos = 0.0d;
     }
 
     public interface BlinkyBlinky {
@@ -195,10 +201,16 @@ public class Constants {
         }
 
         public interface Pivot {
-            interface PivotPID extends BasePID { }
+            interface PivotPID extends BasePID { 
+                double kP = 0;
+                double kI = 0;
+                double kD = 0;
+                double kCos = 0;
+            }
+            int kCosRatio = 1;
 
             enum Position {
-                TOP(31), BOTTOM(40); // TODO: these aren't real
+                TOP(-0.5), BOTTOM(0); // TODO: these aren't real
 
                 private double m_value;
 
@@ -222,6 +234,12 @@ public class Constants {
     }
  
     public interface HangConstants {
+        public interface HangPID extends BasePID {
+            double kP = 0.09;
+            double kI = 0;
+            double kD = 0;
+        }
+
         double kSetpointMaxVelocity = 0.02; // Prevents flybys
         double kSetpointPositionTolerance = 0.05;
         double kZeroingSpeed = -0.1;
