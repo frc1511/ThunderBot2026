@@ -238,6 +238,7 @@ public class Robot extends TimedRobot {
         drivetrain.setLimelightDisable(limelightDisable.isOn());
         
         conductor.periodic();
+        blinkyBlinkyOrchestrator.sparkle();
         CommandScheduler.getInstance().run();
     }
 

@@ -53,7 +53,7 @@ public class BlinkyBlinkyOrchestrator {
                 break;
             case TRENCH_SAFE:
                 m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 140, 124, 255);
+                    m_buffer.setHSV(index, 140, 255, 255);
                 });
                 break;
             default: break;

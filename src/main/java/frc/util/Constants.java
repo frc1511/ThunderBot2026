@@ -135,9 +135,9 @@ public class Constants {
     }
 
     public interface BlinkyBlinky {
-        int kPort = 0;
+        int kPort = 2;
 
-        int kLength = 40;
+        int kLength = 36;
 
         enum Mode {
             NONE, INTAKING, HUNG, FIRE_READY, HOME, TRENCH_SAFE
