@@ -5,15 +5,15 @@ public class Broken {
     public static boolean drivetrainFullyDisabled = true;
 
     /** Disable everything shooter related */
-    public static boolean shooterFullyDisabled = true; // NOTE: YOU MUST BE CAREFUL NOT TO HAVE THIS FALSE WHEN A & B ARE TRUE
+    public static boolean shooterFullyDisabled = false; // NOTE: YOU MUST BE CAREFUL NOT TO HAVE THIS FALSE WHEN A & B ARE TRUE
     /** Disable shooter motor A */
     public static boolean shooterADisabled = false;
     /** Disable shooter motor B */
     public static boolean shooterBDisabled = false;
 
     /** Disable everything hood related */
-    public static boolean hoodDisabled = true;
-    public static boolean hoodBeamBreakDisabled = true;
+    public static boolean hoodDisabled = false;
+    public static boolean hoodBeamBreakDisabled = false;
 
     public static final boolean turretDisable = true;
 
@@ -23,15 +23,15 @@ public class Broken {
     public static boolean pivotDisabled = true;
 
     /** Disable everything hang related */
-    public static boolean hangFullyDisabled = true;
+    public static boolean hangFullyDisabled = false;
     /** Disable the upper hang mag limit */
-    public static boolean hangUpperLimitDisabled = true;
+    public static boolean hangUpperLimitDisabled = false;
     /** Disable the lower hang mag limit */
-    public static boolean hangLowerLimitDisabled = true;
+    public static boolean hangLowerLimitDisabled = false;
 
     /** Disable everything kicker related */
-    public static boolean kickerDisabled = true;
+    public static boolean kickerDisabled = false;
 
     /** Disable everything spindexer related */
-    public static boolean spindexerDisabled = true;
+    public static boolean spindexerDisabled = false;
 }

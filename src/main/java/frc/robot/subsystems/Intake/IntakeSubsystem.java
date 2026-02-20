@@ -2,10 +2,7 @@ package frc.robot.subsystems.Intake;
 
 import java.util.function.DoubleSupplier;
 
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -17,11 +14,11 @@ import frc.util.Helpers;
 import frc.util.ThunderSubsystem;
 
 public class IntakeSubsystem extends SubsystemBase implements ThunderSubsystem {
-    private SparkMax m_motor;
+    private TalonFX m_motor;
 
     public IntakeSubsystem() {
         if (!Broken.intakeDisabled) {
-            m_motor = new SparkMax(Constants.IOMap.Intake.kChompMotor, MotorType.kBrushless);
+            m_motor = new TalonFX(Constants.IOMap.Intake.kChompMotor);
         } else {
             m_motor = null;
         }
@@ -31,19 +28,19 @@ public class IntakeSubsystem extends SubsystemBase implements ThunderSubsystem {
     public void periodic() {
         if (Broken.intakeDisabled) return;
 
-        SmartDashboard.putNumber("Intake_output_%", m_motor.getAppliedOutput());
-        SmartDashboard.putNumber("Intake_output_A", m_motor.getOutputCurrent());
+        // SmartDashboard.putNumber("Intake_output_%", m_motor.getAppliedOutput());
+        // SmartDashboard.putNumber("Intake_output_A", m_motor.getOutputCurrent());
     }
 
     /**
      * Intake
      */
     public Command eat() {
-        if (!Broken.intakeDisabled) return Commands.none();
+        if (Broken.intakeDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.set(Constants.Hunger.Intake.kEatSpeed))
-            .isFinished(true)
+            .onEnd(m_motor::stopMotor)
             .withName(Constants.Hunger.Intake.intakeCommandName);
     }
 
@@ -51,7 +48,7 @@ public class IntakeSubsystem extends SubsystemBase implements ThunderSubsystem {
      * Stop Intake
      */
     public Command stopEating() {
-        if (!Broken.intakeDisabled) return Commands.none();
+        if (Broken.intakeDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(m_motor::stopMotor)
@@ -59,7 +56,7 @@ public class IntakeSubsystem extends SubsystemBase implements ThunderSubsystem {
     }
 
     public Command manual_intake(DoubleSupplier speed) {
-        if (!Broken.intakeDisabled) return Commands.none();
+        if (Broken.intakeDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.set(speed.getAsDouble()));

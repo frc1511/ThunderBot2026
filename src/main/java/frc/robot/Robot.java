@@ -152,27 +152,28 @@ public class Robot extends TimedRobot {
         //     )
         //     .onFalse(hang.halt());
 
+        
+        auxController.leftStick().onChange(pivot.manual_pivot(() -> auxController.getLeftY() * 0.2));
+        
         hood.setDefaultCommand(hood.halt());
+        shooter.setDefaultCommand(shooter.halt());
+        kicker.setDefaultCommand(kicker.halt());
 
+        // auxController.x()
+        //     .whileTrue(kicker.run())
+        //     .whileTrue(shooter.runAtCustomSpeed(() -> 2000d))
+        //     .whileTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.INTAKE.get()));
+        // auxController.y()
+        //     .onTrue(hood.toPosition(() -> 1.5d));
+        // auxController.a()
+        //     .onTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.INTAKE.get()));
         auxController.x()
-            .whileTrue(hood.toPosition(() -> 1.0d).repeatedly())
-            .onFalse(hood.halt());
-
-        
-        auxController.y()
-            .whileTrue(hood.toPosition(() -> 1.5d).repeatedly())
-            .onFalse(hood.halt());
-        
-            
-        auxController.b()
-            .onTrue(
-                hood.forceZeroEncoders()
-            )
-            .onFalse(hood.halt());
-
+            .whileTrue(hang.zeroHang());
         auxController.a()
-            .whileTrue(shooter.preheat().repeatedly())
-            .onFalse(shooter.halt());
+            .onTrue(hang.extend());
+        auxController.b()
+            .onTrue(hang.retract());
+            
 
         // auxController.a().and(emmaDisable::isOff).onTrue(kicker.playSoccer());
         // auxController.a().and(emmaDisable::isOff).onFalse(kicker.halt());

@@ -74,8 +74,8 @@ public class Constants {
         */
         public class Hang {
             public static final int kHangMotor = 14;
-            public static final int kDIOupperLimit = 0;
-            public static final int kDIOlowerLimit = 1;
+            public static final int kDIOlowerLimit = 0;
+            public static final int kDIOupperLimit = 1;
         }
       
         public class Intake {
@@ -148,7 +148,7 @@ public class Constants {
 
     public interface Storage {
         interface Spindexer {
-           double kSpeed = 1;
+           double kSpeed = 1d;
 
             /** Seconds */
             enum Duration {
@@ -166,7 +166,7 @@ public class Constants {
         }
 
         interface Kicker {
-            double kTargetKickerRPM = 180;
+            double kTargetKickerRPM = 1800;
 
             public interface KickerPID extends BasePID {
                 double kP = 1.0;
@@ -178,7 +178,7 @@ public class Constants {
     
     public interface Shooter {
         double kMaxShooterSpeed = 0.5d;
-        double kShooterAtSpeedTolerance = 0.1d;
+        double kShooterAtSpeedTolerance = 40d;
         double kTargetShooterRPM = 4500;
         
         public interface TurretPID extends BasePID {}
@@ -195,14 +195,15 @@ public class Constants {
         double kHoodTolerance = 0.005d;
         double kZeroingSpeed = 0.1d; // Just know that zeroing doesn't need to be precise, just needs to see it within a rotation
         public interface HoodPID extends BasePID {
-            double kP = 23;
-            double kI = 10;
+            double kP = 13; // Zippy at 23
+            double kI = 5; // Zippy at 10
             double kD = 0;
         }
+        double kStatorCurrentLimit = 40;
         double kBottomPosition = 0d;
         double kTopPosition = 2d;
         double kHoodSetpointMaxVelocity = 0.01d; // Prevents flybys
-        double kCANcoderOffset = 0.313720703125d;
+        double kCANcoderOffset = 0.043017578125d;
         double kGearing = 9/1;
     }
 
@@ -250,8 +251,8 @@ public class Constants {
         double kSetpointMaxVelocity = 0.02; // Prevents flybys
         double kSetpointPositionTolerance = 0.05;
         double kZeroingSpeed = -0.1;
-        double kMaxDeploySpeed = 0.4; // TODO: DOUBLE FOR LATER TESTING // Extending Hanger
-        double kMaxPullSpeed = -0.3;  // TODO: DOUBLE FOR LATER TESTING // Retracting Hanger (pulling the robot up on the bar)
+        double kMaxDeploySpeed = 0.9; // Extending Hanger
+        double kMaxPullSpeed = -0.3;  // Retracting Hanger (pulling the robot up on the bar)
         double kMaxDeployDistanceRotations = 33;
         double kMaxPullDistanceRotations = 8; // This is not a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down
     }

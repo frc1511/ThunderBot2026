@@ -1,10 +1,12 @@
 package frc.robot.subsystems.Cannon;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
@@ -42,6 +44,8 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
             .withKP(Constants.Hood.HoodPID.kP).withKI(Constants.Hood.HoodPID.kI).withKD(Constants.Hood.HoodPID.kD);
         hoodConfig.Feedback.RotorToSensorRatio = Constants.Hood.kGearing;
         hoodConfig.Feedback.SensorToMechanismRatio = 1;
+        hoodConfig.CurrentLimits.StatorCurrentLimit = Constants.Hood.kStatorCurrentLimit;
+        hoodConfig.CurrentLimits.StatorCurrentLimitEnable = true;
         hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         
         if (!Broken.hoodDisabled) {
@@ -83,6 +87,8 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
         SmartDashboard.putBoolean("hood_atPos", atPosition());
         SmartDashboard.putNumber("hood_output_V", m_motor.getMotorVoltage().getValueAsDouble());
         SmartDashboard.putBoolean("hood_isZeroed", isZeroed());
+        SmartDashboard.putBoolean("hood_zeroSensorTripped", isAtZero());
+        SmartDashboard.putNumber("hood_err", m_motor.getClosedLoopError().getValueAsDouble());
 
         if (m_motor.getPosition().getValueAsDouble() < Constants.Hood.kBottomPosition || m_motor.getPosition().getValueAsDouble() > Constants.Hood.kTopPosition) {
             halt();
@@ -118,7 +124,7 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
     public boolean atPosition() {
         if (Broken.hoodDisabled) return true;
 
-        return m_motor.getClosedLoopError().getValueAsDouble() < Constants.Hood.kHoodTolerance && Math.abs(m_motor.getClosedLoopOutput().getValueAsDouble()) < Constants.Hood.kHoodSetpointMaxVelocity;
+        return Math.abs(m_motor.getClosedLoopError().getValueAsDouble()) < Constants.Hood.kHoodTolerance && Math.abs(m_motor.getClosedLoopOutput().getValueAsDouble()) < Constants.Hood.kHoodSetpointMaxVelocity;
     }
 
     public Command zero() {
@@ -140,7 +146,6 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
         return new CommandBuilder(this) 
             .onExecute(() -> m_motor.setControl(new PositionVoltage(targetPosition.get())))
             .isFinished(this::atPosition)
-            .onEnd(this::halt)
             .onlyIf(this::isZeroed);
     }
 
@@ -175,6 +180,15 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
         return new CommandBuilder(this)
             .onExecute(() -> {
                 m_motor.stopMotor();
+            });
+    }
+
+    public Command setBrakeMode(BooleanSupplier brakeOn) {
+        if (Broken.hoodDisabled) return Commands.none();
+
+        return new CommandBuilder(this)
+            .onExecute(() -> {
+                m_motor.getConfigurator().apply(new MotorOutputConfigs().withNeutralMode(brakeOn.getAsBoolean() ? NeutralModeValue.Brake : NeutralModeValue.Coast));
             });
     }
 
