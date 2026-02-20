@@ -57,8 +57,8 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
             m_pidController = m_motor.getClosedLoopController();
             
             // For broken functionality, these still "work" when the sensors are disconnected so we don't have to null them to avoid errors
-            m_lowerLimitSensor = new DigitalInput(IOMap.Hang.kLowerLimit);
-            m_upperLimitSensor = new DigitalInput(IOMap.Hang.kUpperLimit);
+            m_lowerLimitSensor = new DigitalInput(IOMap.Hang.kDIOlowerLimit);
+            m_upperLimitSensor = new DigitalInput(IOMap.Hang.kDIOupperLimit);
         }
 
         if (Broken.hangLowerLimitDisabled) {

@@ -73,15 +73,15 @@ public class Constants {
         *    +======================================+
         */
         public class Hang {
-            public static final int kHangMotor = 2;
-            public static final int kLowerLimit = 0;
-            public static final int kUpperLimit = 1;
+            public static final int kHangMotor = 14;
+            public static final int kDIOupperLimit = 0;
+            public static final int kDIOlowerLimit = 1;
         }
       
         public class Intake {
-            public static final int kPivotMotor = 25;
-            public static final int kChompMotor = 26;
-            public static final int kCANCoder = 27;
+            public static final int kCANcoder = 15;
+            public static final int kPivotMotor = 16;
+            public static final int kChompMotor = 17;
         }
       
         public class Swerve {
@@ -106,20 +106,24 @@ public class Constants {
       
         public class Shooter {
             //TODO: actual can ids
-            public static final int kShooterMotorA = 21;
-            public static final int kShooterMotorB = 22;
-            public static final int kTurretMotor = 24;
+            public static final int kShooterMotorA = 21; // RIGHT
+            public static final int kShooterMotorB = 20; // LEFT
+            public static final int kTurretMotor = 40;
         }
         
         public class Hood {
             public static final int kHoodMotor = 23;
-            public static final int kCANCoder = 43;
-            public static final int kBeamBreak = 3;
+            public static final int kCANcoder = 22;
+            public static final int kDIObeamBreak = 2;
         }
 
         public class Storage {
-            public static final int kSpindexerMotor = 41;
-            public static final int kKickerMotor = 42;
+            public static final int kSpindexerMotor = 18;
+            public static final int kKickerMotor = 19;
+        }
+
+        public class BlinkyBlinky {
+            public static final int kPWMport = 0;
         }
     }
 
@@ -135,8 +139,6 @@ public class Constants {
     }
 
     public interface BlinkyBlinky {
-        int kPort = 2;
-
         int kLength = 36;
 
         enum Mode {

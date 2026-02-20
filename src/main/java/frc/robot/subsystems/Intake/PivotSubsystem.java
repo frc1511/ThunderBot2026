@@ -43,7 +43,7 @@ public class PivotSubsystem extends SubsystemBase implements ThunderSubsystem {
             .positionConversionFactor(1/96);
 
         if (!Broken.pivotDisabled) {
-            m_CANcoder = new CANcoder(Constants.IOMap.Intake.kCANCoder);
+            m_CANcoder = new CANcoder(Constants.IOMap.Intake.kCANcoder);
 
             m_motor = new SparkMax(Constants.IOMap.Intake.kPivotMotor, MotorType.kBrushless);
             m_motor.configure(pivotConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);

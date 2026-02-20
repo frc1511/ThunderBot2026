@@ -13,7 +13,7 @@ public class BlinkyBlinkyOrchestrator {
     private AddressableLEDBuffer m_buffer;
 
     public BlinkyBlinkyOrchestrator(Robot robot) {
-        m_led = new AddressableLED(Constants.BlinkyBlinky.kPort);
+        m_led = new AddressableLED(Constants.IOMap.BlinkyBlinky.kPWMport);
 
         m_buffer = new AddressableLEDBuffer(Constants.BlinkyBlinky.kLength);
         m_led.setLength(m_buffer.getLength());

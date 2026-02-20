@@ -45,7 +45,7 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
         hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         
         if (!Broken.hoodDisabled) {
-            m_encoder = new CANcoder(Constants.IOMap.Hood.kCANCoder);
+            m_encoder = new CANcoder(Constants.IOMap.Hood.kCANcoder);
             m_encoder.getConfigurator().apply(new MagnetSensorConfigs().withMagnetOffset(Constants.Hood.kCANcoderOffset));
             
             hoodConfig.Feedback.withFusedCANcoder(m_encoder);
@@ -53,7 +53,7 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
             m_motor = new TalonFX(Constants.IOMap.Hood.kHoodMotor);
             m_motor.getConfigurator().apply(hoodConfig);
 
-            m_beamBreakZero = new DigitalInput(Constants.IOMap.Hood.kBeamBreak);
+            m_beamBreakZero = new DigitalInput(Constants.IOMap.Hood.kDIObeamBreak);
             if (!Broken.hoodBeamBreakDisabled) {
                 isConfirmedZeroed = isAtZero();
             } else {
