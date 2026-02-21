@@ -175,7 +175,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                     .withDeadband(Constants.Swerve.kVelocityDeadband)
                     .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband);
             }
-        }).withName("driveWithJoysticks");
+        });
     }
 
     public Command brick() {
@@ -202,7 +202,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     public Command applyRequest(Supplier<SwerveRequest> request) {
         return run(() -> {
             m_isMoving = false;
-            if (isCANSafe() && Broken.drivetrainFullyDisabled) {
+            if (isCANSafe() && !Broken.drivetrainFullyDisabled) {
                 SwerveRequest req = request.get();
                 m_isMoving = req.equals(m_idleRequest);
                 this.setControl(request.get());

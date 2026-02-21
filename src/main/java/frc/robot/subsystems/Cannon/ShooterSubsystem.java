@@ -87,7 +87,7 @@ public class ShooterSubsystem extends SubsystemBase implements ThunderSubsystem 
 
     private void runAtSpeed(double speedRPM) {
         m_targetSpeed = speedRPM;
-        m_primaryMotor.setControl(new VelocityVoltage(Helpers.RPMtoRPS(Constants.Shooter.kTargetShooterRPM)));
+        m_primaryMotor.setControl(new VelocityVoltage(Helpers.RPMtoRPS(m_targetSpeed)));
     }
 
     public Command runAtCustomSpeed(DoubleSupplier speedRPM) {

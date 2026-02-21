@@ -13,6 +13,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.util.Constants.Status;
 
 public class FakeSwerveSubsystem implements SwerveSubsystem {
@@ -39,7 +40,7 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
     }
 
     public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX) {
-        return Commands.none();
+        return new InstantCommand(() -> {}, this);
     }
 
     public Command brick() {

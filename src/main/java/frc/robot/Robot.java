@@ -53,7 +53,7 @@ public class Robot extends TimedRobot {
         .withTimestampReplay()
         .withJoystickReplay();
   
-    public final SwerveSubsystem drivetrain = Broken.drivetrainFullyDisabled ? new FakeSwerveSubsystem() : new FakeSwerveSubsystem();
+    public final SwerveSubsystem drivetrain = Broken.drivetrainFullyDisabled ? new FakeSwerveSubsystem() : new RealSwerveSubsystem();
 
     public final ShooterSubsystem shooter = new ShooterSubsystem();
     public final HoodSubsystem hood = new HoodSubsystem();
@@ -101,6 +101,7 @@ public class Robot extends TimedRobot {
                     .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
                     .onlyIf(() -> !driverController.y().getAsBoolean())
                     .onlyIf(trevorDisable::isOff)
+                    .withName("DriveWithJoysticks")
             );
         }
 
@@ -109,7 +110,7 @@ public class Robot extends TimedRobot {
         driverController.a().and(trevorDisable::isOff).whileTrue(drivetrain.brick());
         driverController.b().and(trevorDisable::isOff).whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
 
-        // Reset the field-centric heading on left bumper press.
+        // Reset the field-centric heading on left bumper press. 
         driverController.x().and(trevorDisable::isOff).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         driverController.leftBumper().and(trevorDisable::isOff).onTrue(drivetrain.decreaseSpeed());
@@ -163,15 +164,19 @@ public class Robot extends TimedRobot {
         auxController.b().whileTrue(shooter.runAtCustomSpeed(() -> 4000d));
 
         auxController.x()
-            .whileTrue(kicker.run())
-            //.whileTrue(shooter.runAtCustomSpeed(() -> 4000d))
-            .whileTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.INTAKE.get()));
+            .whileTrue(shooter.runAtCustomSpeed(() -> SmartDashboard.getNumber("num", 2100))
+                .alongWith(
+                    kicker.run()
+                        .alongWith(spindexer.spin(Constants.Storage.Spindexer.Duration.INTAKE.get()))
+                        .onlyIf(() -> shooter.shooterAtSpeed())
+                )
+            );
         auxController.y()
-            .onTrue(hood.toPosition(() -> 1.5d));
+            .onTrue(hood.toPosition(() -> 0.5d));
         auxController.a()
             .onTrue(intake.eat()).onFalse(intake.stopEating());
                     
-        auxController.leftStick().whileTrue(pivot.manual_pivot(() -> auxController.getLeftY() * -0.2)).onFalse(pivot.halt());
+        auxController.leftBumper().onTrue(pivot.manual_pivot(() -> auxController.getLeftY() * -0.2));
         auxController.back()
                     .whileTrue(pivot.pivotUp()).onFalse(pivot.halt());                        
         auxController.start()
@@ -220,7 +225,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         if (RobotController.getBatteryVoltage() < 9) {
-            Alert.critical(String.format("Battery voltage dipped below 9v, reached %.2f", RobotController.getBatteryVoltage()));
+            // Alert.critical(String.format("Battery voltage dipped below 9v, reached %.2f", RobotController.getBatteryVoltage()));
         } else if (RobotController.getBatteryVoltage() < 10) {
             Alert.error("Battery voltage dipped below 10v");
         }

@@ -2,7 +2,7 @@ package frc.util;
 
 public class Broken {
     /** Disable everything drive related */
-    public static boolean drivetrainFullyDisabled = true;
+    public static boolean drivetrainFullyDisabled = false;
 
     /** Disable everything shooter related */
     public static boolean shooterFullyDisabled = false; // NOTE: YOU MUST BE CAREFUL NOT TO HAVE THIS FALSE WHEN A & B ARE TRUE

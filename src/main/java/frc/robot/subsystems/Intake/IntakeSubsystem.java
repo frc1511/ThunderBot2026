@@ -2,7 +2,10 @@ package frc.robot.subsystems.Intake;
 
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -19,6 +22,7 @@ public class IntakeSubsystem extends SubsystemBase implements ThunderSubsystem {
     public IntakeSubsystem() {
         if (!Broken.intakeDisabled) {
             m_motor = new TalonFX(Constants.IOMap.Intake.kChompMotor);
+            m_motor.getConfigurator().apply(new MotorOutputConfigs().withInverted(InvertedValue.CounterClockwise_Positive));
         } else {
             m_motor = null;
         }
