@@ -166,7 +166,7 @@ public class Constants {
         }
 
         interface Kicker {
-            double kTargetKickerRPM = 1800;
+            double kTargetKickerRPM = 3500;
 
             public interface KickerPID extends BasePID {
                 double kP = 1.0;
@@ -179,7 +179,7 @@ public class Constants {
     public interface Shooter {
         double kMaxShooterSpeed = 0.5d;
         double kShooterAtSpeedTolerance = 40d;
-        double kTargetShooterRPM = 4500;
+        double kTargetShooterRPM = 4000;
         
         public interface TurretPID extends BasePID {}
         double kTurretTolerance = 0.5d;
@@ -209,14 +209,14 @@ public class Constants {
 
     public class Hunger {
         public interface Intake {
-            double kEatSpeed = 0.3;
+            double kEatSpeed = 0.7;
 
             String intakeCommandName = "intake";
         }
 
         public interface Pivot {
             interface PivotPID extends BasePID { 
-                double kP = 0;
+                double kP = .5;
                 double kI = 0;
                 double kD = 0;
                 double kCos = 0;
@@ -224,7 +224,7 @@ public class Constants {
             int kCosRatio = 1;
 
             enum Position {
-                TOP(-0.5), BOTTOM(0); // TODO: these aren't real
+                TOP(-0.342529296875), BOTTOM(0.001708984375); //they change alot but should be approx right
 
                 private double m_value;
 
@@ -237,7 +237,7 @@ public class Constants {
                 }
             }
 
-            double kTolerance = 0.5d;
+            double kTolerance = 0.01d;
         }
     }
  

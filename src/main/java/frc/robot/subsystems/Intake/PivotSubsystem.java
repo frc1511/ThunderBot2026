@@ -34,13 +34,13 @@ public class PivotSubsystem extends SubsystemBase implements ThunderSubsystem {
         SparkMaxConfig pivotConfig = new SparkMaxConfig(); 
         pivotConfig.closedLoop
             .pid(Constants.Hunger.Pivot.PivotPID.kP, Constants.Hunger.Pivot.PivotPID.kI, Constants.Hunger.Pivot.PivotPID.kD)
-            .allowedClosedLoopError(Constants.Hunger.Pivot.kTolerance, ClosedLoopSlot.kSlot0)
-            .feedForward
-                .kCosRatio(Constants.Hunger.Pivot.kCosRatio)
-                .kCos(Constants.Hunger.Pivot.PivotPID.kCos);
+            .allowedClosedLoopError(Constants.Hunger.Pivot.kTolerance, ClosedLoopSlot.kSlot0);
+            // .feedForward
+            //     .kCosRatio(Constants.Hunger.Pivot.kCosRatio)
+            //     .kCos(Constants.Hunger.Pivot.PivotPID.kCos);
 
         pivotConfig.encoder
-            .positionConversionFactor(1/96);
+            .positionConversionFactor(1d/96d);
 
         if (!Broken.pivotDisabled) {
             m_CANcoder = new CANcoder(Constants.IOMap.Intake.kCANcoder);

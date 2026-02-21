@@ -30,6 +30,7 @@ import frc.robot.subsystems.Cannon.HoodSubsystem;
 import frc.robot.subsystems.Cannon.ShooterSubsystem;
 import frc.robot.subsystems.Cannon.TurretSubsystem;
 import frc.robot.subsystems.Drive.FakeSwerveSubsystem;
+import frc.robot.subsystems.Drive.RealSwerveSubsystem;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
 import frc.robot.subsystems.Hang.HangSubsystem;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
@@ -153,27 +154,29 @@ public class Robot extends TimedRobot {
         //     .onFalse(hang.halt());
 
         
-        auxController.leftStick().onChange(pivot.manual_pivot(() -> auxController.getLeftY() * 0.2));
+        
         
         hood.setDefaultCommand(hood.halt());
         shooter.setDefaultCommand(shooter.halt());
         kicker.setDefaultCommand(kicker.halt());
 
-        // auxController.x()
-        //     .whileTrue(kicker.run())
-        //     .whileTrue(shooter.runAtCustomSpeed(() -> 2000d))
-        //     .whileTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.INTAKE.get()));
-        // auxController.y()
-        //     .onTrue(hood.toPosition(() -> 1.5d));
-        // auxController.a()
-        //     .onTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.INTAKE.get()));
+        auxController.b().whileTrue(shooter.runAtCustomSpeed(() -> 4000d));
+
         auxController.x()
-            .whileTrue(hang.zeroHang());
+            .whileTrue(kicker.run())
+            //.whileTrue(shooter.runAtCustomSpeed(() -> 4000d))
+            .whileTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.INTAKE.get()));
+        auxController.y()
+            .onTrue(hood.toPosition(() -> 1.5d));
         auxController.a()
-            .onTrue(hang.extend());
-        auxController.b()
-            .onTrue(hang.retract());
-            
+            .onTrue(intake.eat()).onFalse(intake.stopEating());
+                    
+        auxController.leftStick().whileTrue(pivot.manual_pivot(() -> auxController.getLeftY() * -0.2)).onFalse(pivot.halt());
+        auxController.back()
+                    .whileTrue(pivot.pivotUp()).onFalse(pivot.halt());                        
+        auxController.start()
+                    .whileTrue(pivot.pivotDown()).onFalse(pivot.halt());
+
 
         // auxController.a().and(emmaDisable::isOff).onTrue(kicker.playSoccer());
         // auxController.a().and(emmaDisable::isOff).onFalse(kicker.halt());
@@ -231,7 +234,9 @@ public class Robot extends TimedRobot {
         }
 
         SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);
-        
+        SmartDashboard.putNumber("BATTERY_voltage", RobotController.getBatteryVoltage());
+
+
         m_timeAndJoystickReplay.update();
         SmartDashboard.putData(CommandScheduler.getInstance());
         

@@ -18,9 +18,9 @@ public class Broken {
     public static final boolean turretDisable = true;
 
     /** Disable everything intake related */
-    public static boolean intakeDisabled = true;
+    public static boolean intakeDisabled = false;
     /** Disable just the pivot for intake */
-    public static boolean pivotDisabled = true;
+    public static boolean pivotDisabled = false;
 
     /** Disable everything hang related */
     public static boolean hangFullyDisabled = false;
