@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -132,21 +133,21 @@ public class Robot extends TimedRobot {
 
         // MARK: Aux
         // hang.setDefaultCommand(hang.halt());
-        // auxController.y().and(emmaDisable::isOff)
+        // auxController.y()
         //     .whileTrue(
         //         hang.zeroHang()
         //         .onlyIf(auxManual::isOff)
         //         .onlyIf(climberDisable::isOff)
         //     )
         //     .onFalse(hang.halt());
-        // auxController.a().and(emmaDisable::isOff)
+        // auxController.a()
         //     .whileTrue(
         //         hang.retract()
         //         .onlyIf(auxManual::isOff)
         //         .onlyIf(climberDisable::isOff)
         //     )
         //     .onFalse(hang.halt());
-        // auxController.b().and(emmaDisable::isOff)
+        // auxController.b()
         //     .whileTrue(
         //         hang.extend()
         //         .onlyIf(auxManual::isOff)
@@ -164,19 +165,18 @@ public class Robot extends TimedRobot {
         auxController.b().whileTrue(shooter.runAtCustomSpeed(() -> 4000d));
 
         auxController.x()
-            .whileTrue(shooter.runAtCustomSpeed(() -> SmartDashboard.getNumber("num", 2100))
-                .alongWith(
-                    kicker.run()
-                        .alongWith(spindexer.spin(Constants.Storage.Spindexer.Duration.INTAKE.get()))
-                        .onlyIf(() -> shooter.shooterAtSpeed())
-                )
-            );
+            .whileTrue(shooter.runAtCustomSpeed(() -> SmartDashboard.getNumber("num", 2100))); //needs to be changed to kTargetShooterRPM
+        auxController.b()
+            .whileTrue(kicker.run())
+            .whileTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.INTAKE.get()));
+
         auxController.y()
             .onTrue(hood.toPosition(() -> 0.5d));
         auxController.a()
             .onTrue(intake.eat()).onFalse(intake.stopEating());
                     
         auxController.leftBumper().onTrue(pivot.manual_pivot(() -> auxController.getLeftY() * -0.2));
+        auxController.rightBumper().onTrue(hood.manual_hood(() -> auxController.getLeftY() * -0.2));
         auxController.back()
                     .whileTrue(pivot.pivotUp()).onFalse(pivot.halt());                        
         auxController.start()

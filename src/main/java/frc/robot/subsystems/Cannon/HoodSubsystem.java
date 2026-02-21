@@ -58,15 +58,13 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
             m_motor.getConfigurator().apply(hoodConfig);
 
             m_beamBreakZero = new DigitalInput(Constants.IOMap.Hood.kDIObeamBreak);
-            if (!Broken.hoodBeamBreakDisabled) {
-                isConfirmedZeroed = isAtZero();
-            } else {
+            if (!Broken.hoodBeamBreakDisabled && isAtZero()) {
+                zeroEncodersLightly();
+            } else if (Broken.hoodBeamBreakDisabled) {
                 isConfirmedZeroed = true;
             }
             new Trigger(this::isAtZero).onTrue(new InstantCommand(() -> {
-                isConfirmedZeroed = true;
-                double currentPosition = m_encoder.getPosition().getValueAsDouble();
-                m_encoder.setPosition(currentPosition - Math.floor(currentPosition)); // Remove the full digit; i.e 1.2489 -> 0.2489
+                zeroEncodersLightly();
             }));
 
             if (!Helpers.onCANChain(m_encoder)) {
@@ -110,6 +108,13 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
                 .withSensorToMechanismRatio(1));
             isUsingInbuiltEncoder = false;
         }
+    }
+
+    private void zeroEncodersLightly() {
+        isConfirmedZeroed = true;
+
+        double currentPosition = m_encoder.getPosition().getValueAsDouble();
+        m_encoder.setPosition(currentPosition - Math.floor(currentPosition)); // Remove the full digit; i.e 1.2489 -> 0.2489
     }
 
     public boolean isAtZero() {
