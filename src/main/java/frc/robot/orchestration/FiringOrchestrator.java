@@ -21,11 +21,11 @@ public class FiringOrchestrator {
 
     public Command fire() {
         return shooter.preheat()
-            .alongWith(
+            .andThen(
                 new ParallelCommandGroup(
+                    shooter.holdSpeedForShoot(),
                     kicker.run(), 
-                    spindexer.spin(Constants.Storage.Spindexer.Duration.PARTIAL_BAY.get())
-                )
-                .onlyIf(shooter::shooterAtSpeed));
+                    spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
+                ));
     }
 }

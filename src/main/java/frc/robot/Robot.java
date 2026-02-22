@@ -95,11 +95,23 @@ public class Robot extends TimedRobot {
 
     public Robot() {
         // DataLogManager.start(); //* Uncomment for logs
+
+        // MARK: Orchestration
+
+        blinkyBlinkyOrchestrator = new BlinkyBlinkyOrchestrator(this);
+        cannonOrchestrator = new CannonOrchestrator(this);
+        firingOrchestrator = new FiringOrchestrator(this);
+        hubOrchestrator = new HubOrchestrator(this);
+        hungerOrchestrator = new HungerOrchestrator(this);
+
+        conductor = new Conductor(this);
+
         Alert.info("The robot has restarted");
         DriverStation.silenceJoystickConnectionWarning(true); // trying to fix radio problem
         SignalLogger.enableAutoLogging(false);
+        
         // MARK: Drive
-
+        
         if (!Broken.drivetrainFullyDisabled) {
             drivetrain.setDefaultCommand(
                 drivetrain
@@ -167,19 +179,19 @@ public class Robot extends TimedRobot {
         shooter.setDefaultCommand(shooter.halt());
         kicker.setDefaultCommand(kicker.halt());
 
-        auxController.x()
-            .whileTrue(shooter.holdSpeedForShoot()); //needs to be changed to kTargetShooterRPM
         auxController.b()
-            .whileTrue(shooter.holdSpeedForShoot())
-            .whileTrue(kicker.run())
-            .whileTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.INTAKE.get()));
+            .whileTrue(firingOrchestrator.fire());
 
         auxController.y()
             .onTrue(hood.toPosition(() -> 0.5d));
         auxController.a()
-            .onTrue(intake.eat()).onFalse(intake.stopEating());
+            .whileTrue(intake.eat());
+        auxController.x()
+            .onTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.AGGREGATE));
                     
-        auxController.leftBumper().onTrue(pivot.manual_pivot(() -> auxController.getLeftY() * -0.2));
+
+        auxController.povUp().whileTrue(hang.extend());
+        auxController.povDown().whileTrue(hang.retract());
         auxController.rightBumper().onTrue(hang.zeroHang());
         auxController.back()
                     .whileTrue(pivot.pivotUp()).onFalse(pivot.halt());                        
@@ -189,16 +201,6 @@ public class Robot extends TimedRobot {
 
         // auxController.a().and(emmaDisable::isOff).onTrue(kicker.playSoccer());
         // auxController.a().and(emmaDisable::isOff).onFalse(kicker.halt());
-
-        // MARK: Orchestration
-
-        blinkyBlinkyOrchestrator = new BlinkyBlinkyOrchestrator(this);
-        cannonOrchestrator = new CannonOrchestrator(this);
-        firingOrchestrator = new FiringOrchestrator(this);
-        hubOrchestrator = new HubOrchestrator(this);
-        hungerOrchestrator = new HungerOrchestrator(this);
-
-        conductor = new Conductor(this);
 
         // MARK: Auto
 

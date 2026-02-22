@@ -5,6 +5,7 @@ import java.util.function.DoubleSupplier;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -37,6 +38,8 @@ public class ShooterSubsystem extends SubsystemBase implements ThunderSubsystem 
         shooterConfig.Slot0 = new Slot0Configs()
             .withKP(Constants.Shooter.ShooterPID.kP).withKI(Constants.Shooter.ShooterPID.kI).withKD(Constants.Shooter.ShooterPID.kD);
         shooterConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.5;
+        shooterConfig.MotionMagic.MotionMagicAcceleration = Constants.Shooter.ShooterMotionMagic.kAccel;
+        shooterConfig.MotionMagic.MotionMagicJerk = Constants.Shooter.ShooterMotionMagic.kJerk;
         
         if (!Broken.shooterFullyDisabled) {
             if (!Broken.shooterADisabled) {
@@ -87,7 +90,7 @@ public class ShooterSubsystem extends SubsystemBase implements ThunderSubsystem 
 
     private void runAtSpeed(double speedRPM) {
         m_targetSpeed = speedRPM;
-        m_primaryMotor.setControl(new VelocityVoltage(Helpers.RPMtoRPS(m_targetSpeed)));
+        m_primaryMotor.setControl(new MotionMagicVelocityVoltage(Helpers.RPMtoRPS(m_targetSpeed)).withVelocity(Helpers.RPMtoRPS(m_targetSpeed)));
     }
 
     public Command runAtCustomSpeed(DoubleSupplier speedRPM) {

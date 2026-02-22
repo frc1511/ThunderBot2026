@@ -37,7 +37,7 @@ public class HungerOrchestrator {
 
     public Command spintake() {
         return intake.eat()
-            .alongWith(spindexer.spin(Constants.Storage.Spindexer.Duration.INTAKE.get()));
+            .alongWith(spindexer.spin(Constants.Storage.Spindexer.Duration.INTAKE));
     }
 
     /**

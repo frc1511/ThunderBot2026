@@ -42,7 +42,7 @@ public class SpindexerSubsystem extends SubsystemBase implements ThunderSubsyste
     /**
      * PLEASE use {@code SpinDuration} for the duration
     */
-    public Command spin(double duration) {
+    public Command spin(Constants.Storage.Spindexer.Duration duration) {
         if (Broken.spindexerDisabled) return Commands.none();
 
         return new CommandBuilder(this)
@@ -50,7 +50,7 @@ public class SpindexerSubsystem extends SubsystemBase implements ThunderSubsyste
                 m_motor.set(Constants.Storage.Spindexer.kSpeed);
             })
             .onEnd(m_motor::stopMotor)
-            .withTimeout(duration);
+            .withTimeout(duration.get());
     }
 
     public Command halt() {

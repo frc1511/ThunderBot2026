@@ -138,6 +138,11 @@ public class Constants {
         double kCos = 0.0d;
     }
 
+    protected interface ProfiledPID {
+        double kAccel = 0;
+        double kJerk = 0;
+    }
+
     public interface BlinkyBlinky {
         int kLength = 36;
 
@@ -152,7 +157,7 @@ public class Constants {
 
             /** Seconds */
             enum Duration {
-                FULL_BAY(4), PARTIAL_BAY(2), AUTO_BAY(1), INTAKE(1.0E9);
+                FULL_BAY(4), PARTIAL_BAY(2), AUTO_BAY(1), FOREVER(1.0E9), INTAKE(1.0E9), AGGREGATE(1);
 
                 private double m_value;
                 private Duration(double value) {
@@ -169,8 +174,8 @@ public class Constants {
             double kTargetKickerRPM = 3500;
 
             public interface KickerPID extends BasePID {
-                double kP = 1.0;
-                double kI = 1.2;
+                double kP = 10.0;
+                double kI = 10.2;
                 double kD = 0.0;
             }
         }
@@ -185,9 +190,14 @@ public class Constants {
         double kTurretTolerance = 0.5d;
 
         public interface ShooterPID extends BasePID {
-            double kP = 0.8;
-            double kI = 0.6;
+            double kP = 2;
+            double kI = 1;
             double kD = 0.01;
+        }
+
+        public interface ShooterMotionMagic extends ProfiledPID {
+            double kAccel = 120;
+            double kJerk = 140;
         }
     }
 
