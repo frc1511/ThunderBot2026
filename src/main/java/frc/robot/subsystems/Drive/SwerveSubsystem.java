@@ -37,6 +37,8 @@ public interface SwerveSubsystem extends ThunderSubsystem {
 
     public Command applyRequest(Supplier<SwerveRequest> request);
 
+    public Command toggleFieldCentric();
+
     @Override
     public void periodic();
     

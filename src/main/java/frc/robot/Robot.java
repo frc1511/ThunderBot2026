@@ -5,10 +5,13 @@
 package frc.robot;
 
 import com.ctre.phoenix6.HootAutoReplay;
+import com.ctre.phoenix6.SignalLogger;
 import com.thunder.lib.auto.ThunderAutoProject;
 import com.thunder.lib.auto.ThunderAutoSendableChooser;
 import com.thunder.lib.trajectory.ThunderTrajectoryRunnerProperties;
 
+import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -78,8 +81,8 @@ public class Robot extends TimedRobot {
 
     private ThunderAutoSendableChooser autoChooser;
 
-    public ThunderSwitch trevorDisable = switchBoard.button(1);
-    public ThunderSwitch emmaDisable = switchBoard.button(2);
+    public ThunderSwitch driveDisable = switchBoard.button(1);
+    public ThunderSwitch auxDisable = switchBoard.button(2);
     public ThunderSwitch auxManual = switchBoard.button(3);
     public ThunderSwitch fieldCentric = switchBoard.button(4);
     public ThunderSwitch ledDisable = switchBoard.button(5);
@@ -93,7 +96,8 @@ public class Robot extends TimedRobot {
     public Robot() {
         // DataLogManager.start(); //* Uncomment for logs
         Alert.info("The robot has restarted");
-
+        DriverStation.silenceJoystickConnectionWarning(true); // trying to fix radio problem
+        SignalLogger.enableAutoLogging(false);
         // MARK: Drive
 
         if (!Broken.drivetrainFullyDisabled) {
@@ -101,26 +105,27 @@ public class Robot extends TimedRobot {
                 drivetrain
                     .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
                     .onlyIf(() -> !driverController.y().getAsBoolean())
-                    .onlyIf(trevorDisable::isOff)
+                    .onlyIf(driveDisable::isOff)
                     .withName("DriveWithJoysticks")
             );
         }
 
-        RobotModeTriggers.disabled().whileTrue(drivetrain.idle());
+        RobotModeTriggers.disabled().onTrue(drivetrain.idle().withTimeout(.1));
 
-        driverController.a().and(trevorDisable::isOff).whileTrue(drivetrain.brick());
-        driverController.b().and(trevorDisable::isOff).whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
+        driverController.a().and(driveDisable::isOff).whileTrue(drivetrain.brick());
+        driverController.b().and(driveDisable::isOff).whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
 
         // Reset the field-centric heading on left bumper press. 
-        driverController.x().and(trevorDisable::isOff).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        //driverController.x().and(trevorDisable::isOff).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        driverController.x().and(driveDisable::isOff).toggleOnTrue(drivetrain.toggleFieldCentric());
 
-        driverController.leftBumper().and(trevorDisable::isOff).onTrue(drivetrain.decreaseSpeed());
-        driverController.rightBumper().and(trevorDisable::isOff).onTrue(drivetrain.increaseSpeed());
+        driverController.leftBumper().and(driveDisable::isOff).onTrue(drivetrain.decreaseSpeed());
+        driverController.rightBumper().and(driveDisable::isOff).onTrue(drivetrain.increaseSpeed());
 
-        driverController.y().and(trevorDisable::isOff).whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
+        driverController.y().and(driveDisable::isOff).whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
         new Trigger(() -> 
             Math.abs(driverController.getRightTriggerAxis()) > Constants.kControllerDeadzone)
-            .and(trevorDisable::isOff)
+            .and(driveDisable::isOff)
             .onTrue(drivetrain.setHubLock(true))
             .onFalse(drivetrain.setHubLock(false));
 
@@ -210,8 +215,10 @@ public class Robot extends TimedRobot {
         if (props != null) {
             autoChooser.setTrajectoryRunnerProperties(drivetrain.getTrajectoryRunnerProperties());
         }
-
+        
         safetyWatchdog = new SafetyWatchdog(this);
+        
+        SmartDashboard.putData(CommandScheduler.getInstance());
     }
 
     @SuppressWarnings("all") // Identical Expressions Warning Suppression (BuildConsts)
@@ -219,49 +226,50 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         Alert.info(String.format("Last build time: %s, on branch %s.", BuildConstants.BUILD_DATE, BuildConstants.GIT_BRANCH) + (BuildConstants.DIRTY == 1 ? "Modified" : ""));
     }
-
+    
     private int i = 0; // For the Frozen Dashboard Detector 2000
-
+    
     @Override
     public void robotPeriodic() {
-        if (RobotController.getBatteryVoltage() < 9) {
-            // Alert.critical(String.format("Battery voltage dipped below 9v, reached %.2f", RobotController.getBatteryVoltage()));
-        } else if (RobotController.getBatteryVoltage() < 10) {
-            Alert.error("Battery voltage dipped below 10v");
-        }
+    //     if (RobotController.getBatteryVoltage() < 9) {
+        //         // Alert.critical(String.format("Battery voltage dipped below 9v, reached %.2f", RobotController.getBatteryVoltage()));
+        //     } else if (RobotController.getBatteryVoltage() < 10) {
+            //         Alert.error("Battery voltage dipped below 10v");
+            //     }
 
         if (!driverController.isConnected()) {
             Alert.error("Drive Controller Disconnected");
         }
-
+        
         if (!auxController.isConnected()) {
             Alert.error("Aux Controller Disconnected");
         }
-
+        
         SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);
         SmartDashboard.putNumber("BATTERY_voltage", RobotController.getBatteryVoltage());
 
 
         m_timeAndJoystickReplay.update();
-        SmartDashboard.putData(CommandScheduler.getInstance());
         
-        drivetrain.setFieldCentric(fieldCentric.isOn());
+        drivetrain.setFieldCentric(true);
         drivetrain.setLimelightDisable(limelightDisable.isOn());
         
         conductor.periodic();
         blinkyBlinkyOrchestrator.sparkle();
         CommandScheduler.getInstance().run();
     }
-
+    
     @Override
-    public void disabledInit() {}
-
+    public void disabledInit() {
+        CommandScheduler.getInstance().cancelAll();
+    }
+    
     @Override
     public void disabledPeriodic() {}
-
+    
     @Override
     public void disabledExit() {}
-
+    
     @Override
     public void autonomousInit() {
         Command autoCommand = autoChooser.getSelectedCommand();
@@ -269,15 +277,17 @@ public class Robot extends TimedRobot {
             CommandScheduler.getInstance().schedule(autoCommand);
         }
     }
-
+    
     @Override
     public void autonomousPeriodic() {}
-
+    
     @Override
     public void autonomousExit() {}
-
+    
     @Override
-    public void teleopInit() {}
+    public void teleopInit() {
+        CommandScheduler.getInstance().cancelAll();
+    }
 
     @Override
     public void teleopPeriodic() {}
@@ -287,7 +297,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void testInit() {
-        CommandScheduler.getInstance().cancelAll();
     }
 
     @Override

@@ -126,6 +126,12 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         m_limelightDisable = isDisabled;
     }
 
+    public Command toggleFieldCentric() {
+        return new CommandBuilder()
+            .onExecute(() -> m_fieldCentric = !m_fieldCentric)
+            .isFinished(true);
+    }
+
     public Command increaseSpeed() {
         return new CommandBuilder()
             .onExecute(() -> m_speedMultipler = Math.max(m_speedMultipler + Swerve.kSpeedStep, 1));

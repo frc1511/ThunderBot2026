@@ -59,6 +59,10 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
         return Commands.none();
     }
 
+    public Command toggleFieldCentric() {
+        return Commands.none();
+    }
+
     @Override
     public void periodic() {
         
