@@ -10,7 +10,6 @@ import com.thunder.lib.auto.ThunderAutoProject;
 import com.thunder.lib.auto.ThunderAutoSendableChooser;
 import com.thunder.lib.trajectory.ThunderTrajectoryRunnerProperties;
 
-import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -18,7 +17,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -106,10 +104,12 @@ public class Robot extends TimedRobot {
 
         conductor = new Conductor(this);
 
+        shooter.setOptimalSpeedGetter(hubOrchestrator::getOptimalShootSpeed);
+
         Alert.info("The robot has restarted");
         DriverStation.silenceJoystickConnectionWarning(true); // trying to fix radio problem
         SignalLogger.enableAutoLogging(false);
-        
+
         // MARK: Drive
         
         if (!Broken.drivetrainFullyDisabled) {
@@ -211,7 +211,8 @@ public class Robot extends TimedRobot {
         autoChooser.includeProjectSource(autoProject);
         autoChooser.addAllAutoModesFromProject(autoProject.getName());
         autoChooser.addTrajectoryFromProject(autoProject.getName(), "ShootFromStart");
-        autoChooser.addTrajectoryFromProject(autoProject.getName(), "teehee");
+        autoChooser.addTrajectoryFromProject(autoProject.getName(), "test_teehee");
+        autoChooser.addTrajectoryFromProject(autoProject.getName(), "test_complex_shoot");
         ThunderTrajectoryRunnerProperties props = drivetrain.getTrajectoryRunnerProperties();
         if (props != null) {
             autoChooser.setTrajectoryRunnerProperties(drivetrain.getTrajectoryRunnerProperties());

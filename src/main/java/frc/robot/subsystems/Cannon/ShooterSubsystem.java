@@ -6,7 +6,6 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
@@ -30,6 +29,8 @@ public class ShooterSubsystem extends SubsystemBase implements ThunderSubsystem 
 
     private TalonFX m_primaryMotor;
     private double m_targetSpeed = 0;
+
+    private DoubleSupplier optimalSpeedSupplier = () -> 0d;
 
     public ShooterSubsystem() {
         TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
@@ -64,6 +65,10 @@ public class ShooterSubsystem extends SubsystemBase implements ThunderSubsystem 
         }
     }
 
+    public void setOptimalSpeedGetter(DoubleSupplier supplier) {
+        optimalSpeedSupplier = supplier;
+    }
+
     public boolean shooterAtSpeed() {
         if (Broken.shooterFullyDisabled) return true;
 
@@ -79,10 +84,11 @@ public class ShooterSubsystem extends SubsystemBase implements ThunderSubsystem 
         SmartDashboard.putNumber("shooter_output_V", m_primaryMotor.getMotorVoltage().getValueAsDouble());
         SmartDashboard.putNumber("shooter_err", Math.abs(Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()) - m_targetSpeed));
         SmartDashboard.putBoolean("shooter_atSpeed", shooterAtSpeed());
+        SmartDashboard.putNumber("shooter_optimalSpeed", optimalSpeedSupplier.getAsDouble());
     }
 
     public Command halt() {
-        if (Broken.hoodDisabled) return new InstantCommand(()->{}, this);
+        if (Broken.shooterFullyDisabled) return new InstantCommand(()->{}, this);
 
         return new CommandBuilder(this)
             .onExecute(m_primaryMotor::stopMotor);
@@ -106,7 +112,7 @@ public class ShooterSubsystem extends SubsystemBase implements ThunderSubsystem 
         if (Broken.shooterFullyDisabled) return Commands.none();
 
         return new CommandBuilder(this)
-            .onExecute(() -> runAtSpeed(Constants.Shooter.kTargetShooterRPM))
+            .onExecute(() -> runAtSpeed(optimalSpeedSupplier.getAsDouble()))
             .isFinished(this::shooterAtSpeed)
             .onEnd(this::halt);
     }
@@ -115,7 +121,7 @@ public class ShooterSubsystem extends SubsystemBase implements ThunderSubsystem 
         if (Broken.shooterFullyDisabled) return Commands.none();
 
         return new CommandBuilder(this)
-            .onExecute(() -> runAtSpeed(Constants.Shooter.kTargetShooterRPM))
+            .onExecute(() -> runAtSpeed(optimalSpeedSupplier.getAsDouble()))
             .onEnd(this::halt);
     }
 

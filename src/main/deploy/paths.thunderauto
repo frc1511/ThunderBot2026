@@ -65,7 +65,7 @@
         "current_auto_mode_name": "Basic"
       },
       "trajectory_editor_state": {
-        "current_trajectory_name": "teehee"
+        "current_trajectory_name": "test_complex_shoot"
       },
       "view": 1
     },
@@ -141,7 +141,7 @@
               "outgoing_weight": 0.2838896753846713
             },
             "headings": {
-              "incoming_angle": -0.040861232761613665,
+              "incoming_angle": -0.04086123276161367,
               "outgoing_angle": 3.1007314208281795
             },
             "link": "",
@@ -160,7 +160,70 @@
         },
         "start_rotation": 0.0
       },
-      "teehee": {
+      "test_complex_shoot": {
+        "actions": [
+          {
+            "item": {
+              "action": "Shoot",
+              "editor_locked": false
+            },
+            "position": 0.3958304792933806
+          }
+        ],
+        "end_rotation": -2.4464820427326472,
+        "points": [
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0,
+              "outgoing_weight": 1.0085456371307373
+            },
+            "headings": {
+              "incoming_angle": -1.325995629917614,
+              "outgoing_angle": 1.8155970236721792
+            },
+            "link": "",
+            "position": {
+              "x": 3.611067056655884,
+              "y": 4.040981292724609
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 0.8327189683914185,
+              "outgoing_weight": 1.0
+            },
+            "headings": {
+              "incoming_angle": -0.7468337266003379,
+              "outgoing_angle": 2.3947589269894554
+            },
+            "link": "",
+            "position": {
+              "x": 1.2583892345428467,
+              "y": 7.037566184997559
+            }
+          }
+        ],
+        "rotations": [
+          {
+            "item": {
+              "angle": -2.358320491690555,
+              "editor_locked": false
+            },
+            "position": 0.3958304822444916
+          }
+        ],
+        "settings": {
+          "max_angular_accel": 4.71238898038469,
+          "max_angular_velocity": 4.71238898038469,
+          "max_centripetal_accel": 19.62,
+          "max_linear_accel": 2.0,
+          "max_linear_velocity": 2.0
+        },
+        "start_rotation": -1.5707963267948966
+      },
+      "test_teehee": {
         "end_rotation": -1.5707963267948966,
         "points": [
           {
@@ -228,7 +291,7 @@
           "max_linear_accel": 2.0,
           "max_linear_velocity": 2.0
         },
-        "start_rotation": 0.020417959919771703
+        "start_rotation": 0.0204179599197717
       }
     },
     "trajectory_end_behavior_links": [],

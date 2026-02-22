@@ -34,4 +34,15 @@ public class HubOrchestrator {
     public Command turretAutoLock() {
         return cannonOrchestrator.moveToOrientation(new Orientation(hubLockTurretAngle(), hubLockHoodAngle()));
     }
+
+    public double getOptimalShootSpeed() {
+        Pose2d nearestHub = Helpers.allianceHub();
+
+        Pose2d currentPose = swerveSubsystem.currentPose();
+
+        double dX = currentPose.getX() - nearestHub.getX();
+        double dY = currentPose.getY() - nearestHub.getY();
+
+        return Math.sqrt(Math.pow(dY, 2) + Math.pow(dX, 2)) * 150 + 1500;
+    }
 }

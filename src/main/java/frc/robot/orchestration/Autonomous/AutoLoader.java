@@ -12,7 +12,7 @@ public class AutoLoader {
         ThunderAutoProject autoProject = new ThunderAutoProject("paths");
 
         if (autoProject.isLoaded()) {
-            autoProject.registerActionCommand("Shoot", robot.cannonOrchestrator.shootTurret());
+            autoProject.registerActionCommand("Shoot", robot.firingOrchestrator.fire());
         } else {
             Alert.warning("Auto failed to load");
         }
