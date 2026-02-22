@@ -116,8 +116,8 @@ public class Robot extends TimedRobot {
         driverController.b().and(driveDisable::isOff).whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
 
         // Reset the field-centric heading on left bumper press. 
-        //driverController.x().and(trevorDisable::isOff).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-        driverController.x().and(driveDisable::isOff).toggleOnTrue(drivetrain.toggleFieldCentric());
+        driverController.x().and(driveDisable::isOff).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+        driverController.leftStick().and(driveDisable::isOff).toggleOnTrue(drivetrain.toggleFieldCentric());
 
         driverController.leftBumper().and(driveDisable::isOff).onTrue(drivetrain.decreaseSpeed());
         driverController.rightBumper().and(driveDisable::isOff).onTrue(drivetrain.increaseSpeed());
