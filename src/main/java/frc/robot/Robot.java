@@ -167,11 +167,10 @@ public class Robot extends TimedRobot {
         shooter.setDefaultCommand(shooter.halt());
         kicker.setDefaultCommand(kicker.halt());
 
-        auxController.b().whileTrue(shooter.runAtCustomSpeed(() -> 4000d));
-
         auxController.x()
-            .whileTrue(shooter.runAtCustomSpeed(() -> SmartDashboard.getNumber("num", 2100))); //needs to be changed to kTargetShooterRPM
+            .whileTrue(shooter.holdSpeedForShoot()); //needs to be changed to kTargetShooterRPM
         auxController.b()
+            .whileTrue(shooter.holdSpeedForShoot())
             .whileTrue(kicker.run())
             .whileTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.INTAKE.get()));
 
@@ -181,7 +180,7 @@ public class Robot extends TimedRobot {
             .onTrue(intake.eat()).onFalse(intake.stopEating());
                     
         auxController.leftBumper().onTrue(pivot.manual_pivot(() -> auxController.getLeftY() * -0.2));
-        auxController.rightBumper().onTrue(hood.manual_hood(() -> auxController.getLeftY() * -0.2));
+        auxController.rightBumper().onTrue(hang.zeroHang());
         auxController.back()
                     .whileTrue(pivot.pivotUp()).onFalse(pivot.halt());                        
         auxController.start()

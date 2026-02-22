@@ -42,7 +42,7 @@ import edu.wpi.first.units.measure.Voltage;
 public class Constants {
     public static boolean kUseSignalLogger = false;
 
-    public static final double kCANChainDisconnectTimeout = 0.4; // in seconds
+    public static final double kCANChainDisconnectTimeout = 0.5; // in seconds
 
     public static final double kAntiSpamAlertTimeout = 5; // in seconds
 
@@ -179,13 +179,13 @@ public class Constants {
     public interface Shooter {
         double kMaxShooterSpeed = 0.5d;
         double kShooterAtSpeedTolerance = 40d;
-        double kTargetShooterRPM = 2100d;
+        double kTargetShooterRPM = 1900d;
         
         public interface TurretPID extends BasePID {}
         double kTurretTolerance = 0.5d;
 
         public interface ShooterPID extends BasePID {
-            double kP = 0.2;
+            double kP = 0.8;
             double kI = 0.6;
             double kD = 0.01;
         }

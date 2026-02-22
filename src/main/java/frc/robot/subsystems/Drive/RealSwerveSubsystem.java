@@ -408,7 +408,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                     return new Pose2d(
                         Math.cos(m_arcLockTheta) * m_arcLockDistance + m_arcLockCenter.getX(),
                         Math.sin(m_arcLockTheta) * m_arcLockDistance + m_arcLockCenter.getY(),
-                        new Rotation2d(m_arcLockTheta + Math.PI)
+                        new Rotation2d(m_arcLockTheta + Math.PI/2 - Math.PI/32)
                     );
                 }
             )

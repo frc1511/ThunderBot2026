@@ -61,14 +61,14 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
             if (!Broken.hoodBeamBreakDisabled && isAtZero()) {
                 zeroEncodersLightly();
             } else if (Broken.hoodBeamBreakDisabled) {
-                isConfirmedZeroed = true;
+                zeroEncodersLightly();
             }
             new Trigger(this::isAtZero).onTrue(new InstantCommand(() -> {
                 zeroEncodersLightly();
             }));
 
             if (!Helpers.onCANChain(m_encoder)) {
-                isConfirmedZeroed = true;
+                zeroEncodersLightly();
             }
         } else {
             m_motor = null;
@@ -114,7 +114,9 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
         isConfirmedZeroed = true;
 
         double currentPosition = m_encoder.getPosition().getValueAsDouble();
-        m_encoder.setPosition(currentPosition - Math.floor(currentPosition)); // Remove the full digit; i.e 1.2489 -> 0.2489
+        double newPos = currentPosition - Math.floor(currentPosition);
+        if (newPos >= 0.9) newPos -= 1;
+        m_encoder.setPosition(newPos); // Remove the full digit; i.e 1.2489 -> 0.2489
     }
 
     public boolean isAtZero() {
