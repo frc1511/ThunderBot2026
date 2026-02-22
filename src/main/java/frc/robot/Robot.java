@@ -149,28 +149,28 @@ public class Robot extends TimedRobot {
         // drivetrain.registerTelemetry(logger::telemeterize);
 
         // MARK: Aux
-        // hang.setDefaultCommand(hang.halt());
-        // auxController.y()
-        //     .whileTrue(
-        //         hang.zeroHang()
-        //         .onlyIf(auxManual::isOff)
-        //         .onlyIf(climberDisable::isOff)
-        //     )
-        //     .onFalse(hang.halt());
-        // auxController.a()
-        //     .whileTrue(
-        //         hang.retract()
-        //         .onlyIf(auxManual::isOff)
-        //         .onlyIf(climberDisable::isOff)
-        //     )
-        //     .onFalse(hang.halt());
-        // auxController.b()
-        //     .whileTrue(
-        //         hang.extend()
-        //         .onlyIf(auxManual::isOff)
-        //         .onlyIf(climberDisable::isOff)
-        //     )
-        //     .onFalse(hang.halt());
+        hang.setDefaultCommand(hang.halt());
+        auxController.y()
+            .whileTrue(
+                hang.zeroHang()
+                .onlyIf(auxManual::isOff)
+                .onlyIf(climberDisable::isOff)
+            )
+            .onFalse(hang.halt());
+        auxController.a()
+            .whileTrue(
+                hang.retract()
+                .onlyIf(auxManual::isOff)
+                .onlyIf(climberDisable::isOff)
+            )
+            .onFalse(hang.halt());
+        auxController.b()
+            .whileTrue(
+                hang.extend()
+                .onlyIf(auxManual::isOff)
+                .onlyIf(climberDisable::isOff)
+            )
+            .onFalse(hang.halt());
 
         
         
@@ -179,13 +179,13 @@ public class Robot extends TimedRobot {
         shooter.setDefaultCommand(shooter.halt());
         kicker.setDefaultCommand(kicker.halt());
 
-        auxController.b()
-            .whileTrue(firingOrchestrator.fire());
+        // auxController.b()
+        //     .whileTrue(firingOrchestrator.fire());
 
-        auxController.y()
-            .onTrue(hood.toPosition(() -> 0.5d));
-        auxController.a()
-            .whileTrue(intake.eat());
+        // auxController.y()
+        //     .onTrue(hood.toPosition(() -> 0.5d));
+        // auxController.a()
+        //     .whileTrue(intake.eat());
         auxController.x()
             .onTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.AGGREGATE));
                     
