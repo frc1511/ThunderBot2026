@@ -3,6 +3,7 @@ package frc.util;
 public class Broken {
     /** Disable everything drive related */
     public static boolean drivetrainFullyDisabled = false;
+    public static boolean drivetrainSwitchDisable = false;
 
     /** Disable everything shooter related */
     public static boolean shooterFullyDisabled = false; // NOTE: YOU MUST BE CAREFUL NOT TO HAVE THIS FALSE WHEN A & B ARE TRUE
@@ -34,4 +35,12 @@ public class Broken {
 
     /** Disable everything spindexer related */
     public static boolean spindexerDisabled = false;
+
+    public static boolean getDrivetrainDisableStatus() {
+        if(drivetrainFullyDisabled || drivetrainSwitchDisable) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

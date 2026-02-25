@@ -208,12 +208,12 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     public Command applyRequest(Supplier<SwerveRequest> request) {
         return run(() -> {
             m_isMoving = false;
-            if (isCANSafe() && !Broken.drivetrainFullyDisabled) {
+            if (isCANSafe() && !Broken.getDrivetrainDisableStatus()) {
                 SwerveRequest req = request.get();
                 m_isMoving = req.equals(m_idleRequest);
                 this.setControl(request.get());
             } else {
-                if (!Broken.drivetrainFullyDisabled)
+                if (!Broken.getDrivetrainDisableStatus())
                     Alert.critical("DRIVE DISABLED | CAN DISCONNECT");
                 this.setControl(m_idleRequest);
             }
@@ -462,7 +462,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     }
 
     public Status status() {
-        if (Broken.drivetrainFullyDisabled) return Status.DISABLED;
+        if (Broken.getDrivetrainDisableStatus()) return Status.DISABLED;
         if (!isCANSafe()) return Status.DISCONNECTED;
         if (m_isMoving) return Status.ACTIVE;
         return Status.IDLE;

@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -88,7 +89,7 @@ public class Robot extends TimedRobot {
     public ThunderSwitch climberDisable = switchBoard.button(7);
     public ThunderSwitch placeHolder8 = switchBoard.button(8); // Yes, the placeholder switches have different slots than their names. This is because drive team is 1-based rather than 0-based and this aligns with the controller map.
     public ThunderSwitch placeHolder9 = switchBoard.button(9);
-    public ThunderSwitch placeHolder10 = switchBoard.button(10);
+    public ThunderSwitch oneDriveMode = switchBoard.button(10);
     public ThunderSwitch pitMode = switchBoard.button(11);
 
     public Robot() {
@@ -201,6 +202,8 @@ public class Robot extends TimedRobot {
 
         // auxController.a().and(emmaDisable::isOff).onTrue(kicker.playSoccer());
         // auxController.a().and(emmaDisable::isOff).onFalse(kicker.halt());
+
+        driveDisable.get().onTrue(new InstantCommand(() -> Broken.drivetrainSwitchDisable = true)).onFalse(new InstantCommand(() -> Broken.drivetrainSwitchDisable = false));
 
         // MARK: Auto
 
