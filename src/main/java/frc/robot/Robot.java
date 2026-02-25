@@ -41,6 +41,7 @@ import frc.robot.subsystems.Storage.KickerSubsystem;
 import frc.robot.subsystems.Storage.SpindexerSubsystem;
 import frc.util.Alert;
 import frc.util.Broken;
+import frc.util.CommandBuilder;
 import frc.util.Constants;
 import frc.util.ThunderSwitchboard;
 import frc.util.ZoneConstants;
@@ -140,10 +141,17 @@ public class Robot extends TimedRobot {
         //     .whileTrue(
         //         // TODO
         //     );
-        // driverController.rightTrigger()
-        //     .whileTrue( // temporary robot centric
-        //         // TODO uhh i think there is code already writen for this but im too lazy to find it
-        //     );
+        driverController.rightTrigger()
+            .whileTrue( // temporary robot centric
+                new CommandBuilder()
+                    .onExecute(() -> drivetrain.setFieldCentric(false))
+                    .isFinished(true)
+            )
+            .onFalse(
+                new CommandBuilder()
+                    .onExecute(() -> drivetrain.setFieldCentric(true))
+                    .isFinished(true)
+            );
 
         // Puts the hang and hood in down mode when going under trench
         new Trigger(
@@ -166,20 +174,23 @@ public class Robot extends TimedRobot {
             .onFalse(spindexer.halt());
         // auxController.x()
         //     .onTrue(
-        //         // TODO
+        //         hood.toPosition(() -> Constants.Hood.kBottomPosition)
         //     )
-        // auxController.b() // Trench
-        //     .onTrue(
-        //         // TODO
-        //     )
+        //     .onFalse()
+        auxController.b() // Trench
+            .whileTrue(
+                hood.toPosition(() -> Constants.Hood.kTrenchPosition)
+            )
+            .onFalse(hood.toPosition(() -> Constants.Hood.kBottomPosition));
         // auxController.a() // HUB
         //     .onTrue(
         //         // TODO
         //     )
-        // auxController.y() // feed (hold)
-        //     .whileTrue(
-        //         // TODO
-        //     )
+        auxController.y() // feed (hold)
+            .whileTrue(
+                hood.toPosition(() -> Constants.Hood.kTopPosition)
+            )
+            .onFalse(hood.toPosition(() -> Constants.Hood.kBottomPosition));
         auxController.leftBumper() // Preheat (hold)
             .whileTrue(
                 shooter.preheat()
