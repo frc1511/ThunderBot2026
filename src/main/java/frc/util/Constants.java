@@ -212,6 +212,7 @@ public class Constants {
         double kStatorCurrentLimit = 40;
         double kBottomPosition = 0d;
         double kTopPosition = 2d;
+        double kTrenchPosition = 0.1d;
         double kHoodSetpointMaxVelocity = 0.01d; // Prevents flybys
         double kCANcoderOffset = 0.043017578125d;
         double kGearing = 9/1;
@@ -264,7 +265,8 @@ public class Constants {
         double kMaxDeploySpeed = 0.3; // Extending Hanger FINAL DONT CHNAGE
         double kMaxPullSpeed = -0.9;  // Retracting Hanger (pulling the robot up on the bar) FINAL DONT CHANGE
         double kMaxDeployDistanceRotations = 33;
-        double kMaxPullDistanceRotations = 8; // This is not a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down
+        double kMaxPullDistanceRotations = 8; // This is NOT a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down
+        double kTrenchSafeDistanceRotations = 1;
     }
 
     public class Swerve {

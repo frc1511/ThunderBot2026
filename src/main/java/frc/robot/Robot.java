@@ -149,18 +149,15 @@ public class Robot extends TimedRobot {
         // driverController.back().and(driverController.x()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
         // drivetrain.registerTelemetry(logger::telemeterize);
 
-        // Puts the hang and hood in down mode when going under trench // TODO: make them go back to where they were onFalse
+        // Puts the hang and hood in down mode when going under trench
         new Trigger(
-            () -> 
-                ZoneConstants.checkZone(drivetrain.currentPose().getTranslation()).isWithinOne &&
-                !ZoneConstants.checkZone(drivetrain.currentPose().getTranslation()).isBump
-        ).onTrue(
-            hang.retract()
+            () -> {
+                ZoneConstants.ZoneInfo zone = ZoneConstants.checkZone(drivetrain.currentPose().getTranslation());
+                return zone.isWithinOne && !zone.isBump;
+        }).whileTrue(
+            hang.stowForTrench()
                 .alongWith(
-                    hood.toPosition(() -> Constants.Hood.kBottomPosition)
-                )
-                .onlyIf(
-                    () -> !conductor.trenchSafe()
+                    hood.stowForTrench()
                 )
         );
 

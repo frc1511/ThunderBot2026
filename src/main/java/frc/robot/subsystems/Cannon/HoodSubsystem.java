@@ -171,6 +171,17 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
         return (m_motor.getClosedLoopReference().getValueAsDouble() == Constants.Hood.kBottomPosition && atPosition()) || isAtZero();
     }
 
+    public Command stowForTrench() {
+        if (Broken.hoodDisabled) return Commands.none();
+        
+        double currentSetpoint = m_motor.getClosedLoopReference().getValueAsDouble();
+
+        return new CommandBuilder(this) 
+            .onExecute(() -> m_motor.setControl(new PositionVoltage(Constants.Hood.kTrenchPosition)))
+            .onEnd(() -> m_motor.setControl(new PositionVoltage(currentSetpoint)))
+            .onlyIf(this::isZeroed);
+    }
+
     public Command forceZeroEncoders() {
         if (Broken.hoodDisabled) return Commands.none();
 

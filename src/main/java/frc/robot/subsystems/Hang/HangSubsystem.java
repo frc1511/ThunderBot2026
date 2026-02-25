@@ -170,6 +170,25 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
             .onlyIf(this::isZeroed);
     }
 
+    public Command stowForTrench() {
+        if (Broken.hangFullyDisabled) return Commands.none();
+
+        double beforePosition = m_pidController.getSetpoint();
+
+        return new CommandBuilder(this)
+            .onExecute(() -> {
+                m_pidController.setSetpoint(HangConstants.kTrenchSafeDistanceRotations, ControlType.kPosition);
+                if (isAtLowerLimit()) {
+                    m_motor.stopMotor();
+                    return;
+                }
+            })
+            .onEnd(() -> {
+                m_pidController.setSetpoint(beforePosition, ControlType.kPosition);
+            })
+            .onlyIf(this::isZeroed);
+    }
+
     public Command halt() {
         if (Broken.hangFullyDisabled) return new InstantCommand(()->{}, this);
 
