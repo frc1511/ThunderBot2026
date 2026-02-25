@@ -49,7 +49,7 @@ public class ZoneConstants {
             new Translation2d(leftPoint.getMeasureY(), leftPoint.getMeasureX()));
     }
 
-    static class ZoneInfo {
+    public static class ZoneInfo {
         public boolean isBump = false;
         public boolean isBlueSide = false;
         public boolean isDSside = false;
