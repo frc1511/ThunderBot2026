@@ -82,14 +82,14 @@ public class Robot extends TimedRobot {
 
     public ThunderSwitch driveDisable = switchBoard.button(1);
     public ThunderSwitch auxDisable = switchBoard.button(2);
-    public ThunderSwitch auxManual = switchBoard.button(3);
+    // public ThunderSwitch auxManual = switchBoard.button(3); not on controller map
     public ThunderSwitch fieldCentric = switchBoard.button(4);
     public ThunderSwitch ledDisable = switchBoard.button(5);
     public ThunderSwitch limelightDisable = switchBoard.button(6);
     public ThunderSwitch climberDisable = switchBoard.button(7);
     public ThunderSwitch placeHolder8 = switchBoard.button(8); // Yes, the placeholder switches have different slots than their names. This is because drive team is 1-based rather than 0-based and this aligns with the controller map.
     public ThunderSwitch placeHolder9 = switchBoard.button(9);
-    public ThunderSwitch placeHolder10 = switchBoard.button(10);
+    public ThunderSwitch oneDriverMode = switchBoard.button(10);
     public ThunderSwitch pitMode = switchBoard.button(11);
 
     public Robot() {
@@ -113,7 +113,7 @@ public class Robot extends TimedRobot {
 
         // MARK: Drive
         
-        if (!Broken.drivetrainFullyDisabled) {
+        if (!Broken.drivetrainFullyDisabled) { // driving with joysticks
             drivetrain.setDefaultCommand(
                 drivetrain
                     .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
@@ -125,29 +125,25 @@ public class Robot extends TimedRobot {
 
         RobotModeTriggers.disabled().onTrue(drivetrain.idle().withTimeout(.1));
 
-        driverController.a().and(driveDisable::isOff).whileTrue(drivetrain.brick());
-        driverController.b().and(driveDisable::isOff).whileTrue(drivetrain.pointWithController(driverController::getLeftX, driverController::getLeftY));
+        driverController.x().and(driveDisable::isOff).whileTrue(drivetrain.brick()); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
+        driverController.y().and(driveDisable::isOff).whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX)); // lock and shoot
+        // driverController.b() // TODO: evil climber shake
+        driverController.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric)); // reset IMU
 
-        // Reset the field-centric heading on left bumper press. 
-        driverController.x().and(driveDisable::isOff).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-        driverController.leftStick().and(driveDisable::isOff).toggleOnTrue(drivetrain.toggleFieldCentric());
 
-        driverController.leftBumper().and(driveDisable::isOff).onTrue(drivetrain.decreaseSpeed());
-        driverController.rightBumper().and(driveDisable::isOff).onTrue(drivetrain.increaseSpeed());
+        driverController.povUp().and(driveDisable::isOff).onTrue(hang.extend()); // hang go uppies
+        driverController.povDown().and(driveDisable::isOff).onTrue(hang.retract()); // hang go downies
+        driverController.povLeft().and(driveDisable::isOff).onTrue(drivetrain.increaseSpeed()); // drive go weeee
+        driverController.povRight().and(driveDisable::isOff).onTrue(drivetrain.decreaseSpeed()); // drive go snail
 
-        driverController.y().and(driveDisable::isOff).whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX));
-        new Trigger(() -> 
-            Math.abs(driverController.getRightTriggerAxis()) > Constants.kControllerDeadzone)
-            .and(driveDisable::isOff)
-            .onTrue(drivetrain.setHubLock(true))
-            .onFalse(drivetrain.setHubLock(false));
-
-        // SysID
-        // driverController.start().and(driverController.y()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kForward));
-        // driverController.start().and(driverController.x()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdQuasistatic(Direction.kReverse));
-        // driverController.back().and(driverController.y()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kForward));
-        // driverController.back().and(driverController.x()).and(trevorDisable::isOff).whileTrue(drivetrain.sysID.sysIdDynamic(Direction.kReverse));
-        // drivetrain.registerTelemetry(logger::telemeterize);
+        // driverController.leftTrigger() // trench align
+        //     .whileTrue(
+        //         // TODO
+        //     );
+        // driverController.rightTrigger()
+        //     .whileTrue( // temporary robot centric
+        //         // TODO uhh i think there is code already writen for this but im too lazy to find it
+        //     );
 
         // Puts the hang and hood in down mode when going under trench
         new Trigger(
@@ -163,28 +159,57 @@ public class Robot extends TimedRobot {
 
         // MARK: Aux
         hang.setDefaultCommand(hang.halt());
-        auxController.y()
+        auxController.y() // Feed
             .whileTrue(
-                hang.zeroHang()
-                .onlyIf(auxManual::isOff)
-                .onlyIf(climberDisable::isOff)
+                spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
             )
-            .onFalse(hang.halt());
-        auxController.a()
+            .onFalse(spindexer.halt());
+        // auxController.x()
+        //     .onTrue(
+        //         // TODO
+        //     )
+        // auxController.b() // Trench
+        //     .onTrue(
+        //         // TODO
+        //     )
+        // auxController.a() // HUB
+        //     .onTrue(
+        //         // TODO
+        //     )
+        // auxController.y() // feed (hold)
+        //     .whileTrue(
+        //         // TODO
+        //     )
+        auxController.leftBumper() // Preheat (hold)
             .whileTrue(
-                hang.retract()
-                .onlyIf(auxManual::isOff)
-                .onlyIf(climberDisable::isOff)
+                shooter.preheat()
+                // .onlyIf(auxManual::isOff)
             )
-            .onFalse(hang.halt());
-        auxController.b()
+            .onFalse(shooter.halt());
+        auxController.leftTrigger() // Fire (hold)
             .whileTrue(
-                hang.extend()
-                .onlyIf(auxManual::isOff)
-                .onlyIf(climberDisable::isOff)
+                kicker.run()
+                //TODO
+                // .onlyIf(auxManual::isOff)
             )
-            .onFalse(hang.halt());
-
+            .onFalse(kicker.halt());
+        auxController.rightBumper() // Outtake (hold)
+            .whileTrue(
+                intake.outtake()
+                // .onlyIf(auxManual::isOff)
+            )
+            .onFalse(intake.stopEating());
+        auxController.rightTrigger() // Intake (hold)
+            .whileTrue(
+                intake.eat()
+                // .onlyIf(auxManual::isOff)
+            )
+            .onFalse(intake.stopEating());
+        auxController.start() // Hood down
+            .onTrue(
+                hood.toPosition(() -> Constants.Hood.kBottomPosition)
+                // .onlyIf(auxManual::isOff)
+            );
         
         
         
@@ -199,8 +224,8 @@ public class Robot extends TimedRobot {
         //     .onTrue(hood.toPosition(() -> 0.5d));
         // auxController.a()
         //     .whileTrue(intake.eat());
-        auxController.x()
-            .onTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.AGGREGATE));
+        // auxController.x()
+        //     .onTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.AGGREGATE));
                     
 
         auxController.povUp().whileTrue(hang.extend());

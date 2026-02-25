@@ -48,6 +48,16 @@ public class IntakeSubsystem extends SubsystemBase implements ThunderSubsystem {
             .withName(Constants.Hunger.Intake.intakeCommandName);
     }
 
+    // Outtake
+    public Command outtake() {
+        if (Broken.intakeDisabled) return Commands.none();
+
+        return new CommandBuilder(this)
+            .onExecute(() -> m_motor.set(-Constants.Hunger.Intake.kEatSpeed))
+            .onEnd(m_motor::stopMotor)
+            .withName(Constants.Hunger.Intake.intakeCommandName);
+    }
+
     /**
      * Stop Intake
      */
