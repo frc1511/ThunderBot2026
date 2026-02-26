@@ -113,7 +113,6 @@ public class Robot extends TimedRobot {
         SignalLogger.enableAutoLogging(false);
 
         // MARK: Drive
-        
         if (!Broken.drivetrainFullyDisabled) { // driving with joysticks
             drivetrain.setDefaultCommand(
                 drivetrain
@@ -141,8 +140,8 @@ public class Robot extends TimedRobot {
         //     .whileTrue(
         //         // TODO
         //     );
-        driverController.rightTrigger()
-            .whileTrue( // temporary robot centric
+        driverController.rightTrigger() // temporary robot centric
+            .whileTrue(
                 new CommandBuilder()
                     .onExecute(() -> drivetrain.setFieldCentric(false))
                     .isFinished(true)
@@ -172,16 +171,15 @@ public class Robot extends TimedRobot {
                 spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
             )
             .onFalse(spindexer.halt());
-        // auxController.x()
+        // auxController.x() // Tower
         //     .onTrue(
         //         hood.toPosition(() -> Constants.Hood.kBottomPosition)
         //     )
         //     .onFalse()
         auxController.b() // Trench
-            .whileTrue(
-                hood.toPosition(() -> Constants.Hood.kTrenchPosition)
-            )
-            .onFalse(hood.toPosition(() -> Constants.Hood.kBottomPosition));
+            .onTrue(
+                hood.stowForTrench()
+            );
         // auxController.a() // HUB
         //     .onTrue(
         //         // TODO
@@ -194,65 +192,37 @@ public class Robot extends TimedRobot {
         auxController.leftBumper() // Preheat (hold)
             .whileTrue(
                 shooter.preheat()
-                // .onlyIf(auxManual::isOff)
             )
             .onFalse(shooter.halt());
         auxController.leftTrigger() // Fire (hold)
             .whileTrue(
-                kicker.run()
-                //TODO
-                // .onlyIf(auxManual::isOff)
+                kicker.run().alongWith(
+                    shooter.holdSpeedForShoot().alongWith(
+                        spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
+                    )
+                )
             )
             .onFalse(kicker.halt());
         auxController.rightBumper() // Outtake (hold)
             .whileTrue(
                 intake.outtake()
-                // .onlyIf(auxManual::isOff)
             )
             .onFalse(intake.stopEating());
         auxController.rightTrigger() // Intake (hold)
             .whileTrue(
                 intake.eat()
-                // .onlyIf(auxManual::isOff)
             )
             .onFalse(intake.stopEating());
         auxController.start() // Hood down
             .onTrue(
                 hood.toPosition(() -> Constants.Hood.kBottomPosition)
-                // .onlyIf(auxManual::isOff)
             );
-        
-        
         
         hood.setDefaultCommand(hood.halt());
         shooter.setDefaultCommand(shooter.halt());
         kicker.setDefaultCommand(kicker.halt());
 
-        // auxController.b()
-        //     .whileTrue(firingOrchestrator.fire());
-
-        // auxController.y()
-        //     .onTrue(hood.toPosition(() -> 0.5d));
-        // auxController.a()
-        //     .whileTrue(intake.eat());
-        // auxController.x()
-        //     .onTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.AGGREGATE));
-                    
-
-        auxController.povUp().whileTrue(hang.extend());
-        auxController.povDown().whileTrue(hang.retract());
-        auxController.rightBumper().onTrue(hang.zeroHang());
-        auxController.back()
-                    .whileTrue(pivot.pivotUp()).onFalse(pivot.halt());                        
-        auxController.start()
-                    .whileTrue(pivot.pivotDown()).onFalse(pivot.halt());
-
-
-        // auxController.a().and(emmaDisable::isOff).onTrue(kicker.playSoccer());
-        // auxController.a().and(emmaDisable::isOff).onFalse(kicker.halt());
-
         // MARK: Auto
-
         ThunderAutoProject autoProject = AutoLoader.load(this);
 
         autoChooser = new ThunderAutoSendableChooser("Auto_Mode");
@@ -282,11 +252,6 @@ public class Robot extends TimedRobot {
     
     @Override
     public void robotPeriodic() {
-    //     if (RobotController.getBatteryVoltage() < 9) {
-        //         // Alert.critical(String.format("Battery voltage dipped below 9v, reached %.2f", RobotController.getBatteryVoltage()));
-        //     } else if (RobotController.getBatteryVoltage() < 10) {
-            //         Alert.error("Battery voltage dipped below 10v");
-            //     }
 
         if (!driverController.isConnected()) {
             Alert.error("Drive Controller Disconnected");
