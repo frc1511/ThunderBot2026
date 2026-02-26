@@ -42,6 +42,22 @@ public interface SwerveSubsystem extends ThunderSubsystem {
 
     @Override
     public void periodic();
+
+    public boolean crossedBlueBumpLeft();
+
+    public boolean crossedBlueBumpRight();
+
+    public boolean crossedBlueTrenchLeft();
+
+    public boolean crossedBlueTrenchRight();
+
+    public boolean crossedRedBumpLeft();
+
+    public boolean crossedRedBumpRight();
+
+    public boolean crossedRedTrenchLeft();
+
+    public boolean crossedRedTrenchRight();
     
     public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds);
 
