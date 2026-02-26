@@ -204,15 +204,25 @@ public class Constants {
     public interface Hood {
         double kHoodTolerance = 0.005d;
         double kZeroingSpeed = 0.1d; // Just know that zeroing doesn't need to be precise, just needs to see it within a rotation
+        enum Position {
+            BOTTOM(0), TOP(2), TRENCH(.1), HUB(1.9);
+
+            private double m_value;
+
+            public double get() {
+                return m_value;
+            }
+
+            private Position(double value) {
+                m_value = value;
+            }
+        }
         public interface HoodPID extends BasePID {
             double kP = 13; // Zippy at 23
             double kI = 5; // Zippy at 10
             double kD = 0;
         }
         double kStatorCurrentLimit = 40;
-        double kBottomPosition = 0d;
-        double kTopPosition = 2d;
-        double kTrenchPosition = 0.1d;
         double kHoodSetpointMaxVelocity = 0.01d; // Prevents flybys
         double kCANcoderOffset = 0.043017578125d;
         double kGearing = 9/1;

@@ -88,7 +88,7 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
         SmartDashboard.putBoolean("hood_zeroSensorTripped", isAtZero());
         SmartDashboard.putNumber("hood_err", m_motor.getClosedLoopError().getValueAsDouble());
 
-        if (m_motor.getPosition().getValueAsDouble() < Constants.Hood.kBottomPosition || m_motor.getPosition().getValueAsDouble() > Constants.Hood.kTopPosition) {
+        if (m_motor.getPosition().getValueAsDouble() < Constants.Hood.Position.BOTTOM.get() || m_motor.getPosition().getValueAsDouble() > Constants.Hood.Position.TOP.get()) {
             halt();
         }
 
@@ -168,7 +168,7 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
     public boolean safeForTrench() {
         if (Broken.hoodDisabled) return false;
         
-        return (m_motor.getClosedLoopReference().getValueAsDouble() == Constants.Hood.kBottomPosition && atPosition()) || isAtZero();
+        return (m_motor.getClosedLoopReference().getValueAsDouble() == Constants.Hood.Position.BOTTOM.get() && atPosition()) || isAtZero();
     }
 
     public Command stowForTrench() {
@@ -177,7 +177,7 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
         double currentSetpoint = m_motor.getClosedLoopReference().getValueAsDouble();
 
         return new CommandBuilder(this) 
-            .onExecute(() -> m_motor.setControl(new PositionVoltage(Constants.Hood.kTrenchPosition)))
+            .onExecute(() -> m_motor.setControl(new PositionVoltage(Constants.Hood.Position.TRENCH.get())))
             .onEnd(() -> m_motor.setControl(new PositionVoltage(currentSetpoint)))
             .onlyIf(this::isZeroed);
     }

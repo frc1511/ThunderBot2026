@@ -145,6 +145,7 @@ public class Robot extends TimedRobot {
                 new CommandBuilder()
                     .onExecute(() -> drivetrain.setFieldCentric(false))
                     .isFinished(true)
+                    .onlyIf(oneDriverMode::isOff)
             )
             .onFalse(
                 new CommandBuilder()
@@ -163,7 +164,31 @@ public class Robot extends TimedRobot {
                     hood.stowForTrench()
                 )
         );
-
+        // MARK: One Driver Mode
+        driverController.rightTrigger() // outtake (hold)
+            .whileTrue(
+                intake.outtake()
+                .onlyIf(oneDriverMode::isOn)
+            );
+        driverController.rightBumper() // preheat (hold)
+            .whileTrue(
+                shooter.preheat()
+                .onlyIf(oneDriverMode::isOn)
+            );
+        driverController.rightTrigger() // intake (hold)
+            .whileTrue(
+                intake.eat()
+                .onlyIf(oneDriverMode::isOn)
+            );
+        driverController.rightBumper() // fire (hold)
+            .whileTrue(
+                kicker.run().alongWith(
+                    shooter.holdSpeedForShoot().alongWith(
+                        spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
+                    )
+                )
+                .onlyIf(oneDriverMode::isOn)
+            );
         // MARK: Aux
         hang.setDefaultCommand(hang.halt());
         auxController.y() // Feed
@@ -171,24 +196,23 @@ public class Robot extends TimedRobot {
                 spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
             )
             .onFalse(spindexer.halt());
-        // auxController.x() // Tower
-        //     .onTrue(
-        //         hood.toPosition(() -> Constants.Hood.kBottomPosition)
-        //     )
-        //     .onFalse()
+        auxController.x() // Tower
+            .onTrue(
+                hood.toPosition(() -> Constants.Hood.Position.TRENCH.get()) // TODO: evil trench please change this
+            );
         auxController.b() // Trench
             .onTrue(
-                hood.stowForTrench()
+                hood.toPosition(() -> Constants.Hood.Position.TRENCH.get())
             );
-        // auxController.a() // HUB
-        //     .onTrue(
-        //         // TODO
-        //     )
+        auxController.a() // HUB
+            .onTrue(
+                hood.toPosition(() -> Constants.Hood.Position.HUB.get())
+            );
         auxController.y() // feed (hold)
             .whileTrue(
-                hood.toPosition(() -> Constants.Hood.kTopPosition)
+                hood.toPosition(() -> Constants.Hood.Position.TOP.get())
             )
-            .onFalse(hood.toPosition(() -> Constants.Hood.kBottomPosition));
+            .onFalse(hood.toPosition(() -> Constants.Hood.Position.BOTTOM.get()));
         auxController.leftBumper() // Preheat (hold)
             .whileTrue(
                 shooter.preheat()
@@ -215,7 +239,7 @@ public class Robot extends TimedRobot {
             .onFalse(intake.stopEating());
         auxController.start() // Hood down
             .onTrue(
-                hood.toPosition(() -> Constants.Hood.kBottomPosition)
+                hood.toPosition(() -> Constants.Hood.Position.BOTTOM.get())
             );
         
         hood.setDefaultCommand(hood.halt());
