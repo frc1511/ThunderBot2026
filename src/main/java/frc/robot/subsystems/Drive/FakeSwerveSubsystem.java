@@ -9,6 +9,7 @@ import com.thunder.lib.trajectory.ThunderTrajectoryRunnerProperties;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -124,5 +125,9 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
 
     public void clearEnsuredTheta() {
         
+    }
+
+    public ChassisSpeeds getSpeed() {
+        return new ChassisSpeeds(0, 0, 0);
     }
 }

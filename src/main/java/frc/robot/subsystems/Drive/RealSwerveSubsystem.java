@@ -1,5 +1,8 @@
 package frc.robot.subsystems.Drive;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -76,6 +79,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     private boolean m_ensureTheta = true;
     private DoubleSupplier m_ensuredThetaSupplier = () -> 0;
 
+    private Pose2d m_lastPose;
+    private Pose2d m_currentPose;
+
     public RealSwerveSubsystem() {
         super();
 
@@ -94,6 +100,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         m_targetCenterPoseField = new Field2d();
 
         m_fieldCentric = true;
+
+        m_lastPose = Pose2d.kZero;
+        m_currentPose = Pose2d.kZero;
 
         SmartDashboard.putData("Swerve Data", new Sendable() {
             @Override
@@ -257,6 +266,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                 Alert.warning("Couldn't find limelight");
             }
         }
+
+        m_lastPose = m_currentPose;
+        m_currentPose = currentPose();
 
         m_currentField.setRobotPose(currentPose());
         SmartDashboard.putData("currentPose", m_currentField);
@@ -486,5 +498,13 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     public void clearEnsuredTheta() {
         m_ensureTheta = false;
         m_ensuredThetaSupplier = () -> 0;
+    }
+
+    public ChassisSpeeds getSpeed() {
+        return new ChassisSpeeds(
+            MetersPerSecond.of(m_currentPose.getX() - m_lastPose.getX() / 0.020), // per 20 ms
+            MetersPerSecond.of(m_currentPose.getY() - m_lastPose.getY() / 0.020),
+            RadiansPerSecond.of(m_currentPose.getRotation().getRadians() - m_lastPose.getRotation().getRadians() / 0.020)
+        );
     }
 }
