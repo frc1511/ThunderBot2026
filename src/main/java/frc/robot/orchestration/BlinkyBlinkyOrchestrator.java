@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Robot;
+import frc.robot.subsystems.Hang.HangSubsystem;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
 
@@ -11,6 +12,10 @@ public class BlinkyBlinkyOrchestrator {
     private Constants.BlinkyBlinky.Mode m_currentMode = Constants.BlinkyBlinky.Mode.NONE;
     private AddressableLED m_led;
     private AddressableLEDBuffer m_buffer;
+
+    private HangSubsystem hang;
+
+    private int m_strobeProgress = 0;
 
     public BlinkyBlinkyOrchestrator(Robot robot) {
         m_led = new AddressableLED(Constants.IOMap.BlinkyBlinky.kPWMport);
@@ -20,6 +25,8 @@ public class BlinkyBlinkyOrchestrator {
 
         m_led.setData(m_buffer);
         m_led.start();
+
+        hang = robot.hang;
     }
 
     public void sparkle() {
@@ -35,15 +42,16 @@ public class BlinkyBlinkyOrchestrator {
                 });
                 break;
             case HUNG:
-                // TODO: progress
+                // TODO: finish this
+                double position = hang.getPosition();
                 m_buffer.forEach((index, r, g, b) -> {
                     m_buffer.setHSV(index, 150, 255, 255);
                 });
                 break;
             case FIRE_READY:
-                // TODO: strobe
+                m_strobeProgress = (m_strobeProgress + 1) & 0xff;
                 m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 55, 255, 255);
+                    m_buffer.setHSV(index, 55, m_strobeProgress, 255);
                 });
                 break;
             case HOME:

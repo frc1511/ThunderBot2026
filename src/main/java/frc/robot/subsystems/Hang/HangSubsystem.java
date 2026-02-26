@@ -38,6 +38,8 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
     private DigitalInput m_upperLimitSensor;
     private boolean m_isZeroed;
 
+    private boolean m_isRunning;
+
     public HangSubsystem() {
         SparkMaxConfig motorConfig = new SparkMaxConfig();
         motorConfig
@@ -55,7 +57,7 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
             m_motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
             m_encoder = m_motor.getEncoder();
             m_pidController = m_motor.getClosedLoopController();
-            
+
             // For broken functionality, these still "work" when the sensors are disconnected so we don't have to null them to avoid errors
             m_lowerLimitSensor = new DigitalInput(IOMap.Hang.kDIOlowerLimit);
             m_upperLimitSensor = new DigitalInput(IOMap.Hang.kDIOupperLimit);
@@ -69,7 +71,7 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
     @Override
     public void periodic() {
         if (Broken.hangFullyDisabled) return;
-        
+
         SmartDashboard.putBoolean("Hang_atLower", isAtLowerLimit());
         SmartDashboard.putBoolean("Hang_atUpper", isAtUpperLimit());
         SmartDashboard.putBoolean("Hang_isZeroed", isZeroed());
@@ -127,10 +129,10 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
 
         return m_pidController.isAtSetpoint() && Math.abs(m_motor.getAppliedOutput()) < Constants.HangConstants.kSetpointMaxVelocity;
     }
-    
-    private boolean atExtentionLimit() {
+
+    private boolean atExtensionLimit() {
         if (Broken.hangFullyDisabled) return true;
-        
+
         return (atSetpoint() && m_pidController.getSetpoint() == HangConstants.kMaxDeployDistanceRotations) || isAtUpperLimit();
     }
 
@@ -139,13 +141,13 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
         
         return new CommandBuilder(this)
             .onExecute(() -> {
-                if (atExtentionLimit()) {
+                if (atExtensionLimit()) {
                     m_motor.stopMotor();
                     return;
                 }
                 m_pidController.setSetpoint(HangConstants.kMaxDeployDistanceRotations, ControlType.kPosition);
             })
-            .isFinished(this::atExtentionLimit)
+            .isFinished(this::atExtensionLimit)
             .onlyIf(this::isZeroed);
     }
 
@@ -213,11 +215,20 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
             .isFinished(true)
             .repeatedly();
     }
-    
+
     public Status status() {
         if (Broken.hangFullyDisabled) return Status.DISABLED;
         if (!Helpers.onCANChain(m_motor)) return Status.DISCONNECTED;
         if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
         return Status.IDLE;
+    }
+
+    public boolean isRunning() {
+        if (Broken.hangFullyDisabled) return false;
+        return m_isRunning;
+    }
+
+    public double getPosition() {
+        return m_encoder.getPosition();
     }
 }

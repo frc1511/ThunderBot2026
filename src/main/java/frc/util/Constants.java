@@ -123,7 +123,7 @@ public class Constants {
         }
 
         public class BlinkyBlinky {
-            public static final int kPWMport = 0;
+            public static final int kPWMport = 9;
         }
     }
 
@@ -144,7 +144,7 @@ public class Constants {
     }
 
     public interface BlinkyBlinky {
-        int kLength = 36;
+        int kLength = 72;
 
         enum Mode {
             NONE, INTAKING, HUNG, FIRE_READY, HOME, TRENCH_SAFE
