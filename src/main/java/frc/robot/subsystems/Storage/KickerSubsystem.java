@@ -15,8 +15,8 @@ import frc.util.CommandBuilder;
 import frc.util.Constants;
 import frc.util.Constants.Status;
 import frc.util.Constants.Storage.Kicker.KickerPID;
+import frc.util.Thunder.ThunderSubsystem;
 import frc.util.Helpers;
-import frc.util.ThunderSubsystem;
 
 public class KickerSubsystem extends SubsystemBase implements ThunderSubsystem {
     private TalonFX m_motor;

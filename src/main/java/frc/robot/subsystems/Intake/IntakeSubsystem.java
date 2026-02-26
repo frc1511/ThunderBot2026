@@ -13,8 +13,8 @@ import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
 import frc.util.Constants.Status;
+import frc.util.Thunder.ThunderSubsystem;
 import frc.util.Helpers;
-import frc.util.ThunderSubsystem;
 
 public class IntakeSubsystem extends SubsystemBase implements ThunderSubsystem {
     private TalonFX m_motor;

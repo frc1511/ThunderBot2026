@@ -43,9 +43,9 @@ import frc.util.Alert;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
-import frc.util.ThunderSwitchboard;
 import frc.util.ZoneConstants;
-import frc.util.ThunderSwitchboard.ThunderSwitch;
+import frc.util.Thunder.ThunderSwitchboard;
+import frc.util.Thunder.ThunderSwitchboard.ThunderSwitch;
 
 public class Robot extends TimedRobot {
     private final CommandXboxController driverController = new CommandXboxController(0);

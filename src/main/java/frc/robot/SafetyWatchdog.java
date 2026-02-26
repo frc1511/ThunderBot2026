@@ -4,7 +4,7 @@ import java.util.Set;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.util.ThunderSubsystem;
+import frc.util.Thunder.ThunderSubsystem;
 
 public class SafetyWatchdog extends SubsystemBase {
     private final Set<ThunderSubsystem> subsystems;

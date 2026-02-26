@@ -13,8 +13,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.util.ThunderSubsystem;
 import frc.util.Constants.Status;
+import frc.util.Thunder.ThunderSubsystem;
 
 public interface SwerveSubsystem extends ThunderSubsystem {
 

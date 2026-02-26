@@ -26,9 +26,9 @@ import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
 import frc.util.Helpers;
-import frc.util.ThunderSubsystem;
 import frc.util.Constants.Hood;
 import frc.util.Constants.Status;
+import frc.util.Thunder.ThunderSubsystem;
 
 public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
     private TalonFX m_motor;
