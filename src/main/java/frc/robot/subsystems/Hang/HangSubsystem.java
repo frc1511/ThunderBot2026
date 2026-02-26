@@ -29,7 +29,7 @@ import frc.util.Constants.IOMap;
 import frc.util.Constants.Status;
 import frc.util.Constants.HangConstants.HangPID;
 
-public class HangSubsystem extends SubsystemBase implements ThunderSubsystem, AutoCloseable {
+public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
     private SparkMax m_motor;
     private RelativeEncoder m_encoder;
     private SparkClosedLoopController m_pidController;
@@ -64,13 +64,6 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem, Au
         if (Broken.hangLowerLimitDisabled) {
             m_isZeroed = true;
         }
-    }
-
-    @Override
-    public void close() {
-        m_motor.close();
-        m_lowerLimitSensor.close();
-        m_upperLimitSensor.close();
     }
 
     @Override
