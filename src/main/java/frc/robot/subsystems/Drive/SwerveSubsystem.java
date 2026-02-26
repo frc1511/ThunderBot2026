@@ -67,4 +67,8 @@ public interface SwerveSubsystem extends ThunderSubsystem {
 
     @Override
     public Status status();
+
+    public void ensureTheta(DoubleSupplier thetaSupplier);
+
+    public void clearEnsuredTheta();
 }

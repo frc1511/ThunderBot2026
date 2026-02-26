@@ -251,7 +251,7 @@ public class Constants {
             double kTolerance = 0.01d;
         }
     }
- 
+
     public interface HangConstants {
         public interface HangPID extends BasePID {
             double kP = 0.09;
@@ -330,7 +330,6 @@ public class Constants {
             4.034631,
             new Rotation2d()
         );
-
 
         // Steer PID
         public static final Slot0Configs steerGains = new Slot0Configs()

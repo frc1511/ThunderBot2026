@@ -73,6 +73,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
     private double m_speedMultipler = 1.0; // 0% - 100% of max speed
 
+    private boolean m_ensureTheta = true;
+    private DoubleSupplier m_ensuredThetaSupplier = () -> 0;
+
     public RealSwerveSubsystem() {
         super();
 
@@ -162,6 +165,10 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                 double dY = currentPose().getY() - m_arcLockCenter.getY();
 
                 vRot = m_driveController.getThetaController().calculate(currentPose().getRotation().getDegrees(), Math.atan2(dY, dX));
+            }
+
+            if (m_ensureTheta) {
+                vRot = m_driveController.getThetaController().calculate(currentPose().getRotation().getDegrees(), m_ensuredThetaSupplier.getAsDouble());
             }
 
             if (m_fieldCentric) {
@@ -466,5 +473,18 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         if (!isCANSafe()) return Status.DISCONNECTED;
         if (m_isMoving) return Status.ACTIVE;
         return Status.IDLE;
+    }
+
+    /**
+     * {@code thetaSupplier} should be in degrees
+     */
+    public void ensureTheta(DoubleSupplier thetaSupplier) {
+        m_ensureTheta = true;
+        m_ensuredThetaSupplier = thetaSupplier;
+    }
+
+    public void clearEnsuredTheta() {
+        m_ensureTheta = false;
+        m_ensuredThetaSupplier = () -> 0;
     }
 }

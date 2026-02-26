@@ -10,7 +10,7 @@ import frc.util.Helpers;
 public class HubOrchestrator {
     CannonOrchestrator cannonOrchestrator;
     SwerveSubsystem swerveSubsystem;
-    
+
     public HubOrchestrator(Robot robot) {
         cannonOrchestrator = robot.cannonOrchestrator;
         swerveSubsystem = robot.drivetrain;

@@ -117,4 +117,12 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
     public void seedFieldCentric() {
         
     }
+
+    public void ensureTheta(DoubleSupplier thetaSupplier) {
+        
+    }
+
+    public void clearEnsuredTheta() {
+        
+    }
 }
