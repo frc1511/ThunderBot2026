@@ -13,6 +13,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.thunder.lib.trajectory.ThunderTrajectoryRunnerProperties;
 
+import com.opencsv.CSVWriter;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -38,6 +40,13 @@ import frc.util.Constants.Swerve;
 import frc.util.LimelightHelpers;
 import frc.util.Constants;
 import frc.util.Helpers;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     private static final double kSimLoopPeriod = 0.004; // 4 ms
@@ -81,6 +90,8 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
     private Pose2d m_lastPose;
     private Pose2d m_currentPose;
+
+    File file = new File("./src/main/java/frc/robot/logs/log.csv");
 
     public RealSwerveSubsystem() {
         super();
@@ -127,6 +138,20 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
         if (Utils.isSimulation()) {
             startSimThread();
+        }
+
+        try {
+            FileWriter outputfile = new FileWriter(file);
+
+            CSVWriter writer = new CSVWriter(outputfile);
+
+            String[] header = {"Area", "Orientation"};
+            writer.writeNext(header);
+
+            writer.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -267,8 +292,53 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             }
         }
 
-        m_lastPose = m_currentPose;
+        // Update poses for bump detection
+        if (m_currentPose != null) {
+            m_lastPose = m_currentPose;
+        }
+
         m_currentPose = currentPose();
+
+        // Write to log
+        String[] line = {null, String.valueOf(m_currentPose.getRotation().getDegrees())};
+
+        if (crossedBlueTrenchLeft()) {
+            line[0] = "Blue Trench Left";
+        }
+        else if (crossedBlueTrenchRight()) {
+            line[0] = "Blue Trench Right";
+        }
+        else if (crossedBlueBumpLeft()) {
+            line[0] = "Blue Bump Left";
+        }
+        else if (crossedBlueBumpRight()) {
+            line[0] = "Blue Bump Right";
+        }
+        else if (crossedRedTrenchLeft()) {
+            line[0] = "Red Trench Left";
+        }
+        else if (crossedRedTrenchRight()) {
+            line[0] = "Red Trench Right";
+        }
+        else if (crossedRedBumpLeft()) {
+            line[0] = "Red Bump Left";
+        }
+        else if (crossedRedBumpRight()) {
+            line[0] = "Red Bump Right";
+        }
+
+        if (line[0] != null) {
+            try {
+                FileWriter outputfile = new FileWriter(file, true);
+                CSVWriter writer = new CSVWriter(outputfile);
+                
+                writer.writeNext(line);
+                writer.close();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
         m_currentField.setRobotPose(currentPose());
         SmartDashboard.putData("currentPose", m_currentField);
@@ -294,6 +364,37 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             updateSimState(deltaTime, RobotController.getBatteryVoltage());
         });
         m_simNotifier.startPeriodic(kSimLoopPeriod);
+    }
+
+    public boolean crossedBlueBumpLeft() {
+        return Constants.Swerve.blueBumpLeft.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.blueBumpLeft.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
+    }
+
+    public boolean crossedBlueBumpRight() {
+        return Constants.Swerve.blueBumpRight.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.blueBumpRight.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
+    }
+    public boolean crossedBlueTrenchLeft() {
+        return Constants.Swerve.blueTrenchLeft.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.blueTrenchLeft.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
+    }
+
+    public boolean crossedBlueTrenchRight() {
+        return Constants.Swerve.blueTrenchRight.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.blueTrenchRight.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
+    }
+
+    public boolean crossedRedBumpLeft() {
+        return Constants.Swerve.redBumpLeft.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.redBumpLeft.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
+    }
+
+    public boolean crossedRedBumpRight() {
+        return Constants.Swerve.redBumpRight.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.redBumpRight.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
+    }
+
+    public boolean crossedRedTrenchLeft() {
+        return Constants.Swerve.redTrenchLeft.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.redTrenchLeft.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
+    }
+
+    public boolean crossedRedTrenchRight() {
+        return Constants.Swerve.redTrenchRight.getDistance(m_currentPose.getTranslation()) == 0 && Constants.Swerve.redTrenchRight.getDistance(m_lastPose.getTranslation()) > 0 ? true : false;
     }
 
     /**
