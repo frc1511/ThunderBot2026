@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -95,7 +96,9 @@ public class Robot extends TimedRobot {
 
     public Robot() {
         // DataLogManager.start(); //* Uncomment for logs
-
+        
+        ledDisable.get().onTrue(new InstantCommand(() -> Broken.blinkyBlinkyButtonBopped = true)).onFalse(new InstantCommand(() -> Broken.blinkyBlinkyButtonBopped = false));
+    
         // MARK: Orchestration
 
         blinkyBlinkyOrchestrator = new BlinkyBlinkyOrchestrator(this);
@@ -190,34 +193,42 @@ public class Robot extends TimedRobot {
                 .onlyIf(oneDriverMode::isOn)
             );
         // MARK: Aux
-        hang.setDefaultCommand(hang.halt());
         auxController.y() // Feed
             .whileTrue(
                 spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
             )
-            .onFalse(spindexer.halt());
+            .onFalse(spindexer.halt().onlyIf(auxDisable::isOff));
+
         auxController.x() // Tower
             .onTrue(
                 hood.toPosition(() -> Constants.Hood.Position.TRENCH.get()) // TODO: evil trench please change this
+            .onlyIf(auxDisable::isOff) 
             );
+
         auxController.b() // Trench
             .onTrue(
                 hood.toPosition(() -> Constants.Hood.Position.TRENCH.get())
+            .onlyIf(auxDisable::isOff)    
             );
+
         auxController.a() // HUB
             .onTrue(
                 hood.toPosition(() -> Constants.Hood.Position.HUB.get())
+            .onlyIf(auxDisable::isOff)    
             );
+
         auxController.y() // feed (hold)
             .whileTrue(
                 hood.toPosition(() -> Constants.Hood.Position.TOP.get())
             )
-            .onFalse(hood.toPosition(() -> Constants.Hood.Position.BOTTOM.get()));
+            .onFalse(hood.toPosition(() -> Constants.Hood.Position.BOTTOM.get()).onlyIf(auxDisable::isOff));
+
         auxController.leftBumper() // Preheat (hold)
             .whileTrue(
                 shooter.preheat()
             )
-            .onFalse(shooter.halt());
+            .onFalse(shooter.halt().onlyIf(auxDisable::isOff));
+
         auxController.leftTrigger() // Fire (hold)
             .whileTrue(
                 kicker.run().alongWith(
@@ -226,20 +237,24 @@ public class Robot extends TimedRobot {
                     )
                 )
             )
-            .onFalse(kicker.halt());
+            .onFalse(kicker.halt().onlyIf(auxDisable::isOff));
+
         auxController.rightBumper() // Outtake (hold)
             .whileTrue(
-                intake.outtake()
+                intake.outtake()   
             )
-            .onFalse(intake.stopEating());
+            .onFalse(intake.stopEating().onlyIf(auxDisable::isOff));
+
         auxController.rightTrigger() // Intake (hold)
             .whileTrue(
-                intake.eat()
+                intake.eat()    
             )
-            .onFalse(intake.stopEating());
+            .onFalse(intake.stopEating().onlyIf(auxDisable::isOff));
+
         auxController.start() // Hood down
             .onTrue(
                 hood.toPosition(() -> Constants.Hood.Position.BOTTOM.get())
+            .onlyIf(auxDisable::isOff)    
             );
         
         hood.setDefaultCommand(hood.halt());
@@ -264,7 +279,7 @@ public class Robot extends TimedRobot {
         safetyWatchdog = new SafetyWatchdog(this);
         
         SmartDashboard.putData(CommandScheduler.getInstance());
-    }
+    }    
 
     @SuppressWarnings("all") // Identical Expressions Warning Suppression (BuildConsts)
     @Override

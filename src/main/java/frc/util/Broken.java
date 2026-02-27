@@ -1,8 +1,13 @@
 package frc.util;
 
+import edu.wpi.first.wpilibj2.command.Command;
+
 public class Broken {
     /** Disable everything drive related */
     public static boolean drivetrainFullyDisabled = false;
+
+    /** Disable everything aux related */
+    public static boolean auxFullyDisabled = false;
 
     /** Disable everything shooter related */
     public static boolean shooterFullyDisabled = false; // NOTE: YOU MUST BE CAREFUL NOT TO HAVE THIS FALSE WHEN A & B ARE TRUE
@@ -34,4 +39,16 @@ public class Broken {
 
     /** Disable everything spindexer related */
     public static boolean spindexerDisabled = false;
+
+    /** Disable everything LED related */
+    public static boolean blinkyBlinkyDisabled = false;
+    public static boolean blinkyBlinkyButtonBopped = false;
+
+    public static boolean blinkyBlinkyDisableStatus() {
+        if(blinkyBlinkyDisabled || blinkyBlinkyButtonBopped) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

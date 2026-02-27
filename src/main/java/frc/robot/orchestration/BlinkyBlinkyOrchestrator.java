@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Robot;
 import frc.robot.subsystems.Hang.HangSubsystem;
+import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
 
@@ -30,44 +31,45 @@ public class BlinkyBlinkyOrchestrator {
     }
 
     public void sparkle() {
-        switch (m_currentMode) {
-            case NONE:
-                m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 0, 0, 0);
-                });
-                break;
-            case INTAKING:
-                m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 15, 255, 255);
-                });
-                break;
-            case HUNG:
-                // TODO: finish this
-                double position = hang.getPosition();
-                m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 150, 255, 255);
-                });
-                break;
-            case FIRE_READY:
-                m_strobeProgress = (m_strobeProgress + 1) & 0xff;
-                m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 55, m_strobeProgress, 255);
-                });
-                break;
-            case HOME:
-                m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 0, 0, 255);
-                });
-                break;
-            case TRENCH_SAFE:
-                m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 140, 255, 255);
-                });
-                break;
-            default: break;
+        if(!Broken.blinkyBlinkyDisableStatus()) {
+            switch (m_currentMode) {
+                case NONE:
+                    m_buffer.forEach((index, r, g, b) -> {
+                        m_buffer.setHSV(index, 0, 0, 0);
+                    });
+                    break;
+                case INTAKING:
+                    m_buffer.forEach((index, r, g, b) -> {
+                        m_buffer.setHSV(index, 15, 255, 255);
+                    });
+                    break;
+                case HUNG:
+                    // TODO: finish this
+                    double position = hang.getPosition();
+                    m_buffer.forEach((index, r, g, b) -> {
+                        m_buffer.setHSV(index, 150, 255, 255);
+                    });
+                    break;
+                case FIRE_READY:
+                    m_strobeProgress = (m_strobeProgress + 1) & 0xff;
+                    m_buffer.forEach((index, r, g, b) -> {
+                        m_buffer.setHSV(index, 55, m_strobeProgress, 255);
+                    });
+                    break;
+                case HOME:
+                    m_buffer.forEach((index, r, g, b) -> {
+                        m_buffer.setHSV(index, 0, 0, 255);
+                    });
+                    break;
+                case TRENCH_SAFE:
+                    m_buffer.forEach((index, r, g, b) -> {
+                        m_buffer.setHSV(index, 140, 255, 255);
+                    });
+                    break;
+                default: break;
+            }
         }
-
-        m_led.setData(m_buffer);
+            m_led.setData(m_buffer);
     }
 
     public Command set(Constants.BlinkyBlinky.Mode mode) {
