@@ -14,9 +14,9 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.util.Constants.Status;
-import frc.util.Thunder.ThunderSubsystem;
+import frc.util.Thunder.ThunderInterface;
 
-public interface SwerveSubsystem extends ThunderSubsystem {
+public interface SwerveSubsystem extends ThunderInterface {
 
     public void setFieldCentric(boolean isOn);
 

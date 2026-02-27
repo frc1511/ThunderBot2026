@@ -11,13 +11,11 @@ import com.revrobotics.ResetMode;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkLowLevel.PeriodicFrame;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
@@ -25,7 +23,7 @@ import frc.util.Constants.Status;
 import frc.util.Thunder.ThunderSubsystem;
 import frc.util.Helpers;
 
-public class PivotSubsystem extends SubsystemBase implements ThunderSubsystem {
+public class PivotSubsystem extends ThunderSubsystem {
     private SparkMax m_motor;
     private CANcoder m_CANcoder;
     private RelativeEncoder m_builtinEncoder;

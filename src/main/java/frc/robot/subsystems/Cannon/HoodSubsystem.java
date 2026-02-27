@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
@@ -30,7 +29,7 @@ import frc.util.Constants.Hood;
 import frc.util.Constants.Status;
 import frc.util.Thunder.ThunderSubsystem;
 
-public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
+public class HoodSubsystem extends ThunderSubsystem {
     private TalonFX m_motor;
     private CANcoder m_encoder;
     private DigitalInput m_beamBreakZero;
