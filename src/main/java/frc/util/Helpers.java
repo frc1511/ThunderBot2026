@@ -56,4 +56,8 @@ public class Helpers {
     public static double RPStoRPM(double RPS) {
         return RPS * 60;
     }
+
+    public static double lerp(double v0, double v1, double t) {
+        return v0 + t * (v1 - v0);
+    }
 }

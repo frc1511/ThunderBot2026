@@ -5,15 +5,18 @@ import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.Robot;
 import frc.robot.orchestration.CannonOrchestrator.Orientation;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
+import frc.util.FiringTable;
 import frc.util.Helpers;
 
 public class HubOrchestrator {
     CannonOrchestrator cannonOrchestrator;
     SwerveSubsystem swerveSubsystem;
+    FiringTable firingTable;
 
     public HubOrchestrator(Robot robot) {
         cannonOrchestrator = robot.cannonOrchestrator;
         swerveSubsystem = robot.drivetrain;
+        firingTable = new FiringTable();
     }
 
     public double hubLockTurretAngle() {
@@ -42,7 +45,9 @@ public class HubOrchestrator {
 
         double dX = currentPose.getX() - nearestHub.getX();
         double dY = currentPose.getY() - nearestHub.getY();
+        
+        double dist = Math.sqrt(Math.pow(dY, 2) + Math.pow(dX, 2));
 
-        return Math.sqrt(Math.pow(dY, 2) + Math.pow(dX, 2)) * 150 + 1500;
+        return firingTable.lerp(dist).speedRPM;
     }
 }
