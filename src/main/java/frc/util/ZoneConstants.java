@@ -55,6 +55,24 @@ public class ZoneConstants {
         public boolean isDSside = false;
         public boolean isRightSide = false;
         public boolean isWithinOne = false;
+
+        static public ZoneInfo none() {
+            return new ZoneInfo();
+        }
+
+        public String shortName() {
+            if (!isWithinOne) return "None";
+            
+            return (isBlueSide ? "Blue " : "Red ")
+                + (isBump ? "Bump " : "Trench ")
+                + (isRightSide ? "Right" : "Left");
+        }
+
+        public String fullName() {
+            if (!isWithinOne) return "None";
+
+            return shortName() + (isDSside ? " Close" : " Far");
+        }
     }
 
     public static ZoneInfo checkZone(Translation2d position) {

@@ -15,7 +15,6 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import frc.util.Constants;
 import frc.util.Constants.Status;
 
 public class FakeSwerveSubsystem implements SwerveSubsystem {
@@ -68,37 +67,6 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
     @Override
     public void periodic() {
         
-    }
-
-    public boolean crossedBlueBumpLeft() {
-        return false;
-    }
-
-    public boolean crossedBlueBumpRight() {
-        return false;
-    }
-    public boolean crossedBlueTrenchLeft() {
-        return false;
-    }
-
-    public boolean crossedBlueTrenchRight() {
-        return false;
-    }
-
-    public boolean crossedRedBumpLeft() {
-        return false;
-    }
-
-    public boolean crossedRedBumpRight() {
-        return false;
-    }
-
-    public boolean crossedRedTrenchLeft() {
-        return false;
-    }
-
-    public boolean crossedRedTrenchRight() {
-        return false;
     }
     
     @Override
