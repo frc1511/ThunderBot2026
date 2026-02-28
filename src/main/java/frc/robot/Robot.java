@@ -254,7 +254,7 @@ public class Robot extends TimedRobot {
             .onlyIf(auxDisable::isOff)
             .onlyIf(oneDriverMode::isOff)
             )
-            .onFalse(kicker.halt().onlyIf(auxDisable::isOff));
+            .onFalse(kicker.halt());
 
         auxController.rightBumper() // Outtake (hold)
             .whileTrue(
@@ -262,7 +262,7 @@ public class Robot extends TimedRobot {
             .onlyIf(auxDisable::isOff)
             .onlyIf(oneDriverMode::isOff)
             )
-            .onFalse(intake.stopEating().onlyIf(auxDisable::isOff));
+            .onFalse(intake.stopEating());
 
         auxController.rightTrigger() // Intake (hold)
             .whileTrue(
@@ -270,7 +270,7 @@ public class Robot extends TimedRobot {
             .onlyIf(auxDisable::isOff)
             .onlyIf(oneDriverMode::isOff)
             )
-            .onFalse(intake.stopEating().onlyIf(auxDisable::isOff));
+            .onFalse(intake.stopEating());
 
         auxController.start() // Hood down
             .onTrue(
