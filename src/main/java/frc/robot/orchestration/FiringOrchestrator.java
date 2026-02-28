@@ -26,6 +26,7 @@ public class FiringOrchestrator {
                     shooter.holdSpeedForShoot(),
                     kicker.run(), 
                     spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
-                ));
+                ))
+            .withName("fire");
     }
 }

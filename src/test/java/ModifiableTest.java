@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 class ModifiableTest {
   public class DummySubsystem extends ThunderSubsystem {
     public DummySubsystem() {
-      Modifiable field = new Modifiable("test", this, () -> Integer.valueOf(0));
+      new Modifiable("test", this, () -> Integer.valueOf(0));
     }
 
     public int get() {
