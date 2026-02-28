@@ -93,7 +93,7 @@ public class Robot extends TimedRobot {
     public ThunderSwitch placeHolder9 = switchBoard.button(9);
     public ThunderSwitch oneDriverMode = switchBoard.button(10);
     public ThunderSwitch pitMode = switchBoard.button(11);
-
+    
     public Robot() {
         // DataLogManager.start(); //* Uncomment for logs
         
@@ -108,10 +108,12 @@ public class Robot extends TimedRobot {
         hungerOrchestrator = new HungerOrchestrator(this);
 
         conductor = new Conductor(this);
-
+        
+        safetyWatchdog = new SafetyWatchdog(this);
+        
         shooter.setOptimalSpeedGetter(hubOrchestrator::getOptimalShootSpeed);
 
-        Alert.info("The robot has restarted");
+        //Alert.info("The robot has restarted");
         DriverStation.silenceJoystickConnectionWarning(true); // trying to fix radio problem
         SignalLogger.enableAutoLogging(false);
 
@@ -275,8 +277,6 @@ public class Robot extends TimedRobot {
         if (props != null) {
             autoChooser.setTrajectoryRunnerProperties(drivetrain.getTrajectoryRunnerProperties());
         }
-        
-        safetyWatchdog = new SafetyWatchdog(this);
         
         SmartDashboard.putData(CommandScheduler.getInstance());
     }    

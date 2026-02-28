@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
@@ -29,7 +28,7 @@ import frc.util.Constants.Status;
 import frc.util.Constants.HangConstants.HangPID;
 import frc.util.Thunder.ThunderSubsystem;
 
-public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
+public class HangSubsystem extends ThunderSubsystem {
     private SparkMax m_motor;
     private RelativeEncoder m_encoder;
     private SparkClosedLoopController m_pidController;
@@ -37,8 +36,6 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
     private DigitalInput m_lowerLimitSensor;
     private DigitalInput m_upperLimitSensor;
     private boolean m_isZeroed;
-
-    private boolean m_isRunning;
 
     public HangSubsystem() {
         SparkMaxConfig motorConfig = new SparkMaxConfig();
@@ -221,11 +218,6 @@ public class HangSubsystem extends SubsystemBase implements ThunderSubsystem {
         if (!Helpers.onCANChain(m_motor)) return Status.DISCONNECTED;
         if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
         return Status.IDLE;
-    }
-
-    public boolean isRunning() {
-        if (Broken.hangFullyDisabled) return false;
-        return m_isRunning;
     }
 
     public double getPosition() {

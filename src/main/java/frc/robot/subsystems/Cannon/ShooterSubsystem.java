@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
@@ -23,7 +22,7 @@ import frc.util.Helpers;
 import frc.util.Constants.Status;
 import frc.util.Thunder.ThunderSubsystem;
 
-public class ShooterSubsystem extends SubsystemBase implements ThunderSubsystem {
+public class ShooterSubsystem extends ThunderSubsystem {
     private TalonFX m_shooterMotorA;
     private TalonFX m_shooterMotorB;
 

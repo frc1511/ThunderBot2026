@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
@@ -28,15 +27,15 @@ import frc.util.Constants;
 import frc.util.Helpers;
 import frc.util.Constants.Hood;
 import frc.util.Constants.Status;
+import frc.util.Thunder.Modifiable;
 import frc.util.Thunder.ThunderSubsystem;
 
-public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
+public class HoodSubsystem extends ThunderSubsystem {
     private TalonFX m_motor;
     private CANcoder m_encoder;
     private DigitalInput m_beamBreakZero;
 
     private boolean isUsingInbuiltEncoder = false;
-    private boolean isConfirmedZeroed = false;
 
     public HoodSubsystem() {
         TalonFXConfiguration hoodConfig = new TalonFXConfiguration(); 
@@ -73,6 +72,8 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
         } else {
             m_motor = null;
         }
+
+        new Modifiable("isConfirmedZeroed", this, () -> Boolean.FALSE);
     }
 
     @Override
@@ -111,7 +112,8 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
     }
 
     private void zeroEncodersLightly() {
-        isConfirmedZeroed = true;
+        Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
+        if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) isConfirmedZeroed.withValue(() -> Boolean.TRUE);
 
         double currentPosition = m_encoder.getPosition().getValueAsDouble();
         double newPos = currentPosition - Math.floor(currentPosition);
@@ -125,7 +127,9 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
     }
 
     public boolean isZeroed() {
-        return isConfirmedZeroed;
+        Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
+        if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) return (Boolean) isConfirmedZeroed.getValue();
+        return false;
     }
 
     public boolean atPosition() {
@@ -137,7 +141,9 @@ public class HoodSubsystem extends SubsystemBase implements ThunderSubsystem {
     public Command zero() {
         if (Broken.hoodDisabled) return Commands.none();
         if (Broken.hoodBeamBreakDisabled) {
-            isConfirmedZeroed = true;
+            Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
+            if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) isConfirmedZeroed.withValue(() -> true);
+
             return Commands.none();
         }
 
