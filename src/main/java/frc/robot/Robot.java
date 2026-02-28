@@ -84,7 +84,7 @@ public class Robot extends TimedRobot {
 
     public ThunderSwitch driveDisable = switchBoard.button(1);
     public ThunderSwitch auxDisable = switchBoard.button(2);
-    // public ThunderSwitch auxManual = switchBoard.button(3); not on controller map
+    public ThunderSwitch placeholder3 = switchBoard.button(3);
     public ThunderSwitch fieldCentric = switchBoard.button(4);
     public ThunderSwitch ledDisable = switchBoard.button(5);
     public ThunderSwitch limelightDisable = switchBoard.button(6);
@@ -122,8 +122,7 @@ public class Robot extends TimedRobot {
             drivetrain.setDefaultCommand(
                 drivetrain
                     .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
-                    .onlyIf(() -> !driverController.y().getAsBoolean())
-                    .onlyIf(driveDisable::isOff)
+                    .onlyIf(() -> !driverController.y().getAsBoolean() || driveDisable.isOff())
                     .withName("DriveWithJoysticks")
             );
         }
@@ -135,8 +134,8 @@ public class Robot extends TimedRobot {
         // driverController.b() // TODO: evil climber shake
         driverController.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric)); // reset IMU
 
-        driverController.povUp().and(driveDisable::isOff).onTrue(hang.extend()); // hang go uppies
-        driverController.povDown().and(driveDisable::isOff).onTrue(hang.retract()); // hang go downies
+        driverController.povUp().and(driveDisable::isOff).whileTrue(hang.extend()).onFalse(hang.halt()); // hang go uppies (hold)
+        driverController.povDown().and(driveDisable::isOff).whileTrue(hang.retract()).onFalse(hang.halt()); // hang go downies (hold)
         driverController.povLeft().and(driveDisable::isOff).onTrue(drivetrain.increaseSpeed()); // drive go weeee
         driverController.povRight().and(driveDisable::isOff).onTrue(drivetrain.decreaseSpeed()); // drive go snail
 
@@ -149,8 +148,7 @@ public class Robot extends TimedRobot {
                 new CommandBuilder()
                     .onExecute(() -> drivetrain.setFieldCentric(fieldCentric.isOn()))
                     .isFinished(true)
-                    .onlyIf(driveDisable::isOff)
-                    .onlyIf(oneDriverMode::isOff)
+                    .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOff())
             )
             .onFalse(
                 new CommandBuilder()
@@ -173,20 +171,17 @@ public class Robot extends TimedRobot {
         driverController.rightTrigger() // outtake (hold)
             .whileTrue(
                 intake.outtake()
-                .onlyIf(driveDisable::isOff)
-                .onlyIf(oneDriverMode::isOn)
+                .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOn())
             );
         driverController.rightBumper() // preheat (hold)
             .whileTrue(
                 shooter.preheat()
-                .onlyIf(driveDisable::isOff)
-                .onlyIf(oneDriverMode::isOn)
+                .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOn())
             );
         driverController.rightTrigger() // intake (hold)
             .whileTrue(
                 intake.eat()
-                .onlyIf(driveDisable::isOff)
-                .onlyIf(oneDriverMode::isOn)
+                .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOn()).onlyIf(driveDisable::isOff)
             );
         driverController.rightBumper() // fire (hold)
             .whileTrue(
@@ -195,54 +190,47 @@ public class Robot extends TimedRobot {
                         spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
                     )
                 )
-                .onlyIf(driveDisable::isOff)
-                .onlyIf(oneDriverMode::isOn)
+                .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOn())
             );
         // MARK: Aux
         auxController.y() // Feed
             .whileTrue(
                 spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
-            .onlyIf(auxDisable::isOff)
-            .onlyIf(oneDriverMode::isOff)
+            .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
             )
-            .onFalse(spindexer.halt().onlyIf(auxDisable::isOff));
+            .onFalse(spindexer.halt());
 
         auxController.x() // Tower
             .onTrue(
                 hood.toPosition(() -> Constants.Hood.Position.TRENCH.get()) // TODO: evil trench please change this
-            .onlyIf(auxDisable::isOff)
-            .onlyIf(oneDriverMode::isOff)
+            .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
             );
 
         auxController.b() // Trench
             .onTrue(
                 hood.toPosition(() -> Constants.Hood.Position.TRENCH.get())
-            .onlyIf(auxDisable::isOff)
-            .onlyIf(oneDriverMode::isOff)
+            .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
             );
 
         auxController.a() // HUB
             .onTrue(
                 hood.toPosition(() -> Constants.Hood.Position.HUB.get())
-            .onlyIf(auxDisable::isOff)
-            .onlyIf(oneDriverMode::isOff)
+            .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
             );
 
         auxController.y() // feed (hold)
             .whileTrue(
                 hood.toPosition(() -> Constants.Hood.Position.TOP.get())
-            .onlyIf(auxDisable::isOff)
-            .onlyIf(oneDriverMode::isOff)
+                .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
             )
-            .onFalse(hood.toPosition(() -> Constants.Hood.Position.BOTTOM.get()).onlyIf(auxDisable::isOff));
+            .onFalse(hood.toPosition(() -> Constants.Hood.Position.BOTTOM.get()));
 
         auxController.leftBumper() // Preheat (hold)
             .whileTrue(
                 shooter.preheat()
-            .onlyIf(auxDisable::isOff)
-            .onlyIf(oneDriverMode::isOff)
+            .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
             )
-            .onFalse(shooter.halt().onlyIf(auxDisable::isOff));
+            .onFalse(shooter.halt());
 
         auxController.leftTrigger() // Fire (hold)
             .whileTrue(
@@ -251,32 +239,28 @@ public class Robot extends TimedRobot {
                         spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
                     )
                 )
-            .onlyIf(auxDisable::isOff)
-            .onlyIf(oneDriverMode::isOff)
+            .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
             )
             .onFalse(kicker.halt());
 
         auxController.rightBumper() // Outtake (hold)
             .whileTrue(
                 intake.outtake() 
-            .onlyIf(auxDisable::isOff)
-            .onlyIf(oneDriverMode::isOff)
+            .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
             )
             .onFalse(intake.stopEating());
 
         auxController.rightTrigger() // Intake (hold)
             .whileTrue(
                 intake.eat()
-            .onlyIf(auxDisable::isOff)
-            .onlyIf(oneDriverMode::isOff)
+            .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
             )
             .onFalse(intake.stopEating());
 
         auxController.start() // Hood down
             .onTrue(
                 hood.toPosition(() -> Constants.Hood.Position.BOTTOM.get())
-            .onlyIf(auxDisable::isOff)
-            .onlyIf(oneDriverMode::isOff)
+            .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
             );
         
         hood.setDefaultCommand(hood.halt());
@@ -323,6 +307,8 @@ public class Robot extends TimedRobot {
         SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);
         SmartDashboard.putNumber("BATTERY_voltage", RobotController.getBatteryVoltage());
 
+        SmartDashboard.putBoolean("drive disabled", driveDisable.isOn());
+        SmartDashboard.putBoolean("aux disabled", auxDisable.isOn());
 
         m_timeAndJoystickReplay.update();
         

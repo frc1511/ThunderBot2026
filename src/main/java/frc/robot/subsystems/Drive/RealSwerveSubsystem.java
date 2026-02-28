@@ -83,7 +83,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
     private double m_speedMultipler = 1.0; // 0% - 100% of max speed
 
-    private boolean m_ensureTheta = true;
+    private boolean m_ensureTheta = false;
     private DoubleSupplier m_ensuredThetaSupplier = () -> 0;
 
     private Pose2d m_lastPose;
@@ -174,12 +174,12 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
     public Command increaseSpeed() {
         return new CommandBuilder()
-            .onExecute(() -> m_speedMultipler = Math.max(m_speedMultipler + Swerve.kSpeedStep, 1));
+            .onExecute(() -> m_speedMultipler = Math.min(m_speedMultipler + Swerve.kSpeedStep, 1));
     }
     
     public Command decreaseSpeed() {
         return new CommandBuilder()
-            .onExecute(() -> m_speedMultipler = Math.min(m_speedMultipler - Swerve.kSpeedStep, 0));
+            .onExecute(() -> m_speedMultipler = Math.max(m_speedMultipler - Swerve.kSpeedStep, 0));
     }
         
     public Command setHubLock(Boolean isOn) {
@@ -308,20 +308,20 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
         ZoneInfo currentZone = ZoneConstants.checkZone(m_currentPose.getTranslation());
 
-        SmartDashboard.putData("currentPose", m_currentField);
+        // SmartDashboard.putData("currentPose", m_currentField);
 
-        if (currentZone != lastZone && currentZone.isWithinOne) {
-            line[0] = currentZone.shortName();
-            try {
-                CSVWriter writer = new CSVWriter(outputfile);
+        // if (currentZone != lastZone && currentZone.isWithinOne) {
+        //     line[0] = currentZone.shortName();
+        //     try {
+        //         CSVWriter writer = new CSVWriter(outputfile);
                 
-                writer.writeNext(line);
-                writer.close();
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        //         writer.writeNext(line);
+        //         writer.close();
+        //     }
+        //     catch (IOException e) {
+        //         e.printStackTrace();
+        //     }
+        // }
 
         m_currentField.setRobotPose(currentPose());
         SmartDashboard.putData("currentPose", m_currentField);

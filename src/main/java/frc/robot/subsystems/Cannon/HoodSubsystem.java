@@ -38,6 +38,8 @@ public class HoodSubsystem extends ThunderSubsystem {
     private boolean isUsingInbuiltEncoder = false;
 
     public HoodSubsystem() {
+        new Modifiable("isConfirmedZeroed", this, () -> Boolean.FALSE);
+        
         TalonFXConfiguration hoodConfig = new TalonFXConfiguration(); 
         hoodConfig.Slot0 = new Slot0Configs()
             .withKP(Constants.Hood.HoodPID.kP).withKI(Constants.Hood.HoodPID.kI).withKD(Constants.Hood.HoodPID.kD);
@@ -72,8 +74,6 @@ public class HoodSubsystem extends ThunderSubsystem {
         } else {
             m_motor = null;
         }
-
-        new Modifiable("isConfirmedZeroed", this, () -> Boolean.FALSE);
     }
 
     @Override
