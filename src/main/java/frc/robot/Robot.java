@@ -93,7 +93,7 @@ public class Robot extends TimedRobot {
     public ThunderSwitch placeHolder9 = switchBoard.button(9);
     public ThunderSwitch oneDriverMode = switchBoard.button(10);
     public ThunderSwitch pitMode = switchBoard.button(11);
-    
+
     public Robot() {
         // DataLogManager.start(); //* Uncomment for logs
         
@@ -108,12 +108,12 @@ public class Robot extends TimedRobot {
         hungerOrchestrator = new HungerOrchestrator(this);
 
         conductor = new Conductor(this);
-        
+
         safetyWatchdog = new SafetyWatchdog(this);
-        
+
         shooter.setOptimalSpeedGetter(hubOrchestrator::getOptimalShootSpeed);
 
-        //Alert.info("The robot has restarted");
+        Alert.info("The robot has restarted");
         DriverStation.silenceJoystickConnectionWarning(true); // trying to fix radio problem
         SignalLogger.enableAutoLogging(false);
 
@@ -134,7 +134,6 @@ public class Robot extends TimedRobot {
         driverController.y().and(driveDisable::isOff).whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX)); // lock and shoot
         // driverController.b() // TODO: evil climber shake
         driverController.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric)); // reset IMU
-
 
         driverController.povUp().and(driveDisable::isOff).onTrue(hang.extend()); // hang go uppies
         driverController.povDown().and(driveDisable::isOff).onTrue(hang.retract()); // hang go downies
