@@ -25,6 +25,8 @@ public class HubOrchestrator {
         cannonOrchestrator = robot.cannonOrchestrator;
         swerveSubsystem = robot.drivetrain;
         firingTable = new FiringTable();
+
+        runConvergance();
     }
 
     public double hubLockTurretAngle() {
