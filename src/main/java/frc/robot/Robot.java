@@ -333,7 +333,9 @@ public class Robot extends TimedRobot {
     }
     
     @Override
-    public void autonomousPeriodic() {}
+    public void autonomousPeriodic() {
+        hubOrchestrator.runConvergance();
+    }
     
     @Override
     public void autonomousExit() {}
@@ -344,7 +346,9 @@ public class Robot extends TimedRobot {
     }
 
     @Override
-    public void teleopPeriodic() {}
+    public void teleopPeriodic() {
+        hubOrchestrator.runConvergance();
+    }
 
     @Override
     public void teleopExit() {}

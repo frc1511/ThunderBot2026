@@ -21,7 +21,7 @@ public class TOFConvergenceTest {
 
     private FiringTable firingTable = new FiringTable();
 
-    private FiringDataPoint converge(ChassisSpeeds currentSpeed, Translation2d robotPosition, Translation2d targetPosition, int recursions) {
+    private Pair<FiringDataPoint, Double> converge(ChassisSpeeds currentSpeed, Translation2d robotPosition, Translation2d targetPosition, int recursions) {
         // These are relative velocities of the hub to the robot. The hub is not moving, but from the robot's perspective it is moving with the opposite velocity of the robot.
         double relativeVelocityOfHubX = -currentSpeed.vxMetersPerSecond;
         double relativeVelocityOfHubY = -currentSpeed.vyMetersPerSecond;
@@ -48,7 +48,7 @@ public class TOFConvergenceTest {
             Translation2d newTargetPosition = new Translation2d(dXPredicted, dYPredicted);
             return converge(currentSpeed, robotPosition, newTargetPosition, recursions + 1);
         } else {
-            return nextInterpolatedDataPoint;
+            return new Pair<FiringDataPoint, Double>(nextInterpolatedDataPoint, Math.atan(dYPredicted / dXPredicted));
         }
     }
 
@@ -73,9 +73,10 @@ public class TOFConvergenceTest {
             ChassisSpeeds speeds = pair.getSecond();
             Pose2d hub = Constants.Swerve.blueHubCenterPose;
 
-            double returnedSpeed = converge(speeds, pose.getTranslation(), hub.getTranslation(), 0).speedRPM;
+            double returnedSpeed = converge(speeds, pose.getTranslation(), hub.getTranslation(), 0).getFirst().speedRPM;
 
             System.out.println(returnedSpeed);
+            System.out.println(converge(speeds, pose.getTranslation(), hub.getTranslation(), 0).getSecond());
         });
     }
 }
