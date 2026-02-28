@@ -75,6 +75,13 @@ public class ZoneConstants {
         }
     }
 
+    public static interface Zones {
+        Rectangle2d kLeftBlueTrench = constructZone(false, true, false, false);
+        Rectangle2d kRightBlueTrench = constructZone(false, true, false, true);
+        Rectangle2d kLeftRedTrench = constructZone(false, false, false, false);
+        Rectangle2d kRightRedTrench = constructZone(false, false, false, true);
+    }
+
     public static ZoneInfo checkZone(Translation2d position) {
         for (int i = 0; i < 0x0F; i++) {
             boolean isBump =      (i & 0b0001) != 0;
