@@ -73,4 +73,5 @@
     "YPID"
   ],
   "wpilib.skipTests": false,
+  "java.debug.settings.onBuildFailureProceed": true,
 }

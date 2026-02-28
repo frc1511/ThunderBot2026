@@ -13,6 +13,10 @@ public class AutoLoader {
 
         if (autoProject.isLoaded()) {
             autoProject.registerActionCommand("Shoot", robot.firingOrchestrator.fire());
+            autoProject.registerActionCommand("HangUp", robot.hang.extend());
+            autoProject.registerActionCommand("HangDown", robot.hang.retract());
+            autoProject.registerActionCommand("Intake", robot.hungerOrchestrator.consume());
+            autoProject.registerActionCommand("StopIntake", robot.hungerOrchestrator.excuseYourself());
         } else {
             Alert.warning("Auto failed to load");
         }

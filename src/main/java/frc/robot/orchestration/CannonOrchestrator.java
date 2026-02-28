@@ -30,7 +30,8 @@ public class CannonOrchestrator {
 
     public Command moveToOrientation(Orientation orientation) {
         return hood.toPosition(() -> orientation.hoodDeg)
-            .alongWith(turret.toPosition(() -> orientation.turretDeg));                
+            .alongWith(turret.toPosition(() -> orientation.turretDeg))
+            .withName("moveToOrientation");                
     }
 
     public Command shootTurret() {
@@ -40,7 +41,8 @@ public class CannonOrchestrator {
                     shooter.preheat();
                 }
             })
-            .isFinished(true);
+            .isFinished(true)
+            .withName("shootTurret");
     }
 
     public boolean ready() {
