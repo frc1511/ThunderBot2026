@@ -1,5 +1,8 @@
 package frc.util;
 
+import java.util.LinkedHashSet;
+
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
@@ -82,25 +85,39 @@ public class ZoneConstants {
         Rectangle2d kRightRedTrench = constructZone(false, false, false, true);
     }
 
-    public static ZoneInfo checkZone(Translation2d position) {
+    private static LinkedHashSet<Pair<Rectangle2d, ZoneInfo>> zoneCache = new LinkedHashSet<Pair<Rectangle2d, ZoneInfo>>();
+
+    static {
         for (int i = 0; i < 0x0F; i++) {
             boolean isBump =      (i & 0b0001) != 0;
             boolean isBlueSide =  (i & 0b0010) != 0;
             boolean isDSside =    (i & 0b0100) != 0;
             boolean isRightSide = (i & 0b1000) != 0;
 
-            if (ZoneConstants.constructZone(isBump, isBlueSide, isDSside, isRightSide).contains(position)) {
-                ZoneInfo b = new ZoneInfo();
-                b.isBump = isBump;
-                b.isBlueSide = isBlueSide;
-                b.isDSside = isDSside;
-                b.isRightSide = isRightSide;
-                b.isWithinOne = true;
+            Rectangle2d rect = constructZone(isBump, isBlueSide, isDSside, isRightSide);
+            ZoneInfo zoneInfo = new ZoneInfo();
+            zoneInfo.isBump = isBump;
+            zoneInfo.isBlueSide = isBlueSide;
+            zoneInfo.isDSside = isDSside;
+            zoneInfo.isRightSide = isRightSide;
 
-                return b;
-            }
+            zoneCache.add(new Pair<Rectangle2d,ZoneConstants.ZoneInfo>(rect, zoneInfo));
         }
+    }
 
-        return new ZoneInfo();
+    public static ZoneInfo checkZone(Translation2d position) {
+        ZoneInfo determined = new ZoneInfo();
+        zoneCache.forEach(zone -> {
+            Rectangle2d rect = zone.getFirst();
+            ZoneInfo zoneInfo = zone.getSecond();
+            if (rect.contains(position)) {
+                determined.isBump = zoneInfo.isBump;
+                determined.isBlueSide = zoneInfo.isBlueSide;
+                determined.isDSside = zoneInfo.isDSside;
+                determined.isRightSide = zoneInfo.isRightSide;
+                determined.isWithinOne = true;
+            }
+        });
+        return determined;
     }
 }
