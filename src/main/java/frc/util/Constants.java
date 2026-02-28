@@ -282,6 +282,9 @@ public class Constants {
     }
 
     public class Swerve {
+        public static final double kTimeOfFlightConvergenceTolerance = 0.1;
+        public static final int kTimeOfFlightConvergenceMaxRecursions = 10;
+
         // Max Speed
         public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(5.76); // DON"T TOUCH, USE MULTIPLIER FOR MAX SPEED INSTEAD
 

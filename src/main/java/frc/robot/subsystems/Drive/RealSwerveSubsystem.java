@@ -1,8 +1,5 @@
 package frc.robot.subsystems.Drive;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -557,10 +554,6 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     }
 
     public ChassisSpeeds getSpeed() {
-        return new ChassisSpeeds(
-            MetersPerSecond.of(m_currentPose.getX() - m_lastPose.getX() / 0.020), // per 20 ms
-            MetersPerSecond.of(m_currentPose.getY() - m_lastPose.getY() / 0.020),
-            RadiansPerSecond.of(m_currentPose.getRotation().getRadians() - m_lastPose.getRotation().getRadians() / 0.020)
-        );
+        return getKinematics().toChassisSpeeds(getState().ModuleStates);
     }
 }

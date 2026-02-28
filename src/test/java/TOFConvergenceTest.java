@@ -1,49 +1,27 @@
-package frc.robot.orchestration;
+import java.util.HashSet;
 
-import edu.wpi.first.wpilibj2.command.Command;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import frc.robot.Robot;
-import frc.robot.orchestration.CannonOrchestrator.Orientation;
-import frc.robot.subsystems.Drive.SwerveSubsystem;
 import frc.util.Constants;
 import frc.util.FiringTable;
-import frc.util.Helpers;
 import frc.util.FiringTable.FiringDataPoint;
 
-public class HubOrchestrator {
-    CannonOrchestrator cannonOrchestrator;
-    SwerveSubsystem swerveSubsystem;
-    FiringTable firingTable;
-
-    public HubOrchestrator(Robot robot) {
-        cannonOrchestrator = robot.cannonOrchestrator;
-        swerveSubsystem = robot.drivetrain;
-        firingTable = new FiringTable();
+public class TOFConvergenceTest {
+    @BeforeEach
+    void setup() {
+        assert HAL.initialize(500, 0); // initialize the HAL, crash if failed
     }
 
-    public double hubLockTurretAngle() {
-        Pose2d nearestHub = Helpers.allianceHub();
+    private FiringTable firingTable = new FiringTable();
 
-        Pose2d currentPose = swerveSubsystem.currentPose();
-
-        double dX = currentPose.getX() - nearestHub.getX();
-        double dY = currentPose.getY() - nearestHub.getY();
-
-        return Math.atan2(dY, dX) - currentPose.getRotation().getRadians();
-    }
-
-    public double hubLockHoodAngle() {
-        return 0;
-    }
-
-    public Command turretAutoLock() {
-        return cannonOrchestrator.moveToOrientation(new Orientation(hubLockTurretAngle(), hubLockHoodAngle()));
-    }
-
-    public FiringDataPoint converge(ChassisSpeeds currentSpeed, Translation2d robotPosition, Translation2d targetPosition, int recursions) {
+    private FiringDataPoint converge(ChassisSpeeds currentSpeed, Translation2d robotPosition, Translation2d targetPosition, int recursions) {
         // These are relative velocities of the hub to the robot. The hub is not moving, but from the robot's perspective it is moving with the opposite velocity of the robot.
         double relativeVelocityOfHubX = -currentSpeed.vxMetersPerSecond;
         double relativeVelocityOfHubY = -currentSpeed.vyMetersPerSecond;
@@ -54,16 +32,16 @@ public class HubOrchestrator {
         FiringDataPoint interpolatedDataPoint = firingTable.lerp(targetPosition.getDistance(robotPosition));
 
         double timeOfFlight = interpolatedDataPoint.timeOfFlight;
-
+    
         double dXPredicted = dX + relativeVelocityOfHubX * timeOfFlight;
         double dYPredicted = dY + relativeVelocityOfHubY * timeOfFlight;
-
+    
         double distPredicted = Math.sqrt(Math.pow(dYPredicted, 2) + Math.pow(dXPredicted, 2));
-
+    
         FiringDataPoint nextInterpolatedDataPoint = firingTable.lerp(distPredicted);
 
         double nextTimeOfFlight = nextInterpolatedDataPoint.timeOfFlight;
-    
+
         double timeOfFlightChange = nextTimeOfFlight - timeOfFlight;
 
         if (Math.abs(timeOfFlightChange) > Constants.Swerve.kTimeOfFlightConvergenceTolerance && !(recursions >= Constants.Swerve.kTimeOfFlightConvergenceMaxRecursions)) {
@@ -74,11 +52,30 @@ public class HubOrchestrator {
         }
     }
 
-    public double getOptimalShootSpeed() {
-        ChassisSpeeds currentSpeed = swerveSubsystem.getSpeed();
-        Pose2d currentPose = swerveSubsystem.currentPose();
-        Pose2d nearestHub = Helpers.allianceHub();
+    @Test
+    void ConvergenceTest() {
+        HashSet<Pair<Pose2d, ChassisSpeeds>> testValues = new HashSet<>();
+        testValues.add(new Pair<Pose2d,ChassisSpeeds>(
+            new Pose2d(2, 2, new Rotation2d(0)),
+            new ChassisSpeeds(1, 1, 0)
+        ));
+        testValues.add(new Pair<Pose2d,ChassisSpeeds>(
+            new Pose2d(1, 3, new Rotation2d(0)),
+            new ChassisSpeeds(-1, 1, 0)
+        ));
+        testValues.add(new Pair<Pose2d,ChassisSpeeds>(
+            new Pose2d(4, 1, new Rotation2d(0)),
+            new ChassisSpeeds(0, 3, 0)
+        ));
 
-        return converge(currentSpeed, currentPose.getTranslation(), nearestHub.getTranslation(), 0).speedRPM;
+        testValues.forEach(pair -> {
+            Pose2d pose = pair.getFirst();
+            ChassisSpeeds speeds = pair.getSecond();
+            Pose2d hub = Constants.Swerve.blueHubCenterPose;
+
+            double returnedSpeed = converge(speeds, pose.getTranslation(), hub.getTranslation(), 0).speedRPM;
+
+            System.out.println(returnedSpeed);
+        });
     }
 }

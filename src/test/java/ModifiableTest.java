@@ -1,5 +1,4 @@
 import edu.wpi.first.hal.HAL;
-import frc.robot.Robot;
 import frc.robot.subsystems.Cannon.HoodSubsystem;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
