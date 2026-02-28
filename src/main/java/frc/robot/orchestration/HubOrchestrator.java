@@ -18,7 +18,7 @@ public class HubOrchestrator {
     CannonOrchestrator cannonOrchestrator;
     SwerveSubsystem swerveSubsystem;
     FiringTable firingTable;
-    
+
     Pair<FiringDataPoint, Double> latestConvergance;
 
     public HubOrchestrator(Robot robot) {
@@ -59,12 +59,12 @@ public class HubOrchestrator {
         FiringDataPoint interpolatedDataPoint = firingTable.lerp(targetPosition.getDistance(robotPosition));
 
         double timeOfFlight = interpolatedDataPoint.timeOfFlight;
-    
+
         double dXPredicted = dX + relativeVelocityOfHubX * timeOfFlight;
         double dYPredicted = dY + relativeVelocityOfHubY * timeOfFlight;
-    
+
         double distPredicted = Math.sqrt(Math.pow(dYPredicted, 2) + Math.pow(dXPredicted, 2));
-    
+
         FiringDataPoint nextInterpolatedDataPoint = firingTable.lerp(distPredicted);
 
         double nextTimeOfFlight = nextInterpolatedDataPoint.timeOfFlight;
@@ -75,7 +75,7 @@ public class HubOrchestrator {
             Translation2d newTargetPosition = new Translation2d(dXPredicted, dYPredicted);
             return converge(currentSpeed, robotPosition, newTargetPosition, recursions + 1);
         } else {
-            return new Pair<FiringDataPoint, Double>(nextInterpolatedDataPoint, Math.atan(dYPredicted / dXPredicted));
+            return new Pair<FiringDataPoint, Double>(nextInterpolatedDataPoint, Math.atan2(dYPredicted, dXPredicted));
         }
     }
 
@@ -87,7 +87,6 @@ public class HubOrchestrator {
         latestConvergance = converge(currentSpeed, currentPose.getTranslation(), nearestHub.getTranslation(), 0);
     }
 
-    
     public double getOptimalShootSpeed() {
         return latestConvergance.getFirst().speedRPM;
     }

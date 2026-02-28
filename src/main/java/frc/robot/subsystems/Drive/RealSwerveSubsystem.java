@@ -15,7 +15,9 @@ import com.opencsv.CSVWriter;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -555,5 +557,21 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
     public ChassisSpeeds getSpeed() {
         return getKinematics().toChassisSpeeds(getState().ModuleStates);
+    }
+
+    public Rectangle2d getNearestTrench() {
+        Translation2d current = currentPose().getTranslation();
+
+        if (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) {
+            double leftDistance = ZoneConstants.Zones.kLeftBlueTrench.getDistance(current);
+            double rightDistance = ZoneConstants.Zones.kRightBlueTrench.getDistance(current);
+            if (leftDistance < rightDistance) return ZoneConstants.Zones.kLeftBlueTrench;
+            return ZoneConstants.Zones.kRightBlueTrench;
+        } else {
+            double leftDistance = ZoneConstants.Zones.kLeftRedTrench.getDistance(current);
+            double rightDistance = ZoneConstants.Zones.kRightRedTrench.getDistance(current);
+            if (leftDistance < rightDistance) return ZoneConstants.Zones.kLeftRedTrench;
+            return ZoneConstants.Zones.kRightRedTrench;
+        }
     }
 }
