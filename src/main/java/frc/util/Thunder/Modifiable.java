@@ -1,18 +1,20 @@
 package frc.util.Thunder;
 
-public class Modifiable<T> {
-    private T m_value;
+import java.util.function.Supplier;
 
-    public Modifiable(String name, ThunderSubsystem subsystem, T value) {
+public class Modifiable {
+    private Supplier<Object> m_value;
+
+    public Modifiable(String name, ThunderSubsystem subsystem, Supplier<Object> value) {
         m_value = value;
         subsystem.registerField(name, this);
     }
 
-    public T getValue() {
-        return m_value;
+    public Object getValue() {
+        return m_value.get();
     }
 
-    public void setValue(T value) {
+    public void withValue(Supplier<Object> value) {
         m_value = value;
     }
 }

@@ -5,13 +5,13 @@ import java.util.HashMap;
 import frc.util.Constants.Status;
 
 public class ThunderSubsystem implements ThunderInterface {
-    private HashMap<String, Modifiable<Object>> m_fields;
+    private HashMap<String, Modifiable> m_fields = new HashMap<>();
 
-    public void registerField(String key, Modifiable<Object> field) {
+    public void registerField(String key, Modifiable field) {
         m_fields.put(key, field);
     }
 
-    public Modifiable<Object> getField(String key) {
+    public Modifiable getField(String key) {
         if (m_fields.containsKey(key)) {
             return m_fields.get(key);
         }

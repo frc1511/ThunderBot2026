@@ -141,22 +141,22 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             startSimThread();
         }
 
-        try {
-            boolean needsInit = !file.exists();
-            FileWriter outputfile = new FileWriter(file);
+        // try {
+            // boolean needsInit = !file.exists();
+            // FileWriter outputfile = new FileWriter(file);
             
-            if (needsInit) {
-                CSVWriter writer = new CSVWriter(outputfile);
+            // if (needsInit) {
+            //     CSVWriter writer = new CSVWriter(outputfile);
     
-                String[] header = {"Area", "Orientation"};
-                writer.writeNext(header);
+            //     String[] header = {"Area", "Orientation"};
+            //     writer.writeNext(header);
     
-                writer.close();
-            }
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+            //     writer.close();
+            // }
+        // }
+        // catch (IOException e) {
+        //     e.printStackTrace();
+        // }
     }
 
     public void setFieldCentric(boolean isOn) {

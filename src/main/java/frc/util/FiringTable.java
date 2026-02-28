@@ -24,7 +24,7 @@ public class FiringTable {
         firingTable.add(new FiringDataPoint(2.0, 2000, 0.2));
     }
 
-    private FiringDataPoint lerp(double distance) {
-        return new FiringDataPoint(distance, , )
-    }
+    // private FiringDataPoint lerp(double distance) {
+    //     return new FiringDataPoint(distance, null, null);
+    // }
 }

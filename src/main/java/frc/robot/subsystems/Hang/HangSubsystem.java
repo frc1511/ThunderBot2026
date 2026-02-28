@@ -37,8 +37,6 @@ public class HangSubsystem extends ThunderSubsystem {
     private DigitalInput m_upperLimitSensor;
     private boolean m_isZeroed;
 
-    private boolean m_isRunning;
-
     public HangSubsystem() {
         SparkMaxConfig motorConfig = new SparkMaxConfig();
         motorConfig
@@ -220,11 +218,6 @@ public class HangSubsystem extends ThunderSubsystem {
         if (!Helpers.onCANChain(m_motor)) return Status.DISCONNECTED;
         if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
         return Status.IDLE;
-    }
-
-    public boolean isRunning() {
-        if (Broken.hangFullyDisabled) return false;
-        return m_isRunning;
     }
 
     public double getPosition() {
