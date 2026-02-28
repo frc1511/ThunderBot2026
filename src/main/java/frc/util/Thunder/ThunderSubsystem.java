@@ -2,6 +2,7 @@ package frc.util.Thunder;
 
 import java.util.HashMap;
 
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.util.Constants.Status;
 
 public class ThunderSubsystem implements ThunderInterface {
