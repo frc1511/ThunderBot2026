@@ -21,15 +21,19 @@ public class FiringTable {
     public List<FiringDataPoint> firingTable = new ArrayList<FiringDataPoint>();
 
     public FiringTable() {
-        // firingTable.add(new FiringDataPoint(2.99, 1830, 0.25, 3.44));
-        // firingTable.add(new FiringDataPoint(3.76, 1900, 0.22, 3.67));
-        // firingTable.add(new FiringDataPoint(4.95, 2100, 0.241, 4.75));
+        firingTable.add(new FiringDataPoint(2.99, 1830, 0.25, 0.86));
+        firingTable.add(new FiringDataPoint(3.76, 1900, 0.2, 0.9174));
+        firingTable.add(new FiringDataPoint(4.95, 2100, 0.241, 1.1875));
         
-        firingTable.add(new FiringDataPoint(3, 1800, 0.25, 1));
-        firingTable.add(new FiringDataPoint(3.5, 1900, 0.26, 1.2));
-        firingTable.add(new FiringDataPoint(4, 2000, 0.27, 1.3));
-        firingTable.add(new FiringDataPoint(4.5, 2100, 0.28, 1.35));
-        firingTable.add(new FiringDataPoint(5, 2200, 0.29, 1.38));
+        // firingTable.add(new FiringDataPoint(2.99, 1830, 0.25, 0.86));
+        // firingTable.add(new FiringDataPoint(3.76, 1900, 0.2, 0.9174));
+        // firingTable.add(new FiringDataPoint(4.95, 2100, 0.241, 1.1875));
+
+        // firingTable.add(new FiringDataPoint(3, 1800, 0.25, 1));
+        // firingTable.add(new FiringDataPoint(3.5, 1900, 0.26, 1.2));
+        // firingTable.add(new FiringDataPoint(4, 2000, 0.27, 1.3));
+        // firingTable.add(new FiringDataPoint(4.5, 2100, 0.28, 1.35));
+        // firingTable.add(new FiringDataPoint(5, 2200, 0.29, 1.38));
     }
 
     public FiringDataPoint lerp(double distance) {

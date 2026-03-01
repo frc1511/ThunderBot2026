@@ -2,6 +2,8 @@ package frc.robot.orchestration;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
+import java.util.ArrayList;
+
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -49,35 +51,58 @@ public class HubOrchestrator {
         return cannonOrchestrator.moveToOrientation(new Orientation(hubLockTurretAngle(), hubLockHoodAngle()));
     }
 
-    private Pair<FiringDataPoint, Double> converge(ChassisSpeeds currentSpeed, Translation2d robotPosition, Translation2d targetPosition, int recursions) {
-        // These are relative velocities of the hub to the robot. The hub is not moving, but from the robot's perspective it is moving with the opposite velocity of the robot.
-        double relativeVelocityOfHubX = -currentSpeed.vxMetersPerSecond;
-        double relativeVelocityOfHubY = -currentSpeed.vyMetersPerSecond;
+    private Pair<FiringDataPoint, Double> converge(ChassisSpeeds currentSpeed, Translation2d robotPosition, Translation2d targetPosition) {
+        ArrayList<Translation2d> iterations = new ArrayList<Translation2d>();
 
-        double dX = robotPosition.getX() - targetPosition.getX();
-        double dY = robotPosition.getY() - targetPosition.getY();
+        Translation2d initialDeltaTranslation = targetPosition.minus(robotPosition);
 
-        FiringDataPoint interpolatedDataPoint = firingTable.lerp(targetPosition.getDistance(robotPosition));
+        Translation2d currentDeltaPosition = initialDeltaTranslation;
+        Double previousTimeOfFlight = null;
 
-        double timeOfFlight = interpolatedDataPoint.timeOfFlight;
+        for (int iteration = 0; iteration < Constants.Swerve.kTimeOfFlightConvergenceMaxRecursions; iteration++) {
+            double previousTau;
+            if (previousTimeOfFlight != null) {
+                previousTau = previousTimeOfFlight.doubleValue();
+            } else {
+                double deltaDistance = currentDeltaPosition.getNorm();
+                previousTau = firingTable.lerp(deltaDistance).timeOfFlight;
+            }
 
-        double dXPredicted = dX + relativeVelocityOfHubX * timeOfFlight;
-        double dYPredicted = dY + relativeVelocityOfHubY * timeOfFlight;
+            Translation2d virtualTargetOffset = new Translation2d(
+                previousTau * -currentSpeed.vxMetersPerSecond,
+                previousTau * -currentSpeed.vyMetersPerSecond
+            );
 
-        double distPredicted = Math.sqrt(Math.pow(dYPredicted, 2) + Math.pow(dXPredicted, 2));
+            Translation2d virtualTargetPosition = targetPosition.plus(virtualTargetOffset);
 
-        FiringDataPoint nextInterpolatedDataPoint = firingTable.lerp(distPredicted);
+            Translation2d virtualTargetDelta = virtualTargetPosition.minus(robotPosition);
+            double deltaDistance = virtualTargetDelta.getNorm();
+            double newTau = firingTable.lerp(deltaDistance).timeOfFlight;
 
-        double nextTimeOfFlight = nextInterpolatedDataPoint.timeOfFlight;
+            Translation2d realTrajectoryEnd = new Translation2d(
+                virtualTargetPosition.getX() + currentSpeed.vxMetersPerSecond * newTau,
+                virtualTargetPosition.getY() + currentSpeed.vyMetersPerSecond * newTau
+            );
 
-        double timeOfFlightChange = nextTimeOfFlight - timeOfFlight;
+            iterations.add(realTrajectoryEnd);
 
-        if (Math.abs(timeOfFlightChange) > Constants.Swerve.kTimeOfFlightConvergenceTolerance && !(recursions >= Constants.Swerve.kTimeOfFlightConvergenceMaxRecursions)) {
-            Translation2d newTargetPosition = new Translation2d(dXPredicted, dYPredicted);
-            return converge(currentSpeed, robotPosition, newTargetPosition, recursions + 1);
-        } else {
-            return new Pair<FiringDataPoint, Double>(nextInterpolatedDataPoint, Math.atan2(dYPredicted, dXPredicted));
+            if (previousTimeOfFlight != null && Math.abs(newTau - previousTau) < Constants.Swerve.kTimeOfFlightConvergenceTolerance) {
+                break;
+            }
+            
+            currentDeltaPosition = virtualTargetPosition.minus(robotPosition);
+
+            previousTimeOfFlight = newTau;
         }
+
+        Translation2d finalTargetPosition = iterations.get(iterations.size() - 1);
+
+        double finalDistance = finalTargetPosition.minus(robotPosition).getNorm();
+
+        FiringDataPoint finalPoint = firingTable.lerp(finalDistance);
+        double finalTheta = finalTargetPosition.getAngle().getRadians();
+
+        return new Pair<FiringTable.FiringDataPoint,Double>(finalPoint, finalTheta);
     }
 
     public void runConvergance() {
@@ -87,7 +112,7 @@ public class HubOrchestrator {
 
         SmartDashboard.putNumber("converge_dist", Math.sqrt(Math.pow(currentPose.getX() - nearestHub.getX(), 2) + Math.pow(currentPose.getY() - nearestHub.getY(), 2)));
         
-        latestConvergance = converge(currentSpeed, currentPose.getTranslation(), nearestHub.getTranslation(), 0);
+        latestConvergance = converge(currentSpeed, currentPose.getTranslation(), nearestHub.getTranslation());
         SmartDashboard.putNumber("firingPoint_speed", latestConvergance.getFirst().speedRPM);
     }
 

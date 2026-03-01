@@ -2,7 +2,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -78,37 +77,6 @@ public class TOFConvergenceTest {
 
         return new Pair<FiringTable.FiringDataPoint,Double>(finalPoint, finalTheta);
     }
-
-    // private Pair<FiringDataPoint, Double> converge(ChassisSpeeds currentSpeed, Translation2d robotPosition, Translation2d targetPosition, int recursions) {
-    //     // These are relative velocities of the hub to the robot. The hub is not moving, but from the robot's perspective it is moving with the opposite velocity of the robot.
-    //     double relativeVelocityOfHubX = -currentSpeed.vxMetersPerSecond;
-    //     double relativeVelocityOfHubY = -currentSpeed.vyMetersPerSecond;
-
-    //     double dX = robotPosition.getX() - targetPosition.getX();
-    //     double dY = robotPosition.getY() - targetPosition.getY();
-        
-    //     FiringDataPoint interpolatedDataPoint = firingTable.lerp(targetPosition.getDistance(robotPosition));
-        
-    //     double timeOfFlight = interpolatedDataPoint.timeOfFlight;
-        
-    //     double dXPredicted = dX + relativeVelocityOfHubX * timeOfFlight;
-    //     double dYPredicted = dY + relativeVelocityOfHubY * timeOfFlight;
-
-    //     double distPredicted = Math.sqrt(Math.pow(dYPredicted, 2) + Math.pow(dXPredicted, 2));
-
-    //     FiringDataPoint nextInterpolatedDataPoint = firingTable.lerp(distPredicted);
-
-    //     double nextTimeOfFlight = nextInterpolatedDataPoint.timeOfFlight;
-
-    //     double timeOfFlightChange = nextTimeOfFlight - timeOfFlight;
-
-    //     if (Math.abs(timeOfFlightChange) > Constants.Swerve.kTimeOfFlightConvergenceTolerance && !(recursions >= Constants.Swerve.kTimeOfFlightConvergenceMaxRecursions)) {
-    //         Translation2d newTargetPosition = new Translation2d(dXPredicted, dYPredicted);
-    //         return converge(currentSpeed, robotPosition, newTargetPosition, recursions + 1);
-    //     } else {
-    //         return new Pair<FiringDataPoint, Double>(nextInterpolatedDataPoint, Math.atan2(dYPredicted, dXPredicted));
-    //     }
-    // }
 
     @Test
     void ConvergenceTest() {
