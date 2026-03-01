@@ -4,26 +4,31 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsytem.Moving;
-import frc.util.Alert;
 
 public class Robot extends TimedRobot {
     Moving moving;
     DigitalInput m_SW_2;
     DigitalInput m_SW_3;
+    AnalogInput m_distanceSensor;
 
     public Robot() {
         moving = new Moving();
         m_SW_2 = new DigitalInput(1);
         m_SW_3 = new DigitalInput(2);
+        m_distanceSensor = new AnalogInput(3);
 
         new Trigger(() -> m_SW_2.get()).onFalse(moving.runForward()).onTrue(moving.stop());  
         new Trigger(() -> m_SW_3.get()).onFalse(moving.runBackward()).onTrue(moving.stop());
+
+        //new Trigger(() -> m_SW_2.get()).toggleOnTrue(new PrintCommand(String.format("Percent: %f", m_distanceSensor.getVoltage() / 12d))).toggleOnFalse(Commands.none());
 
         // new Trigger(() -> m_SW_2.get()).onTrue(new InstantCommand(() -> Alert.critical("DRIVE SAFETY", "SECONDARY SAFETY TRIPPED")).ignoringDisable(true));
     }
@@ -31,6 +36,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
+        System.out.println(m_distanceSensor.getVoltage());
     }
 
     @Override
