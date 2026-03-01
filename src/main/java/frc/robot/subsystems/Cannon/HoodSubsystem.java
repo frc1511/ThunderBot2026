@@ -37,9 +37,10 @@ public class HoodSubsystem extends ThunderSubsystem {
 
     private boolean isUsingInbuiltEncoder = false;
 
+    private DoubleSupplier optimalAngleSupplier = () -> 0;
+
     public HoodSubsystem() {
         new Modifiable("isConfirmedZeroed", this, () -> Boolean.FALSE);
-        
         TalonFXConfiguration hoodConfig = new TalonFXConfiguration(); 
         hoodConfig.Slot0 = new Slot0Configs()
             .withKP(Constants.Hood.HoodPID.kP).withKI(Constants.Hood.HoodPID.kI).withKD(Constants.Hood.HoodPID.kD);
@@ -60,16 +61,16 @@ public class HoodSubsystem extends ThunderSubsystem {
 
             m_beamBreakZero = new DigitalInput(Constants.IOMap.Hood.kDIObeamBreak);
             if (!Broken.hoodBeamBreakDisabled && isAtZero()) {
-                zeroEncodersLightly();
+                forceZeroEncoders();
             } else if (Broken.hoodBeamBreakDisabled) {
-                zeroEncodersLightly();
+                forceZeroEncoders();
             }
             new Trigger(this::isAtZero).onTrue(new InstantCommand(() -> {
-                zeroEncodersLightly();
+                forceZeroEncoders();
             }));
 
             if (!Helpers.onCANChain(m_encoder)) {
-                zeroEncodersLightly();
+                forceZeroEncoders();
             }
         } else {
             m_motor = null;
@@ -85,6 +86,7 @@ public class HoodSubsystem extends ThunderSubsystem {
         SmartDashboard.putNumber("hood_vel", m_encoder.getVelocity().getValueAsDouble());
         SmartDashboard.putBoolean("hood_atPos", atPosition());
         SmartDashboard.putNumber("hood_output_V", m_motor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("hood_target", m_motor.getClosedLoopReference().getValueAsDouble());
         SmartDashboard.putBoolean("hood_isZeroed", isZeroed());
         SmartDashboard.putBoolean("hood_zeroSensorTripped", isAtZero());
         SmartDashboard.putNumber("hood_err", m_motor.getClosedLoopError().getValueAsDouble());
@@ -188,14 +190,13 @@ public class HoodSubsystem extends ThunderSubsystem {
             .onlyIf(this::isZeroed);
     }
 
-    public Command forceZeroEncoders() {
-        if (Broken.hoodDisabled) return Commands.none();
+    public void forceZeroEncoders() {
+        if (Broken.hoodDisabled) return;
 
-        return new CommandBuilder(this)
-            .onExecute(() -> {
-                m_encoder.setPosition(0);
-                m_motor.setPosition(0);
-            });
+        Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
+        if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) isConfirmedZeroed.withValue(() -> Boolean.TRUE);
+        m_encoder.setPosition(0);
+        m_motor.setPosition(0);
     }
 
     public Command halt() {
@@ -221,5 +222,18 @@ public class HoodSubsystem extends ThunderSubsystem {
         if (!m_motor.isConnected(Constants.kCANChainDisconnectTimeout)) return Status.DISCONNECTED;
         if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
         return Status.IDLE;
+    }
+
+    public void setOptimalAngleGetter(DoubleSupplier supplier) {
+        optimalAngleSupplier = supplier;
+    }
+
+    public Command toOptimalPosition() {
+        if (Broken.hoodDisabled) return Commands.none();
+
+        return new CommandBuilder(this) 
+            .onExecute(() -> m_motor.setControl(new PositionVoltage(optimalAngleSupplier.getAsDouble())))
+            .isFinished(this::atPosition)
+            .onlyIf(this::isZeroed);
     }
 }

@@ -112,6 +112,7 @@ public class Robot extends TimedRobot {
         safetyWatchdog = new SafetyWatchdog(this);
 
         shooter.setOptimalSpeedGetter(hubOrchestrator::getOptimalShootSpeed);
+        hood.setOptimalAngleGetter(hubOrchestrator::getOptimalHoodAngle);
 
         Alert.info("The robot has restarted");
         DriverStation.silenceJoystickConnectionWarning(true); // trying to fix radio problem
@@ -130,7 +131,7 @@ public class Robot extends TimedRobot {
         RobotModeTriggers.disabled().onTrue(drivetrain.idle().withTimeout(.1));
 
         driverController.x().and(driveDisable::isOff).whileTrue(drivetrain.brick()); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
-        driverController.y().and(driveDisable::isOff).whileTrue(drivetrain.driveLockedToArcWithJoysticks(driverController::getLeftX)); // lock and shoot
+        driverController.y().and(driveDisable::isOff).whileTrue(drivetrain.toggleHubLock()); // lock and shoot
         // driverController.b() // TODO: evil climber shake
         driverController.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric)); // reset IMU
 
@@ -234,12 +235,9 @@ public class Robot extends TimedRobot {
 
         auxController.leftTrigger() // Fire (hold)
             .whileTrue(
-                kicker.run().alongWith(
-                    shooter.holdSpeedForShoot().alongWith(
-                        spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
-                    )
-                )
-            .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
+                firingOrchestrator.fire()
+            .onlyIf(auxDisable::isOff)
+            .onlyIf(oneDriverMode::isOff)
             )
             .onFalse(kicker.halt());
 

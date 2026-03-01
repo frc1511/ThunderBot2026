@@ -31,9 +31,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -192,9 +190,9 @@ public class Constants {
         double kTurretTolerance = 0.5d;
 
         public interface ShooterPID extends BasePID {
-            double kP = 2;
+            double kP = 8;
             double kI = 1;
-            double kD = 0.01;
+            double kD = .5;
         }
 
         public interface ShooterMotionMagic extends ProfiledPID {
@@ -226,7 +224,7 @@ public class Constants {
         }
         double kStatorCurrentLimit = 40;
         double kHoodSetpointMaxVelocity = 0.01d; // Prevents flybys
-        double kCANcoderOffset = 0.043017578125d;
+        double kCANcoderOffset = 0.931781d;
         double kGearing = 9/1;
     }
 
@@ -290,6 +288,8 @@ public class Constants {
 
         public static final double kSpeedStep = 0.1; // Amount to step speed for the inc/dec btns
 
+        public static final double kShooterOffset = .231; // meters
+
         private static final double kCoupleRatio = 3.125;
 
         private static final double kDriveGearRatio = 5.357142857142857;
@@ -344,46 +344,6 @@ public class Constants {
             4.5998835,
             4.034631,
             new Rotation2d()
-        );
-
-        public static Rectangle2d blueTrenchLeft = new Rectangle2d(
-            new Translation2d(4.009232, 6.79688125),
-            new Translation2d(5.199063, 8.0756125)
-        );
-
-        public static Rectangle2d blueTrenchRight = new Rectangle2d(
-            new Translation2d(4.009232, 0),
-            new Translation2d(5.199063, 1.297781)
-        );
-
-        public static Rectangle2d blueBumpLeft = new Rectangle2d(
-            new Translation2d(4.009232, 4.643485633),
-            new Translation2d(5.199063, 6.4703013342)
-        );
-
-        public static Rectangle2d blueBumpRight = new Rectangle2d(
-            new Translation2d(4.009232, 1.59064325),
-            new Translation2d(5.199063, 3.4444840178)
-        );
-
-        public static Rectangle2d redTrenchLeft = new Rectangle2d(
-            new Translation2d(11.299032012, 6.79688125),
-            new Translation2d(12.4994007314, 8.0756125)
-        );
-
-        public static Rectangle2d redTrenchRight = new Rectangle2d(
-            new Translation2d(11.299032012, 0),
-            new Translation2d(12.4994007314, 1.297781)
-        );
-
-        public static Rectangle2d redBumpLeft = new Rectangle2d(
-            new Translation2d(11.299032012, 4.643485633),
-            new Translation2d(12.4994007314, 6.4703013342)
-        );
-
-        public static Rectangle2d redBumpRight = new Rectangle2d(
-            new Translation2d(11.299032012, 1.59064325),
-            new Translation2d(12.4994007314, 3.4444840178)
         );
 
         // Steer PID

@@ -40,6 +40,10 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
         return Commands.none();
     }
 
+    public Command toggleHubLock() {
+        return Commands.none();
+    }
+
     public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX) {
         return new InstantCommand(() -> {}, this);
     }

@@ -6,6 +6,7 @@ import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.orchestration.CannonOrchestrator.Orientation;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
@@ -84,7 +85,10 @@ public class HubOrchestrator {
         Pose2d currentPose = swerveSubsystem.currentPose();
         Pose2d nearestHub = Helpers.allianceHub();
 
+        SmartDashboard.putNumber("converge_dist", Math.sqrt(Math.pow(currentPose.getX() - nearestHub.getX(), 2) + Math.pow(currentPose.getY() - nearestHub.getY(), 2)));
+        
         latestConvergance = converge(currentSpeed, currentPose.getTranslation(), nearestHub.getTranslation(), 0);
+        SmartDashboard.putNumber("firingPoint_speed", latestConvergance.getFirst().speedRPM);
     }
 
     public double getOptimalShootSpeed() {

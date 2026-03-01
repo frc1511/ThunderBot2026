@@ -129,7 +129,7 @@ public class ShooterSubsystem extends ThunderSubsystem {
 
         return new CommandBuilder(this)
             .onExecute(() ->
-                runAtSpeed(speed.getAsDouble() * Helpers.RPMtoRPS(Constants.Shooter.kTargetShooterRPM))
+                runAtSpeed(speed.getAsDouble())
             )
             .isFinished(() -> false);
     }

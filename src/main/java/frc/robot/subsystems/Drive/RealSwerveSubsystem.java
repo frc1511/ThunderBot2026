@@ -181,11 +181,19 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         return new CommandBuilder()
             .onExecute(() -> m_speedMultipler = Math.max(m_speedMultipler - Swerve.kSpeedStep, 0));
     }
-        
+
     public Command setHubLock(Boolean isOn) {
         return new CommandBuilder().onExecute(() -> {
             m_hubLock = isOn;
         });
+    }
+
+    public Command toggleHubLock() {
+        return new CommandBuilder()
+            .onExecute(() -> {
+                m_hubLock = !m_hubLock;
+            })
+            .isFinished(true);
     }
 
     public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX) {
@@ -200,8 +208,15 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
                 double dX = currentPose().getX() - m_arcLockCenter.getX();
                 double dY = currentPose().getY() - m_arcLockCenter.getY();
+                
+                Rotation2d targetAngle = new Rotation2d(Math.atan2(dY, dX) + Math.PI/2 - getShooterAngleCompensation());
 
-                vRot = m_driveController.getThetaController().calculate(currentPose().getRotation().getDegrees(), Math.atan2(dY, dX));
+                vRot = m_driveController.calculate(
+                        currentPose(),
+                        new Pose2d(currentPose().getTranslation(), targetAngle),
+                        Math.hypot(dX, dY),
+                        targetAngle
+                    ).omegaRadiansPerSecond * Swerve.kMaxAngularRate;
             }
 
             if (m_ensureTheta) {
@@ -287,7 +302,8 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         if (!m_limelightDisable) {
             LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
             if (limelightMeasurement != null) {
-                if (limelightMeasurement.tagCount >= 1) {
+                if (limelightMeasurement.tagCount >= 2 ||
+                    (limelightMeasurement.tagCount == 1 && limelightMeasurement.rawFiducials[0].ambiguity < 0.2)) {
                     addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
                 }
             } else {
@@ -304,7 +320,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         
         // Write to log
 
-        String[] line = {null, String.valueOf(m_currentPose.getRotation().getDegrees())};
+        // String[] line = {null, String.valueOf(m_currentPose.getRotation().getDegrees())};
 
         ZoneInfo currentZone = ZoneConstants.checkZone(m_currentPose.getTranslation());
 
@@ -436,12 +452,6 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                         targetPose.getRotation()
                     );
                     m_targetField.setRobotPose(targetPose);
-                    SmartDashboard.putNumber("targetVelX", speeds.vxMetersPerSecond * Swerve.kMaxSpeed);
-                    SmartDashboard.putNumber("targetVelY", speeds.vyMetersPerSecond * Swerve.kMaxSpeed);
-                    SmartDashboard.putNumber("targetVelTheta", speeds.omegaRadiansPerSecond * Swerve.kMaxAngularRate);
-                    SmartDashboard.putNumber("currentVelTheta", getModule(0).getSteerMotor().getVelocity().getValueAsDouble());
-                    SmartDashboard.putNumber("currentTheta", currentPose().getRotation().getDegrees());
-                    SmartDashboard.putNumber("targetTheta", targetPose.getRotation().getDegrees());
                     setControl(
                         new SwerveRequest.RobotCentric()
                             .withVelocityX(speeds.vxMetersPerSecond * Swerve.kMaxSpeed)
@@ -482,7 +492,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                     return new Pose2d(
                         Math.cos(m_arcLockTheta) * m_arcLockDistance + m_arcLockCenter.getX(),
                         Math.sin(m_arcLockTheta) * m_arcLockDistance + m_arcLockCenter.getY(),
-                        new Rotation2d(m_arcLockTheta + Math.PI/2 - Math.PI/32)
+                        new Rotation2d(m_arcLockTheta + Math.PI/2 - getShooterAngleCompensation())
                     );
                 }
             )
@@ -499,6 +509,15 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                     m_arcLockTheta = Math.atan2(dY, dX);
                 }
             );
+    }
+
+    private double getShooterAngleCompensation() {
+        Pose2d currentPose = currentPose();
+
+        double dX = currentPose.getX() - m_arcLockCenter.getX();
+        double dY = currentPose.getY() - m_arcLockCenter.getY();
+
+        return Math.PI/2 - Math.acos(Constants.Swerve.kShooterOffset / Math.hypot(dX, dY));
     }
 
     private void setSpeeds(ChassisSpeeds speeds) {
