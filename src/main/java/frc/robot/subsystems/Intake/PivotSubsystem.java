@@ -32,15 +32,15 @@ public class PivotSubsystem extends ThunderSubsystem {
     public PivotSubsystem() {
         SparkMaxConfig pivotConfig = new SparkMaxConfig(); 
         pivotConfig.closedLoop
-            .pid(Constants.Hunger.Pivot.PivotPID.kP, Constants.Hunger.Pivot.PivotPID.kI, Constants.Hunger.Pivot.PivotPID.kD)
-            .allowedClosedLoopError(Constants.Hunger.Pivot.kTolerance, ClosedLoopSlot.kSlot0);
-            // .feedForward
-            //     .kCosRatio(Constants.Hunger.Pivot.kCosRatio)
-            //     .kCos(Constants.Hunger.Pivot.PivotPID.kCos);
-
+        .pid(Constants.Hunger.Pivot.PivotPID.kP, Constants.Hunger.Pivot.PivotPID.kI, Constants.Hunger.Pivot.PivotPID.kD)
+        .allowedClosedLoopError(Constants.Hunger.Pivot.kTolerance, ClosedLoopSlot.kSlot0);
+        // .feedForward
+        //     .kCosRatio(Constants.Hunger.Pivot.kCosRatio)
+        //     .kCos(Constants.Hunger.Pivot.PivotPID.kCos);
+        
         pivotConfig.encoder
-            .positionConversionFactor(1d/96d);
-
+        .positionConversionFactor(1d/96d);
+        
         if (!Broken.pivotDisabled) {
             m_CANcoder = new CANcoder(Constants.IOMap.Intake.kCANcoder);
 
@@ -62,9 +62,9 @@ public class PivotSubsystem extends ThunderSubsystem {
     @Override
     public void periodic() {
         if (Broken.pivotDisabled) return;
-        
+
         m_builtinEncoder.setPosition(m_CANcoder.getPosition().getValueAsDouble());
-        
+
         SmartDashboard.putNumber("Pivot_builtin_position", m_builtinEncoder.getPosition());
         SmartDashboard.putNumber("Pivot_CANcoder_position", m_CANcoder.getPosition().getValueAsDouble());
         SmartDashboard.putNumber("Pivot_pidSetpoint", m_pidController.getSetpoint());

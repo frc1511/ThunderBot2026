@@ -67,7 +67,7 @@ public class Robot extends TimedRobot {
     public final SpindexerSubsystem spindexer = new SpindexerSubsystem();
     public final KickerSubsystem kicker = new KickerSubsystem();
     public final IntakeSubsystem intake = new IntakeSubsystem();
-    public final PivotSubsystem pivot = new PivotSubsystem();   
+    public final PivotSubsystem pivot = new PivotSubsystem();
     public final HangSubsystem hang = new HangSubsystem();
 
     public final SafetyWatchdog safetyWatchdog;
@@ -95,6 +95,8 @@ public class Robot extends TimedRobot {
     public ThunderSwitch pitMode = switchBoard.button(11);
 
     public Robot() {
+        CommandScheduler.getInstance().registerSubsystem(pivot);
+        CommandScheduler.getInstance().registerSubsystem(intake);
         // DataLogManager.start(); //* Uncomment for logs
         
         ledDisable.get().onTrue(new InstantCommand(() -> Broken.blinkyBlinkyButtonBopped = true)).onFalse(new InstantCommand(() -> Broken.blinkyBlinkyButtonBopped = false));
@@ -126,13 +128,13 @@ public class Robot extends TimedRobot {
                     .onlyIf(() -> !driverController.y().getAsBoolean() || driveDisable.isOff())
                     .withName("DriveWithJoysticks")
             );
-        }
+        };
 
         RobotModeTriggers.disabled().onTrue(drivetrain.idle().withTimeout(.1));
 
         driverController.x().and(driveDisable::isOff).whileTrue(drivetrain.brick()); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
         driverController.y().and(driveDisable::isOff).whileTrue(drivetrain.toggleHubLock()); // lock and shoot
-        // driverController.b() // TODO: evil climber shake
+        // driverController.b() // TODO: spooky climber shake, goal is to have the hang fully extended and wiggle to make it onto the tower
         driverController.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric)); // reset IMU
 
         driverController.povUp().and(driveDisable::isOff).whileTrue(hang.extend()).onFalse(hang.halt()); // hang go uppies (hold)
@@ -142,7 +144,7 @@ public class Robot extends TimedRobot {
 
         // driverController.leftTrigger() // trench align
         //     .whileTrue(
-        //         // TODO
+        //         TODO: trench align
         //     );
         driverController.rightTrigger() // temporary robot centric
             .whileTrue(
@@ -181,7 +183,7 @@ public class Robot extends TimedRobot {
             );
         driverController.rightTrigger() // intake (hold)
             .whileTrue(
-                intake.eat()
+                hungerOrchestrator.consume()
                 .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOn()).onlyIf(driveDisable::isOff)
             );
         driverController.rightBumper() // fire (hold)
@@ -293,7 +295,6 @@ public class Robot extends TimedRobot {
     
     @Override
     public void robotPeriodic() {
-
         if (!driverController.isConnected()) {
             Alert.error("Drive Controller Disconnected");
         }
