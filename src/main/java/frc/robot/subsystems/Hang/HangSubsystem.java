@@ -36,6 +36,7 @@ public class HangSubsystem extends ThunderSubsystem {
     private DigitalInput m_lowerLimitSensor;
     private DigitalInput m_upperLimitSensor;
     private boolean m_isZeroed;
+    private boolean m_isClimbing;
 
     public HangSubsystem() {
         SparkMaxConfig motorConfig = new SparkMaxConfig();
@@ -106,14 +107,16 @@ public class HangSubsystem extends ThunderSubsystem {
         return new CommandBuilder(this)
             .onExecute(() -> {
                 if (isAtLowerLimit()) {
-                    m_motor.stopMotor();
+                    stop();
                     return;
                 }
+                m_isClimbing = true;
+
                 m_motor.set(HangConstants.kZeroingSpeed);
             })
             .isFinished(this::isAtLowerLimit)
             .onEnd((boolean interupped) -> {
-                m_motor.stopMotor();
+                stop();
                 if (!interupped) {
                     m_encoder.setPosition(0);
                     m_isZeroed = true;
@@ -139,9 +142,11 @@ public class HangSubsystem extends ThunderSubsystem {
         return new CommandBuilder(this)
             .onExecute(() -> {
                 if (atExtensionLimit()) {
-                    m_motor.stopMotor();
+                    stop();
                     return;
                 }
+                m_isClimbing = true;
+
                 m_pidController.setSetpoint(HangConstants.kMaxDeployDistanceRotations, ControlType.kPosition);
             })
             .isFinished(this::atExtensionLimit)
@@ -159,9 +164,11 @@ public class HangSubsystem extends ThunderSubsystem {
 
         return new CommandBuilder(this)
             .onExecute(() -> {
+                m_isClimbing = true;
+
                 m_pidController.setSetpoint(HangConstants.kMaxPullDistanceRotations, ControlType.kPosition);
                 if (atRetractionLimit()) {
-                    m_motor.stopMotor();
+                    stop();
                     return;
                 }
             })
@@ -176,11 +183,13 @@ public class HangSubsystem extends ThunderSubsystem {
 
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_pidController.setSetpoint(HangConstants.kTrenchSafeDistanceRotations, ControlType.kPosition);
                 if (isAtLowerLimit()) {
-                    m_motor.stopMotor();
+                    stop();
                     return;
                 }
+                m_isClimbing = true;
+
+                m_pidController.setSetpoint(HangConstants.kTrenchSafeDistanceRotations, ControlType.kPosition);
             })
             .onEnd(() -> {
                 m_pidController.setSetpoint(beforePosition, ControlType.kPosition);
@@ -192,10 +201,17 @@ public class HangSubsystem extends ThunderSubsystem {
         if (Broken.hangFullyDisabled) return new InstantCommand(()->{}, this);
 
         return new CommandBuilder(this)
-            .onExecute(() -> {
-                m_motor.stopMotor();
-            })
+            .onExecute(this::stop)
             .isFinished(true);
+    }
+
+    private void stop() {
+        m_motor.stopMotor();
+        m_isClimbing = false;
+    }
+
+    public boolean climbClimbingButHasntClumbJustYet() {
+        return m_isClimbing;
     }
 
     public Command manual(DoubleSupplier speedSupplier) {
@@ -205,9 +221,11 @@ public class HangSubsystem extends ThunderSubsystem {
             .onExecute(() -> {
                 double speed = -speedSupplier.getAsDouble() * .5;
                 if ((isAtLowerLimit() && speed < 0) || (isAtUpperLimit() && speed > 0))
-                    m_motor.stopMotor();
-                else
+                    stop();
+                else {
+                    m_isClimbing = true;
                     m_motor.set(speed);
+                }
             })
             .isFinished(true)
             .repeatedly();

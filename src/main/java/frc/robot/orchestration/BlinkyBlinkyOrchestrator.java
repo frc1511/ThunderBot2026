@@ -15,9 +15,10 @@ public class BlinkyBlinkyOrchestrator {
     private AddressableLEDBuffer m_buffer;
 
     private HangSubsystem hang;
-
+    
     private int m_strobeProgress = 0;
-
+    private int frame = 0;
+    
     public BlinkyBlinkyOrchestrator(Robot robot) {
         m_led = new AddressableLED(Constants.IOMap.BlinkyBlinky.kPWMport);
 
@@ -30,12 +31,13 @@ public class BlinkyBlinkyOrchestrator {
         hang = robot.hang;
     }
 
+
     public void sparkle() {
         if(!Broken.blinkyBlinkyDisableStatus()) {
             switch (m_currentMode) {
                 case NONE:
                     m_buffer.forEach((index, r, g, b) -> {
-                        m_buffer.setHSV(index, 0, 0, 0);
+                        m_buffer.setHSV(index, ((index / Constants.BlinkyBlinky.kLength * 180) + frame * 10) % 180, 0, 0);
                     });
                     break;
                 case INTAKING:
@@ -44,7 +46,6 @@ public class BlinkyBlinkyOrchestrator {
                     });
                     break;
                 case HUNG:
-                    // TODO: finish this
                     double position = hang.getPosition();
                     m_buffer.forEach((index, r, g, b) -> {
                         m_buffer.setHSV(index, 150, 255, 255);
@@ -68,8 +69,9 @@ public class BlinkyBlinkyOrchestrator {
                     break;
                 default: break;
             }
-        }
             m_led.setData(m_buffer);
+            ++frame;
+        }
     }
 
     public Command set(Constants.BlinkyBlinky.Mode mode) {
@@ -79,6 +81,11 @@ public class BlinkyBlinkyOrchestrator {
                     m_currentMode = mode;
                 }
             })
-            .isFinished(true);
+            .onEnd(() -> {
+                if (mode == m_currentMode) {
+                    m_currentMode = Constants.BlinkyBlinky.Mode.NONE;
+                }
+            })
+            .ignoringDisable(true);
     }
 }
