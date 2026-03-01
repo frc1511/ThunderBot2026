@@ -273,6 +273,7 @@ public class Robot extends TimedRobot {
         hood.setDefaultCommand(hood.halt());
         shooter.setDefaultCommand(shooter.halt());
         kicker.setDefaultCommand(kicker.halt());
+        hang.setDefaultCommand(hang.zeroHang());
 
         // MARK: Auto
         ThunderAutoProject autoProject = AutoLoader.load(this);

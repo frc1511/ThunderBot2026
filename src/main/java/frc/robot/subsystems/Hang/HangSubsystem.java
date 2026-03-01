@@ -99,9 +99,11 @@ public class HangSubsystem extends ThunderSubsystem {
     }
 
     public Command zeroHang() {
+        if (m_isZeroed) return new InstantCommand(() -> {}, this);
+        
         if (Broken.hangFullyDisabled || Broken.hangLowerLimitDisabled) {
             m_isZeroed = true;
-            return Commands.none();
+            return new InstantCommand(() -> {}, this);
         }
 
         return new CommandBuilder(this)
