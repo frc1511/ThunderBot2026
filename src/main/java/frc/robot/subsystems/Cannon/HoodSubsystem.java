@@ -72,6 +72,21 @@ public class HoodSubsystem extends ThunderSubsystem {
             if (!Helpers.onCANChain(m_encoder)) {
                 forceZeroEncoders();
             }
+
+            new Trigger(() -> Helpers.onCANChain(m_encoder)).onTrue(new InstantCommand(() -> {
+                if (!Helpers.onCANChain(m_encoder)) {
+                    m_motor.getConfigurator().apply(new FeedbackConfigs()
+                        .withRotorToSensorRatio(1)
+                        .withSensorToMechanismRatio(Constants.Hood.kGearing));
+                    isUsingInbuiltEncoder = true;
+                } else if (isUsingInbuiltEncoder && Helpers.onCANChain(m_encoder)) {
+                    m_motor.getConfigurator().apply(new FeedbackConfigs()
+                        .withFusedCANcoder(m_encoder)
+                        .withRotorToSensorRatio(Constants.Hood.kGearing)
+                        .withSensorToMechanismRatio(1));
+                    isUsingInbuiltEncoder = false;
+                }
+            }));
         } else {
             m_motor = null;
         }
@@ -97,19 +112,6 @@ public class HoodSubsystem extends ThunderSubsystem {
 
         if (!isZeroed()) {
             CommandScheduler.getInstance().schedule(zero());
-        }
-
-        if (!Helpers.onCANChain(m_encoder)) {
-            m_motor.getConfigurator().apply(new FeedbackConfigs()
-                .withRotorToSensorRatio(1)
-                .withSensorToMechanismRatio(Constants.Hood.kGearing));
-            isUsingInbuiltEncoder = true;
-        } else if (isUsingInbuiltEncoder && Helpers.onCANChain(m_encoder)) {
-            m_motor.getConfigurator().apply(new FeedbackConfigs()
-                .withFusedCANcoder(m_encoder)
-                .withRotorToSensorRatio(Constants.Hood.kGearing)
-                .withSensorToMechanismRatio(1));
-            isUsingInbuiltEncoder = false;
         }
     }
 
@@ -231,7 +233,7 @@ public class HoodSubsystem extends ThunderSubsystem {
     public Command toOptimalPosition() {
         if (Broken.hoodDisabled) return Commands.none();
 
-        return new CommandBuilder(this) 
+        return new CommandBuilder(this)
             .onExecute(() -> m_motor.setControl(new PositionVoltage(optimalAngleSupplier.getAsDouble())))
             .isFinished(this::atPosition)
             .onlyIf(this::isZeroed);

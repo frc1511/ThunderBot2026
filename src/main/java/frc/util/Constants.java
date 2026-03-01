@@ -218,8 +218,8 @@ public class Constants {
             }
         }
         public interface HoodPID extends BasePID {
-            double kP = 13; // Zippy at 23
-            double kI = 5; // Zippy at 10
+            double kP = 23; // Zippy at 23
+            double kI = 40; // Zippy at 10
             double kD = 0;
         }
         double kStatorCurrentLimit = 40;
@@ -257,6 +257,7 @@ public class Constants {
                     return this.m_value;
                 }
             }
+            double kCANcoderOffset = 0.322d;
 
             double kTolerance = 0.01d;
         }
@@ -288,7 +289,7 @@ public class Constants {
 
         public static final double kSpeedStep = 0.1; // Amount to step speed for the inc/dec btns
 
-        public static final double kShooterOffset = .231; // meters
+        public static final double kShooterOffset = .351; // meters
 
         private static final double kCoupleRatio = 3.125;
 

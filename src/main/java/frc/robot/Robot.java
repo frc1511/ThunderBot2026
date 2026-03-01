@@ -252,10 +252,17 @@ public class Robot extends TimedRobot {
 
         auxController.rightTrigger() // Intake (hold)
             .whileTrue(
-                intake.eat()
+                hungerOrchestrator.consume()
             .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
             )
             .onFalse(intake.stopEating());
+        
+        
+        auxController.back() // Intake (hold)
+            .whileTrue(
+                pivot.pivotUp()
+            .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
+            );
 
         auxController.start() // Hood down
             .onTrue(
