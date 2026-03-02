@@ -1,11 +1,16 @@
 package frc.util.Thunder;
 
+import java.util.HashMap;
+
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandGenericHID;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
-public class ThunderSwitchboard {
+public class ThunderSwitchboard implements Sendable {
     private final CommandGenericHID m_hid;
+    private HashMap<Integer, ThunderSwitch> m_switches = new HashMap<Integer, ThunderSwitch>();
 
     public ThunderSwitchboard(int port) {
         m_hid = new CommandGenericHID(port);
@@ -15,7 +20,18 @@ public class ThunderSwitchboard {
      * With the returned {@code ThunderSwitch}, use the {@code .getOn()} method to get an always up to date value of the switch
      */
     public ThunderSwitch button(int slot) {
-        return new ThunderSwitch(m_hid.button(slot));
+        ThunderSwitch button = new ThunderSwitch(m_hid.button(slot));
+        m_switches.put(slot, button);
+        return button;
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.setSmartDashboardType("ThunderSwitchboard");
+
+        m_switches.forEach((slot, button) -> {
+            builder.addBooleanProperty(String.format("Slot %d", slot), button::isOn, null);
+        });
     }
 
     /**
@@ -29,7 +45,7 @@ public class ThunderSwitchboard {
             m_trigger = trigger;
 
             m_value = m_trigger.getAsBoolean();
-            m_trigger.onChange(new InstantCommand(() -> {m_value = trigger.getAsBoolean();}));
+            m_trigger.onChange(new InstantCommand(() -> {m_value = trigger.getAsBoolean();}).ignoringDisable(true));
         }
 
         public Trigger get() {

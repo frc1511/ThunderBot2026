@@ -305,8 +305,7 @@ public class Robot extends TimedRobot {
             .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
             )
             .onFalse(intake.stopEating());
-        
-        
+
         auxController.back() // Intake (hold)
             .whileTrue(
                 pivot.pivotUp()
@@ -318,7 +317,7 @@ public class Robot extends TimedRobot {
                 hood.toPosition(() -> Constants.Hood.Position.BOTTOM.get())
             .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
             );
-        
+
         hood.setDefaultCommand(hood.halt());
         shooter.setDefaultCommand(shooter.halt());
         kicker.setDefaultCommand(kicker.halt());
@@ -340,6 +339,8 @@ public class Robot extends TimedRobot {
         }
         
         SmartDashboard.putData(CommandScheduler.getInstance());
+
+        SmartDashboard.putData("SwitchBoard", switchBoard);
     }    
 
     @SuppressWarnings("all") // Identical Expressions Warning Suppression (BuildConsts)
