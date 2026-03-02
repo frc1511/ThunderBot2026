@@ -195,6 +195,45 @@ public class Robot extends TimedRobot {
                 )
                 .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOn())
             );
+        
+        // if drive is disabled and one driver mode is enabled
+        if (!Broken.drivetrainFullyDisabled) { // driving with joysticks
+            drivetrain.setDefaultCommand(
+                drivetrain
+                    .driveWithJoysticks(auxController::getLeftX, auxController::getLeftY, auxController::getRightX)
+                    .onlyIf(() -> (driveDisable.isOn() && oneDriverMode.isOn()) && (!auxController.y().getAsBoolean() || auxDisable.isOff()))
+                    .withName("DriveWithJoysticks")
+            );
+        };
+        auxController.leftTrigger() // outtake (hold)
+            .whileTrue(
+                intake.outtake()
+                .onlyIf(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff())
+            );
+        auxController.leftBumper() // preheat (hold)
+            .whileTrue(
+                shooter.preheat()
+                .onlyIf(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff())
+            );
+        auxController.rightTrigger() // intake (hold)
+            .whileTrue(
+                hungerOrchestrator.consume()
+                .onlyIf(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff())
+            );
+        auxController.rightBumper() // fire (hold)
+            .whileTrue(
+                firingOrchestrator.fire()
+                .onlyIf(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff())
+            );
+        auxController.povUp().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(hang.extend()).onFalse(hang.halt()); // hang go uppies (hold)
+        auxController.povDown().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(hang.retract()).onFalse(hang.halt()); // hang go downies (hold)
+        auxController.povLeft().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).onTrue(drivetrain.increaseSpeed()); // drive go weeee
+        auxController.povRight().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).onTrue(drivetrain.decreaseSpeed()); // drive go snail
+        auxController.x().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(drivetrain.brick()); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
+        auxController.y().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(drivetrain.toggleHubLock()); // lock and shoot
+        // auxController.b() // TODO: spooky climber shake, goal is to have the hang fully extended and wiggle to make it onto the tower
+        auxController.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).onlyIf(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff())); // reset IMU
+
         // MARK: Aux
         auxController.y() // Feed
             .whileTrue(
