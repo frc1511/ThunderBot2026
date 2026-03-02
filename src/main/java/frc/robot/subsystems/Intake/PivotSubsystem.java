@@ -14,6 +14,7 @@ import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,20 +29,21 @@ import frc.util.Helpers;
 public class PivotSubsystem extends ThunderSubsystem {
     private SparkMax m_motor;
     private CANcoder m_CANcoder;
+    private SparkMaxConfig pivotConfig;
     private RelativeEncoder m_builtinEncoder;
     private SparkClosedLoopController m_pidController;
 
     public PivotSubsystem() {
-        SparkMaxConfig pivotConfig = new SparkMaxConfig(); 
+        pivotConfig = new SparkMaxConfig(); 
         pivotConfig.closedLoop
-        .pid(Constants.Hunger.Pivot.PivotPID.kP, Constants.Hunger.Pivot.PivotPID.kI, Constants.Hunger.Pivot.PivotPID.kD)
-        .allowedClosedLoopError(Constants.Hunger.Pivot.kTolerance, ClosedLoopSlot.kSlot0);
+            .pid(Constants.Hunger.Pivot.PivotPID.kP, Constants.Hunger.Pivot.PivotPID.kI, Constants.Hunger.Pivot.PivotPID.kD)
+            .allowedClosedLoopError(Constants.Hunger.Pivot.kTolerance, ClosedLoopSlot.kSlot0);
         // .feedForward
         //     .kCosRatio(Constants.Hunger.Pivot.kCosRatio)
         //     .kCos(Constants.Hunger.Pivot.PivotPID.kCos);
         
         pivotConfig.encoder
-        .positionConversionFactor(1d/96d);
+            .positionConversionFactor(1d/96d);
         
         if (!Broken.pivotDisabled) {
             m_CANcoder = new CANcoder(Constants.IOMap.Intake.kCANcoder);
@@ -74,6 +76,13 @@ public class PivotSubsystem extends ThunderSubsystem {
         SmartDashboard.putBoolean("Pivot_atSetpoint", m_pidController.isAtSetpoint());
         SmartDashboard.putNumber("Pivot_output_%", m_motor.getAppliedOutput());
         SmartDashboard.putNumber("Pivot_output_A", m_motor.getOutputCurrent());
+    }
+
+    public void setMotorMode(IdleMode mode) {
+        if (Broken.pivotDisabled) return; 
+        
+        pivotConfig.idleMode(mode);
+        m_motor.configure(pivotConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     public Command halt() {

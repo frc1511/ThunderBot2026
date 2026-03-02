@@ -171,12 +171,17 @@ public class Constants {
         }
 
         interface Kicker {
-            double kTargetKickerRPM = 3500;
+            double kTargetKickerRPM = 2000;
+            double kRPMTolerance = 50;
 
             public interface KickerPID extends BasePID {
-                double kP = 10.0;
-                double kI = 10.2;
-                double kD = 0.0;
+                double kP = 150;
+                double kI = 5;
+            }
+
+            public interface KickerMotionMagic extends ProfiledPID {
+                double kAccel = 120;
+                double kJerk = 140;
             }
         }
     }
@@ -230,14 +235,20 @@ public class Constants {
 
     public class Hunger {
         public interface Intake {
-            double kEatSpeed = 0.85;
+            double kEatRPM = 5000;
+
+            interface IntakePID extends BasePID { 
+                double kP = 8.0;
+                double kI = 0;
+                double kD = 0;
+            }
 
             String intakeCommandName = "intake";
         }
 
         public interface Pivot {
             interface PivotPID extends BasePID { 
-                double kP = .5;
+                double kP = 1.5;
                 double kI = 0;
                 double kD = 0;
                 double kCos = 0;
@@ -273,7 +284,7 @@ public class Constants {
         double kSetpointMaxVelocity = 0.02; // Prevents flybys
         double kSetpointPositionTolerance = 0.05;
         double kZeroingSpeed = -0.1;
-        double kMaxDeploySpeed = 0.3; // Extending Hanger FINAL DONT CHNAGE
+        double kMaxDeploySpeed = 0.9; // Extending Hanger FINAL DONT CHNAGE
         double kMaxPullSpeed = -0.9;  // Retracting Hanger (pulling the robot up on the bar) FINAL DONT CHANGE
         double kMaxDeployDistanceRotations = 33;
         double kMaxPullDistanceRotations = 8; // This is NOT a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down
@@ -310,8 +321,8 @@ public class Constants {
         private static final Voltage kSteerFrictionVoltage = Volts.of(0.2);
         private static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
 
-        public static final double kMaxSpeed = 0.5 * kSpeedAt12Volts.in(MetersPerSecond); // % Multiplier | kSpeedAt12Volts desired top speed
-        public static final double kMaxAngularRate = .5 * RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+        public static final double kMaxSpeed = 0.8 * kSpeedAt12Volts.in(MetersPerSecond); // % Multiplier | kSpeedAt12Volts desired top speed
+        public static final double kMaxAngularRate = .8 * RotationsPerSecond.of(1.5).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
         public static final double kMaxAngularAcceleration = .5 * RotationsPerSecondPerSecond.of(.75).in(RadiansPerSecondPerSecond);
 
         public static final double kVelocityDeadband = 0.40 * kMaxSpeed; // % Multiplier 
@@ -322,7 +333,7 @@ public class Constants {
             double kI = .1;
         }
         private interface ThetaPID extends BasePID {
-            double kP = 6;
+            double kP = 2;
             double kD = 0.101;
         }
         public static final PIDController kHolonomicXPIDController = new PIDController(XYPID.kP, XYPID.kI, XYPID.kD);

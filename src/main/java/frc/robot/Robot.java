@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.SignalLogger;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.thunder.lib.auto.ThunderAutoProject;
 import com.thunder.lib.auto.ThunderAutoSendableChooser;
 import com.thunder.lib.trajectory.ThunderTrajectoryRunnerProperties;
@@ -116,6 +117,8 @@ public class Robot extends TimedRobot {
         shooter.setOptimalSpeedGetter(hubOrchestrator::getOptimalShootSpeed);
         hood.setOptimalAngleGetter(hubOrchestrator::getOptimalHoodAngle);
 
+        kicker.getField("optimalRPM").withValue(hubOrchestrator::getOptimalShootSpeed);
+
         Alert.info("The robot has restarted");
         DriverStation.silenceJoystickConnectionWarning(true); // trying to fix radio problem
         SignalLogger.enableAutoLogging(false);
@@ -137,8 +140,8 @@ public class Robot extends TimedRobot {
         // driverController.b() // TODO: spooky climber shake, goal is to have the hang fully extended and wiggle to make it onto the tower
         driverController.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric)); // reset IMU
 
-        driverController.povUp().and(driveDisable::isOff).whileTrue(hang.extend()).onFalse(hang.halt()); // hang go uppies (hold)
-        driverController.povDown().and(driveDisable::isOff).whileTrue(hang.retract()).onFalse(hang.halt()); // hang go downies (hold)
+        driverController.povUp()  .and(() -> driveDisable.isOff() && climberDisable.isOff()).whileTrue(hang.extend()).onFalse(hang.halt()); // hang go uppies (hold)
+        driverController.povDown().and(() -> driveDisable.isOff() && climberDisable.isOff()).whileTrue(hang.retract()).onFalse(hang.halt()); // hang go downies (hold)
         driverController.povLeft().and(driveDisable::isOff).onTrue(drivetrain.increaseSpeed()); // drive go weeee
         driverController.povRight().and(driveDisable::isOff).onTrue(drivetrain.decreaseSpeed()); // drive go snail
 
@@ -171,12 +174,12 @@ public class Robot extends TimedRobot {
                 )
         );
         // MARK: One Driver Mode
-        driverController.rightTrigger() // outtake (hold)
+        driverController.leftTrigger() // outtake (hold)
             .whileTrue(
                 intake.outtake()
                 .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOn())
             );
-        driverController.rightBumper() // preheat (hold)
+        driverController.leftBumper() // preheat (hold)
             .whileTrue(
                 shooter.preheat()
                 .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOn())
@@ -184,15 +187,16 @@ public class Robot extends TimedRobot {
         driverController.rightTrigger() // intake (hold)
             .whileTrue(
                 hungerOrchestrator.consume()
-                .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOn()).onlyIf(driveDisable::isOff)
+                .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOn())
             );
         driverController.rightBumper() // fire (hold)
             .whileTrue(
-                kicker.run().alongWith(
-                    shooter.holdSpeedForShoot().alongWith(
-                        spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
-                    )
-                )
+                firingOrchestrator.fire()
+                .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOn())
+            );
+        driverController.back()
+            .onTrue(
+                pivot.pivotUp()
                 .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOn())
             );
         
@@ -266,6 +270,12 @@ public class Robot extends TimedRobot {
                 .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
             )
             .onFalse(hood.toPosition(() -> Constants.Hood.Position.BOTTOM.get()));
+
+        auxController.back() // feed (hold)
+            .whileTrue(
+                pivot.pivotUp()
+                .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
+            );
 
         auxController.leftBumper() // Preheat (hold)
             .whileTrue(
@@ -368,6 +378,7 @@ public class Robot extends TimedRobot {
     
     @Override
     public void disabledInit() {
+        pivot.setMotorMode(IdleMode.kCoast);
         CommandScheduler.getInstance().cancelAll();
     }
     
@@ -375,7 +386,9 @@ public class Robot extends TimedRobot {
     public void disabledPeriodic() {}
     
     @Override
-    public void disabledExit() {}
+    public void disabledExit() {
+        pivot.setMotorMode(IdleMode.kBrake);
+    }
     
     @Override
     public void autonomousInit() {

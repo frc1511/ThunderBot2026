@@ -99,7 +99,6 @@ public class HangSubsystem extends ThunderSubsystem {
     }
 
     public Command zeroHang() {
-        if (m_isZeroed) return new InstantCommand(() -> {}, this);
         
         if (Broken.hangFullyDisabled || Broken.hangLowerLimitDisabled) {
             m_isZeroed = true;
@@ -123,7 +122,8 @@ public class HangSubsystem extends ThunderSubsystem {
                     m_encoder.setPosition(0);
                     m_isZeroed = true;
                 }
-            });
+            })
+            .onlyIf(() -> !m_isZeroed);
     }
 
     private boolean atSetpoint() {
