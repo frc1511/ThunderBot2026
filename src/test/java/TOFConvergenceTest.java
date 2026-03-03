@@ -70,11 +70,12 @@ public class TOFConvergenceTest {
 
         Translation2d finalTargetPosition = iterations.get(iterations.size() - 1);
 
-        double finalDistance = finalTargetPosition.minus(robotPosition).getNorm();
+        Translation2d deltaTarget = finalTargetPosition.minus(robotPosition);
+        double finalDistance = deltaTarget.getNorm();
+        double finalTheta = deltaTarget.getAngle().getRadians();
 
         FiringDataPoint finalPoint = firingTable.lerp(finalDistance);
-        double finalTheta = finalTargetPosition.getAngle().getRadians();
-
+        
         return new Pair<FiringTable.FiringDataPoint,Double>(finalPoint, finalTheta);
     }
 
