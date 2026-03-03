@@ -196,10 +196,15 @@ public class Robot extends TimedRobot {
             );
         driverController.back()
             .onTrue(
-                pivot.pivotUp()
+                pivot.up()
                 .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOn())
             );
-        
+        driverController.start()
+            .onTrue(
+                pivot.jostle()
+                .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOn()).withName("PivotJostle")
+            );
+
         // if drive is disabled and one driver mode is enabled
         if (!Broken.drivetrainFullyDisabled) { // driving with joysticks
             drivetrain.setDefaultCommand(
@@ -273,7 +278,7 @@ public class Robot extends TimedRobot {
 
         auxController.back() // feed (hold)
             .whileTrue(
-                pivot.pivotUp()
+                pivot.up()
                 .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
             );
 
@@ -308,7 +313,7 @@ public class Robot extends TimedRobot {
 
         auxController.back() // Intake (hold)
             .whileTrue(
-                pivot.pivotUp()
+                pivot.up()
             .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
             );
 
@@ -337,7 +342,7 @@ public class Robot extends TimedRobot {
         if (props != null) {
             autoChooser.setTrajectoryRunnerProperties(drivetrain.getTrajectoryRunnerProperties());
         }
-        
+
         SmartDashboard.putData(CommandScheduler.getInstance());
 
         SmartDashboard.putData("SwitchBoard", switchBoard);

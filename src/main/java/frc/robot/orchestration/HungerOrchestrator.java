@@ -23,7 +23,7 @@ public class HungerOrchestrator {
      * Put the intake down while intaking FUEL
      */
     public Command consume() {
-        return pivot.pivotDown()
+        return pivot.down()
             .alongWith(intake.eat());
     }
 
@@ -31,7 +31,7 @@ public class HungerOrchestrator {
      * Retract intake from ground and stop intaking FUEL
      */
     public Command excuseYourself() {
-        return pivot.pivotUp()
+        return pivot.up()
             .alongWith(intake.stopEating());
     }
 
@@ -45,7 +45,7 @@ public class HungerOrchestrator {
     */
     public Command feast() {
         return spintake()
-            .alongWith(pivot.pivotDown());
+            .alongWith(pivot.down());
     }
 
     public boolean isIntaking() {

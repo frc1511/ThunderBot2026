@@ -248,15 +248,13 @@ public class Constants {
 
         public interface Pivot {
             interface PivotPID extends BasePID { 
-                double kP = 1.5;
-                double kI = 0;
-                double kD = 0;
-                double kCos = 0;
+                // double kP = 5;
+                double kI = .003;
+                double kD = 0.05;
             }
-            int kCosRatio = 1;
 
             enum Position {
-                TOP(-0.342529296875), BOTTOM(0.001708984375); //they change alot but should be approx right
+                TOP(-0.336914), MIDDLE(-0.175), BOTTOM(0.001708984375); //they change alot but should be approx right
 
                 private double m_value;
 
@@ -270,7 +268,7 @@ public class Constants {
             }
             double kCANcoderOffset = 0.322d;
 
-            double kTolerance = 0.01d;
+            double kTolerance = 0.015d;
         }
     }
 
