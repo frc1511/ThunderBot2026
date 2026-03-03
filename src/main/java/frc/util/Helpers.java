@@ -60,4 +60,12 @@ public class Helpers {
     public static double lerp(double v0, double v1, double t) {
         return v0 + t * (v1 - v0);
     }
+
+    /**
+     * {@code wantedTarget} is the target you want to be moving towards.
+     * {@code realTarget} is the target the system thinks it's moving towards (often a method from a pid controller).
+     */
+    public static boolean ensureTarget(double wantedTarget, double realTarget, double tolerance) {
+        return Math.abs(realTarget - wantedTarget) < tolerance;
+    }
 }

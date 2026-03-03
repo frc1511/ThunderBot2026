@@ -113,7 +113,7 @@ public class PivotSubsystem extends ThunderSubsystem {
 
         return new CommandBuilder(this)
             .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.MIDDLE.get(), ControlType.kPosition, ClosedLoopSlot.kSlot0, -.2)) // arbFeedForward counteracts gravity
-            .isFinished(() -> m_pidController.isAtSetpoint() && Math.abs(m_pidController.getSetpoint() - Constants.Hunger.Pivot.Position.MIDDLE.get()) < Constants.Hunger.Pivot.kTolerance); // This extra NONSENSE is because the motor controller is slow or something and, uh, doesn't actually set the setpoint for a bit.
+            .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(Constants.Hunger.Pivot.Position.MIDDLE.get(), m_pidController.getSetpoint(), Constants.Hunger.Pivot.kTolerance)); // This extra NONSENSE is because the motor controller is slow or something and, uh, doesn't actually set the setpoint for a bit.
     }
 
     public Command jostle() {
