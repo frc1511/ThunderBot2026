@@ -199,13 +199,14 @@ public class Robot extends TimedRobot {
                 pivot.up()
                 .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOn())
             );
+
         driverController.start()
             .onTrue(
-                pivot.jostle()
-                .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOn()).withName("PivotJostle")
+                hungerOrchestrator.jossle()
+                .onlyIf(() -> driveDisable.isOff()).withName("HungerJossle")
             );
-
-        // if drive is disabled and one driver mode is enabled
+            
+            // if drive is disabled and one driver mode is enabled
         if (!Broken.drivetrainFullyDisabled) { // driving with joysticks
             drivetrain.setDefaultCommand(
                 drivetrain
@@ -215,7 +216,7 @@ public class Robot extends TimedRobot {
             );
         };
         auxController.leftTrigger() // outtake (hold)
-            .whileTrue(
+        .whileTrue(
                 intake.outtake()
                 .onlyIf(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff())
             );
