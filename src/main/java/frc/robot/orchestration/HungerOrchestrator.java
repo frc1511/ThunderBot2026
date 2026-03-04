@@ -35,7 +35,7 @@ public class HungerOrchestrator {
             .alongWith(intake.stopEating());
     }
 
-    public Command jossle() {
+    public Command jostle() {
         return pivot.jostle()
             .alongWith(intake.eat());
     }

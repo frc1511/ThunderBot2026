@@ -26,6 +26,7 @@ import frc.util.Constants.HangConstants;
 import frc.util.Constants.IOMap;
 import frc.util.Constants.Status;
 import frc.util.Constants.HangConstants.HangPID;
+import frc.util.Thunder.Modifiable;
 import frc.util.Thunder.ThunderSubsystem;
 
 public class HangSubsystem extends ThunderSubsystem {
@@ -178,12 +179,16 @@ public class HangSubsystem extends ThunderSubsystem {
             .onlyIf(this::isZeroed);
     }
 
+    
+    private double m_beforePosition = 0;
+
     public Command stowForTrench() {
         if (Broken.hangFullyDisabled) return Commands.none();
 
-        double beforePosition = m_pidController.getSetpoint();
-
         return new CommandBuilder(this)
+            .onInitialize(() -> {
+                m_beforePosition = m_pidController.getSetpoint();
+            })
             .onExecute(() -> {
                 if (isAtLowerLimit()) {
                     stop();
@@ -194,7 +199,7 @@ public class HangSubsystem extends ThunderSubsystem {
                 m_pidController.setSetpoint(HangConstants.kTrenchSafeDistanceRotations, ControlType.kPosition);
             })
             .onEnd(() -> {
-                m_pidController.setSetpoint(beforePosition, ControlType.kPosition);
+                m_pidController.setSetpoint(m_beforePosition, ControlType.kPosition);
             })
             .onlyIf(this::isZeroed);
     }
@@ -242,5 +247,26 @@ public class HangSubsystem extends ThunderSubsystem {
 
     public double getPosition() {
         return m_encoder.getPosition();
+    }
+
+    private double m_preJostlePosition;
+    private double m_i = 0;
+    public Command jostle() {
+        if (Broken.hangFullyDisabled) return Commands.none();
+
+        return new CommandBuilder(this)
+            .onInitialize(() -> {
+                m_i = 0;
+                m_preJostlePosition = m_pidController.getSetpoint();
+            })
+            .onExecute(() -> {
+                double delta = Constants.HangConstants.kJostleAmplitude * Math.sin(m_i * (Math.PI / 2d));
+                m_i += 0.01;
+                m_pidController.setSetpoint(m_preJostlePosition + delta, ControlType.kPosition);
+            })
+            .onEnd(() -> {
+                m_pidController.setSetpoint(m_preJostlePosition, ControlType.kPosition);
+            })
+            .isFinished(true);
     }
 }

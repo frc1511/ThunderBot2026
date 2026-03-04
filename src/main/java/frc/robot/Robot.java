@@ -136,15 +136,15 @@ public class Robot extends TimedRobot {
 
         RobotModeTriggers.disabled().onTrue(drivetrain.idle().withTimeout(.1));
 
-        driverController.x().and(driveDisable::isOff).whileTrue(drivetrain.brick()); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
-        driverController.y().and(driveDisable::isOff).whileTrue(drivetrain.toggleHubLock()); // lock and shoot
-        // driverController.b() // TODO: spooky climber shake, goal is to have the hang fully extended and wiggle to make it onto the tower
-        driverController.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric)); // reset IMU
+        driverController.x().and(driveDisable::isOff).whileTrue(drivetrain.brick().withName("DriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
+        driverController.y().and(driveDisable::isOff).whileTrue(drivetrain.toggleHubLock().withName("DriveHubLockToggle")); // lock and shoot
+        driverController.b().and(driveDisable::isOff).whileTrue(hang.jostle().withName("HangJostle"));
+        driverController.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).withName("DriveSeedFieldCentric")); // reset IMU
 
-        driverController.povUp()  .and(() -> driveDisable.isOff() && climberDisable.isOff()).whileTrue(hang.extend()).onFalse(hang.halt()); // hang go uppies (hold)
-        driverController.povDown().and(() -> driveDisable.isOff() && climberDisable.isOff()).whileTrue(hang.retract()).onFalse(hang.halt()); // hang go downies (hold)
-        driverController.povLeft().and(driveDisable::isOff).onTrue(drivetrain.increaseSpeed()); // drive go weeee
-        driverController.povRight().and(driveDisable::isOff).onTrue(drivetrain.decreaseSpeed()); // drive go snail
+        driverController.povUp()  .and(() -> driveDisable.isOff() && climberDisable.isOff()).whileTrue(hang.extend().withName("HangExtend")).onFalse(hang.halt().withName("HangHalt")); // hang go uppies (hold)
+        driverController.povDown().and(() -> driveDisable.isOff() && climberDisable.isOff()).whileTrue(hang.retract().withName("HangRetract")).onFalse(hang.halt().withName("HangHalt")); // hang go downies (hold)
+        driverController.povLeft().and(driveDisable::isOff).onTrue(drivetrain.increaseSpeed().withName("DriveSpeedInc")); // drive go weeee
+        driverController.povRight().and(driveDisable::isOff).onTrue(drivetrain.decreaseSpeed().withName("DriveSpeedDesc")); // drive go snail
 
         // driverController.leftTrigger() // trench align
         //     .whileTrue(
@@ -211,9 +211,9 @@ public class Robot extends TimedRobot {
 
         driverController.start()
             .onTrue(
-                hungerOrchestrator.jossle()
+                hungerOrchestrator.jostle()
                 .onlyIf(() -> driveDisable.isOff())
-                .withName("HungerJossle")
+                .withName("HungerJostle")
             );
             
             // if drive is disabled and one driver mode is enabled
@@ -255,7 +255,7 @@ public class Robot extends TimedRobot {
         auxController.povRight().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).onTrue(drivetrain.decreaseSpeed().withName("OneDriveBackupDriveDescSpeed")); // drive go snail
         auxController.x().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(drivetrain.brick().withName("OneDriveBackupDriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
         auxController.y().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(drivetrain.toggleHubLock().withName("OneDriveBackupDriveHubLock")); // lock and shoot
-        // auxController.b() // TODO: spooky climber shake, goal is to have the hang fully extended and wiggle to make it onto the tower
+        auxController.b().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(hang.jostle().withName("OneDriveBackupJostle")); // lock and shoot
         auxController.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).onlyIf(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff()).withName("OneDriveBackupDriveSeedFieldCentric")); // reset IMU
 
         // MARK: Aux

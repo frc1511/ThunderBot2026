@@ -285,6 +285,7 @@ public class Constants {
         double kMaxPullSpeed = -0.9;  // Retracting Hanger (pulling the robot up on the bar) FINAL DONT CHANGE
         double kMaxDeployDistanceRotations = 33;
         double kMaxPullDistanceRotations = 8; // This is NOT a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down
+        double kJostleAmplitude = 0.5;
         double kTrenchSafeDistanceRotations = 1;
     }
 
