@@ -128,8 +128,32 @@ public class Robot extends TimedRobot {
         if (!Broken.drivetrainFullyDisabled) { // driving with joysticks
             drivetrain.setDefaultCommand(
                 drivetrain
-                    .driveWithJoysticks(driverController::getLeftX, driverController::getLeftY, driverController::getRightX)
-                    .onlyIf(() -> !driverController.y().getAsBoolean() || driveDisable.isOff())
+                    .driveWithJoysticks(
+                        () -> {
+                            if (driveDisable.isOff()) {
+                                return driverController.getLeftX();
+                            } else if (driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()) {
+                                return auxController.getLeftX();
+                            }
+                            return 0;
+                        }, 
+                        () -> {
+                            if (driveDisable.isOff()) {
+                                return driverController.getLeftY();
+                            } else if (driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()) {
+                                return auxController.getLeftY();
+                            }
+                            return 0;
+                        }, 
+                        () -> {
+                            if (driveDisable.isOff()) {
+                                return driverController.getRightX();
+                            } else if (driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()) {
+                                return auxController.getRightX();
+                            }
+                            return 0;
+                        })
+                    .onlyIf(() -> !driverController.y().getAsBoolean())
                     .withName("DriveWithJoysticks")
             );
         };
@@ -212,16 +236,8 @@ public class Robot extends TimedRobot {
                 .onlyIf(() -> driveDisable.isOff())
                 .withName("HungerJostle")
             );
-            
-            // if drive is disabled and one driver mode is enabled
-        if (!Broken.drivetrainFullyDisabled) { // driving with joysticks
-            drivetrain.setDefaultCommand(
-                drivetrain
-                    .driveWithJoysticks(auxController::getLeftX, auxController::getLeftY, auxController::getRightX)
-                    .onlyIf(() -> (driveDisable.isOn() && oneDriverMode.isOn()) && (!auxController.y().getAsBoolean() || auxDisable.isOff()))
-                    .withName("DriveWithJoysticks")
-            );
-        };
+
+        // if drive is disabled and one driver mode is enabled
         auxController.leftTrigger() // outtake (hold)
             .whileTrue(
                 intake.outtake()

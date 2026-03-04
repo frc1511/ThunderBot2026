@@ -54,7 +54,10 @@ public class IntakeSubsystem extends ThunderSubsystem {
         if (Broken.intakeDisabled) return Commands.none();
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motor.setControl(new VelocityVoltage(Helpers.RPMtoRPS(Constants.Hunger.Intake.kEatRPM))))
+            .onExecute(() -> {
+                // m_motor.setControl(new VelocityVoltage(Helpers.RPMtoRPS(Constants.Hunger.Intake.kEatRPM)));
+                m_motor.set(1);
+            })
             .onEnd(m_motor::stopMotor)
             .withName(Constants.Hunger.Intake.intakeCommandName);
     }
@@ -64,7 +67,10 @@ public class IntakeSubsystem extends ThunderSubsystem {
         if (Broken.intakeDisabled) return Commands.none();
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motor.setControl(new VelocityVoltage(-Helpers.RPMtoRPS(Constants.Hunger.Intake.kEatRPM))))
+            .onExecute(() -> {
+                // m_motor.setControl(new VelocityVoltage(-Helpers.RPMtoRPS(Constants.Hunger.Intake.kEatRPM)));
+                m_motor.set(-1);
+            })
             .onEnd(m_motor::stopMotor)
             .withName(Constants.Hunger.Intake.intakeCommandName);
     }
