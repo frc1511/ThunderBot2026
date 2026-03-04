@@ -48,7 +48,7 @@ public class Constants {
 
     public static final double kControllerDeadzone = 0.3;
 
-    public static final boolean kDisconecctOnCANBroken = true; // TODO: THIS NEEDS TO BE OFF FOR COMPETITION, ONLY FOR AT HOME
+    public static final boolean kDisconecctOnCANBroken = false;
 
     public static enum Status {
         IDLE,
@@ -105,7 +105,6 @@ public class Constants {
         }
       
         public class Shooter {
-            //TODO: actual can ids
             public static final int kShooterMotorA = 21; // RIGHT
             public static final int kShooterMotorB = 20; // LEFT
             public static final int kTurretMotor = 40;
@@ -376,7 +375,7 @@ public class Constants {
 
         // The stator current at which the wheels start to slip;
         // This needs to be tuned to your individual robot
-        private static final Current kSlipCurrent = Amps.of(120); // TODO
+        private static final Current kSlipCurrent = Amps.of(120);
 
         private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration();
             // .withClosedLoopRamps(

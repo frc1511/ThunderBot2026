@@ -35,4 +35,12 @@ public class FiringOrchestrator {
             ))
         .withName("fire");
     }
+
+    public Command halt() {
+        return new ParallelCommandGroup(
+            shooter.halt(),
+            kicker.halt(),
+            spindexer.halt()
+        );
+    }
 }

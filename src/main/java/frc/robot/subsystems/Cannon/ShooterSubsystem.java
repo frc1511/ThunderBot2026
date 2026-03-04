@@ -107,6 +107,7 @@ public class ShooterSubsystem extends ThunderSubsystem {
             .onEnd(this::halt);
     }
 
+    // Used only for autos
     public Command preheat() {
         if (Broken.shooterFullyDisabled) return Commands.none();
 
@@ -116,6 +117,7 @@ public class ShooterSubsystem extends ThunderSubsystem {
             .onEnd(this::halt);
     }
 
+    // This is used in tele for preheat and fire
     public Command holdSpeedForShoot() {
         if (Broken.shooterFullyDisabled) return Commands.none();
 
