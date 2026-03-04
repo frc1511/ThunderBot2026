@@ -97,7 +97,7 @@ public class PivotSubsystem extends ThunderSubsystem {
 
         return new CommandBuilder(this)
             .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.BOTTOM.get(), ControlType.kPosition))
-            .isFinished(m_pidController::isAtSetpoint);
+            .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(Constants.Hunger.Pivot.Position.BOTTOM.get(), m_pidController.getSetpoint(), Constants.Hunger.Pivot.kTolerance));
     }
 
     public Command up() {
@@ -105,7 +105,7 @@ public class PivotSubsystem extends ThunderSubsystem {
 
         return new CommandBuilder(this)
             .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.TOP.get(), ControlType.kPosition))
-            .isFinished(m_pidController::isAtSetpoint);
+            .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(Constants.Hunger.Pivot.Position.TOP.get(), m_pidController.getSetpoint(), Constants.Hunger.Pivot.kTolerance));
     }
 
     public Command middle() {
@@ -119,7 +119,8 @@ public class PivotSubsystem extends ThunderSubsystem {
     public Command jostle() {
         if (Broken.pivotDisabled) return Commands.none();
 
-        return middle().andThen(down());
+        return middle()
+            .andThen(down());
     }
 
     public Command manual_pivot(DoubleSupplier speed) {

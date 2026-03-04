@@ -136,7 +136,7 @@ public class Robot extends TimedRobot {
                                 return auxController.getLeftX();
                             }
                             return 0;
-                        }, 
+                        },
                         () -> {
                             if (driveDisable.isOff()) {
                                 return driverController.getLeftY();
@@ -144,7 +144,7 @@ public class Robot extends TimedRobot {
                                 return auxController.getLeftY();
                             }
                             return 0;
-                        }, 
+                        },
                         () -> {
                             if (driveDisable.isOff()) {
                                 return driverController.getRightX();
