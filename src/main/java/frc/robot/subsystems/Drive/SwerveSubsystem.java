@@ -30,6 +30,8 @@ public interface SwerveSubsystem extends ThunderInterface {
 
     public Command toggleHubLock();
 
+    public Command toggleTrenchLock();
+
     public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX);
 
     public Command brick();

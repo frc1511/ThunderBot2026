@@ -146,10 +146,7 @@ public class Robot extends TimedRobot {
         driverController.povLeft().and(driveDisable::isOff).onTrue(drivetrain.increaseSpeed().withName("DriveSpeedInc")); // drive go weeee
         driverController.povRight().and(driveDisable::isOff).onTrue(drivetrain.decreaseSpeed().withName("DriveSpeedDesc")); // drive go snail
 
-        // driverController.leftTrigger() // trench align
-        //     .whileTrue(
-        //         TODO: trench align
-        //     );
+        driverController.leftTrigger().and(driveDisable::isOff).whileTrue(drivetrain.toggleTrenchLock().withName("DriveTrenchLockToggle"));
         driverController.rightTrigger() // temporary robot centric
             .whileTrue(
                 new CommandBuilder()
@@ -226,7 +223,7 @@ public class Robot extends TimedRobot {
             );
         };
         auxController.leftTrigger() // outtake (hold)
-        .whileTrue(
+            .whileTrue(
                 intake.outtake()
                 .onlyIf(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff())
                 .withName("OneDriveBackupIntakeOuttake")

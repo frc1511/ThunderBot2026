@@ -76,6 +76,10 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     private double m_arcLockTheta;
     
     private boolean m_hubLock = false;
+    
+    private boolean m_trenchLock = false;
+    
+    private double m_trenchXPos = 0;
 
     private boolean m_isMoving = false;
 
@@ -196,6 +200,23 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             .isFinished(true);
     }
 
+    public Command toggleTrenchLock() {
+        return new CommandBuilder()
+            .onExecute(() -> {
+                if (m_trenchLock) {
+                    m_trenchLock = false;
+                    return;
+                }
+                Translation2d closestTrench = ZoneConstants.closestTrench(currentPose().getTranslation());
+
+                if (closestTrench.getDistance(currentPose().getTranslation()) > Constants.Swerve.kTrenchLockMaxDist) return;
+
+                m_trenchXPos = closestTrench.getX();
+                m_trenchLock = true;
+            })
+            .isFinished(true);
+    }
+
     public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX) {
         return applyRequest(() -> {
             // YES! The y and x are swapped on purpose, it has to do with coordinate systems in the library so just leave it like this please!
@@ -217,6 +238,17 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                         Math.hypot(dX, dY),
                         targetAngle
                     ).omegaRadiansPerSecond * Swerve.kMaxAngularRate;
+            }
+
+            if (m_trenchLock) {
+                Translation2d currentTranslation = currentPose().getTranslation();
+                
+                vx = m_driveController.calculate(
+                        currentPose(),
+                        new Pose2d(new Translation2d(m_trenchXPos, currentTranslation.getY()), currentPose().getRotation()),
+                        0,
+                        currentPose().getRotation()
+                    ).vxMetersPerSecond * Swerve.kMaxSpeed;
             }
 
             if (m_ensureTheta) {

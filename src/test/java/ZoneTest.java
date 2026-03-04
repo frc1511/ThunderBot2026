@@ -1,4 +1,5 @@
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Rectangle2d;
@@ -31,5 +32,10 @@ class ZoneTest {
       assert rect.getYWidth() > 0;
       assertNotEquals(rect, new Rectangle2d(Translation2d.kZero, Translation2d.kZero), "Zone is zero! Invalid Zone");
     }
+  }
+
+  @Test
+  void nonZeroLenTrenches() {
+    assertTrue(ZoneConstants.trenchCache.size() >= 1);
   }
 }

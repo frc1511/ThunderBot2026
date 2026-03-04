@@ -44,6 +44,10 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
         return Commands.none();
     }
 
+    public Command toggleTrenchLock() {
+        return Commands.none();
+    }
+
     public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX) {
         return new InstantCommand(() -> {}, this);
     }

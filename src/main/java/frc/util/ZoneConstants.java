@@ -52,6 +52,26 @@ public class ZoneConstants {
             new Translation2d(leftPoint.getMeasureY(), leftPoint.getMeasureX()));
     }
 
+    public static Translation2d trenchPoint(boolean isBump, boolean isBlueSide, boolean isRightSide) {
+        Translation2d rightPoint = kRightBlueTrenchCenterSidePoint;
+        Translation2d leftPoint = kRightBlueTrenchCenterSidePoint;
+
+        if (!isBlueSide) {
+            isRightSide = !isRightSide;
+        }
+
+        Translation2d trenchOffset = new Translation2d(
+            (!isRightSide ? kBumpWidth.times(2).plus(kTrenchWidth) // If on the left, add everything thats to the right of it
+                : Units.Meters.zero())
+            , Units.Meters.zero());
+
+        rightPoint = rightPoint.plus(trenchOffset);
+        leftPoint = leftPoint.plus(trenchOffset);
+        leftPoint = leftPoint.plus(new Translation2d(kTrenchWidth, Units.Meters.zero()));
+
+        return new Translation2d(rightPoint.getMeasureY(), rightPoint.getMeasureX()).interpolate(new Translation2d(leftPoint.getMeasureY(), leftPoint.getMeasureX()), 0.5);
+    }
+
     public static class ZoneInfo {
         public boolean isBump = false;
         public boolean isBlueSide = false;
@@ -86,6 +106,7 @@ public class ZoneConstants {
     }
 
     private static LinkedHashSet<Pair<Rectangle2d, ZoneInfo>> zoneCache = new LinkedHashSet<Pair<Rectangle2d, ZoneInfo>>();
+    public static LinkedHashSet<Translation2d> trenchCache = new LinkedHashSet<Translation2d>();
 
     static {
         for (int i = 0; i < 0x0F; i++) {
@@ -102,6 +123,10 @@ public class ZoneConstants {
             zoneInfo.isRightSide = isRightSide;
 
             zoneCache.add(new Pair<Rectangle2d,ZoneConstants.ZoneInfo>(rect, zoneInfo));
+            if (isDSside) {
+                Translation2d trenchPoint = trenchPoint(isBump, isBlueSide, isRightSide);
+                trenchCache.add(trenchPoint);
+            }
         }
     }
 
@@ -119,5 +144,19 @@ public class ZoneConstants {
             }
         });
         return determined;
+    }
+
+    public static Translation2d closestTrench(Translation2d position) {
+        Translation2d closestPoint = new Translation2d();
+        double closestDistance = 1E9d;
+        for (Translation2d trenchPoint : trenchCache) {
+            double dist = position.getDistance(trenchPoint);
+            if (dist < closestDistance) {
+                closestPoint = trenchPoint;
+                closestDistance = dist;
+            }
+        }
+
+        return closestPoint;
     }
 }

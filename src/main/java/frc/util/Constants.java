@@ -299,6 +299,7 @@ public class Constants {
         public static final double kSpeedStep = 0.1; // Amount to step speed for the inc/dec btns
 
         public static final double kShooterOffset = .351; // meters
+        public static final double kTrenchLockMaxDist = 3; // meters
 
         private static final double kCoupleRatio = 3.125;
 
