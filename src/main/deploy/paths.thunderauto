@@ -21,12 +21,18 @@
       "img_type": 1
     },
     "robot_corner_radius": 0.2,
-    "robot_length": 0.7620000243186951,
-    "robot_width": 0.6349999904632568,
+    "robot_length": 0.6349999904632568,
+    "robot_width": 0.7620000243186951,
     "version_major": 2026
   },
   "state": {
     "actions": {
+      "AlignHang": {
+        "type": "command"
+      },
+      "AlignTrench": {
+        "type": "command"
+      },
       "HangDown": {
         "type": "command"
       },
@@ -48,7 +54,9 @@
       "HangUp",
       "HangDown",
       "Intake",
-      "StopIntake"
+      "StopIntake",
+      "AlignHang",
+      "AlignTrench"
     ],
     "auto_modes": {
       "Basic": {
@@ -70,16 +78,112 @@
             "type": "action"
           }
         ]
+      },
+      "Left 1": {
+        "steps": [
+          {
+            "action": "Shoot",
+            "type": "action"
+          },
+          {
+            "trajectory": "Left 1 Part 1",
+            "type": "trajectory"
+          },
+          {
+            "action": "Intake",
+            "type": "action"
+          },
+          {
+            "trajectory": "Left 1 Part 2",
+            "type": "trajectory"
+          },
+          {
+            "action": "StopIntake",
+            "type": "action"
+          },
+          {
+            "action": "HangUp",
+            "type": "action"
+          },
+          {
+            "trajectory": "Left 1 Part 3",
+            "type": "trajectory"
+          },
+          {
+            "action": "HangDown",
+            "type": "action"
+          }
+        ]
+      },
+      "Right 1": {
+        "steps": [
+          {
+            "action": "Shoot",
+            "type": "action"
+          },
+          {
+            "trajectory": "Right 1 Part 1",
+            "type": "trajectory"
+          },
+          {
+            "trajectory": "Right 1 Part 2",
+            "type": "trajectory"
+          },
+          {
+            "action": "Intake",
+            "type": "action"
+          },
+          {
+            "trajectory": "Right 1 Part 3",
+            "type": "trajectory"
+          },
+          {
+            "action": "StopIntake",
+            "type": "action"
+          },
+          {
+            "trajectory": "Right 1 Part 4",
+            "type": "trajectory"
+          },
+          {
+            "trajectory": "Right 1 Part 5",
+            "type": "trajectory"
+          },
+          {
+            "trajectory": "Right 1 Part 6",
+            "type": "trajectory"
+          },
+          {
+            "action": "Shoot",
+            "type": "action"
+          },
+          {
+            "action": "HangUp",
+            "type": "action"
+          },
+          {
+            "trajectory": "Right 1 Part 7",
+            "type": "trajectory"
+          },
+          {
+            "action": "AlignHang",
+            "type": "action"
+          },
+          {
+            "action": "HangDown",
+            "type": "action"
+          }
+        ]
       }
     },
     "editor_state": {
       "auto_mode_editor_state": {
-        "current_auto_mode_name": "Basic"
+        "current_auto_mode_name": "Right 1"
       },
       "trajectory_editor_state": {
-        "current_trajectory_name": "test_complex_shoot"
+        "current_trajectory_name": "Right 1 Part 3"
       },
-      "view": 1
+      "view": 2
     },
     "trajectories": {
       "HangFromShootPosition": {
@@ -127,6 +231,657 @@
         },
         "start_rotation": 0.0
       },
+      "Left 1 Original": {
+        "end_action": "StopIntake",
+        "end_rotation": 3.141592653589793,
+        "points": [
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0,
+              "outgoing_weight": 1.6928631067276
+            },
+            "headings": {
+              "incoming_angle": -1.2246467991473532e-16,
+              "outgoing_angle": 3.141592653589793
+            },
+            "link": "",
+            "position": {
+              "x": 3.656898260116577,
+              "y": 5.936779499053955
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 0.29833489656448364,
+              "outgoing_weight": 0.42777279019355774
+            },
+            "headings": {
+              "incoming_angle": -1.2246467991473532e-16,
+              "outgoing_angle": 3.141592653589793
+            },
+            "link": "",
+            "position": {
+              "x": 0.7018663287162781,
+              "y": 5.940000057220459
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.3122039900251214,
+              "outgoing_weight": 1.0
+            },
+            "headings": {
+              "incoming_angle": 2.2378925995974233,
+              "outgoing_angle": -0.9037000539923697
+            },
+            "link": "",
+            "position": {
+              "x": 0.9397934675216675,
+              "y": 4.650478839874268
+            }
+          }
+        ],
+        "settings": {
+          "max_angular_accel": 4.71238898038469,
+          "max_angular_velocity": 4.71238898038469,
+          "max_centripetal_accel": 19.6200008392334,
+          "max_linear_accel": 2.0,
+          "max_linear_velocity": 2.0
+        },
+        "start_action": "Intake",
+        "start_rotation": 3.141592653589793
+      },
+      "Left 1 Part 1": {
+        "end_action": "StopIntake",
+        "end_rotation": 3.141592653589793,
+        "points": [
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0,
+              "outgoing_weight": 1.6928631067276
+            },
+            "headings": {
+              "incoming_angle": -1.2246467991473532e-16,
+              "outgoing_angle": 3.141592653589793
+            },
+            "link": "",
+            "position": {
+              "x": 3.656898260116577,
+              "y": 5.936779499053955
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.3122040033340454,
+              "outgoing_weight": 1.0
+            },
+            "headings": {
+              "incoming_angle": -1.2246467991473532e-16,
+              "outgoing_angle": 3.141592653589793
+            },
+            "link": "",
+            "position": {
+              "x": 1.0,
+              "y": 5.940000057220459
+            }
+          }
+        ],
+        "settings": {
+          "max_angular_accel": 4.71238898038469,
+          "max_angular_velocity": 4.71238898038469,
+          "max_centripetal_accel": 19.6200008392334,
+          "max_linear_accel": 2.0,
+          "max_linear_velocity": 2.0
+        },
+        "start_action": "Intake",
+        "start_rotation": 3.141592653589793
+      },
+      "Left 1 Part 2": {
+        "end_action": "StopIntake",
+        "end_rotation": 3.141592653589793,
+        "points": [
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0,
+              "outgoing_weight": 1.5
+            },
+            "headings": {
+              "incoming_angle": 1.2246467991473532e-16,
+              "outgoing_angle": -3.141592653589793
+            },
+            "link": "",
+            "position": {
+              "x": 1.0,
+              "y": 5.936779499053955
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 0.25,
+              "outgoing_weight": 1.0
+            },
+            "headings": {
+              "incoming_angle": -1.2246467991473532e-16,
+              "outgoing_angle": 3.141592653589793
+            },
+            "link": "",
+            "position": {
+              "x": 1.0,
+              "y": 5.940000057220459
+            }
+          }
+        ],
+        "settings": {
+          "max_angular_accel": 4.71238898038469,
+          "max_angular_velocity": 4.71238898038469,
+          "max_centripetal_accel": 19.6200008392334,
+          "max_linear_accel": 2.0,
+          "max_linear_velocity": 2.0
+        },
+        "start_action": "Intake",
+        "start_rotation": 3.141592653589793
+      },
+      "Left 1 Part 3": {
+        "end_action": "StopIntake",
+        "end_rotation": 3.141592653589793,
+        "points": [
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0,
+              "outgoing_weight": 0.30000001192092896
+            },
+            "headings": {
+              "incoming_angle": -1.2246467991473532e-16,
+              "outgoing_angle": 3.141592653589793
+            },
+            "link": "",
+            "position": {
+              "x": 1.0,
+              "y": 5.936779499053955
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.3122039900251214,
+              "outgoing_weight": 1.0
+            },
+            "headings": {
+              "incoming_angle": 2.2378925995974233,
+              "outgoing_angle": -0.9037000539923697
+            },
+            "link": "",
+            "position": {
+              "x": 0.9397934675216675,
+              "y": 4.650478839874268
+            }
+          }
+        ],
+        "settings": {
+          "max_angular_accel": 4.71238898038469,
+          "max_angular_velocity": 4.71238898038469,
+          "max_centripetal_accel": 19.6200008392334,
+          "max_linear_accel": 2.0,
+          "max_linear_velocity": 2.0
+        },
+        "start_action": "Intake",
+        "start_rotation": 3.141592653589793
+      },
+      "Right 1 Original": {
+        "end_rotation": -1.5633952268167612,
+        "points": [
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0,
+              "outgoing_weight": 2.727681150223484
+            },
+            "headings": {
+              "incoming_angle": -1.975391246181139,
+              "outgoing_angle": 1.1662014074086542
+            },
+            "link": "",
+            "position": {
+              "x": 13.032038688659668,
+              "y": 5.977464199066162
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 0.7499330375413119,
+              "outgoing_weight": 1.0473126663122778
+            },
+            "headings": {
+              "incoming_angle": 1.1863236492619744,
+              "outgoing_angle": -1.9552690043278187
+            },
+            "link": "",
+            "position": {
+              "x": 9.05904769897461,
+              "y": 6.687566757202148
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0616512337225579,
+              "outgoing_weight": 0.9634236674284352
+            },
+            "headings": {
+              "incoming_angle": 1.9136996622918483,
+              "outgoing_angle": -1.227892991297945
+            },
+            "link": "",
+            "position": {
+              "x": 8.756685256958008,
+              "y": 4.297064304351807
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 7.92034474658164,
+              "outgoing_weight": 0.25
+            },
+            "headings": {
+              "incoming_angle": 3.1307853544920623,
+              "outgoing_angle": -0.010807299097730816
+            },
+            "link": "",
+            "position": {
+              "x": 14.772402210199091,
+              "y": 7.560988050173539
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.1365576274506608,
+              "outgoing_weight": 0.25
+            },
+            "headings": {
+              "incoming_angle": 2.9280740263415606,
+              "outgoing_angle": -0.2135186272482329
+            },
+            "link": "",
+            "position": {
+              "x": 16.083984375,
+              "y": 7.394388198852539
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.6683130438264047,
+              "outgoing_weight": 1.0
+            },
+            "headings": {
+              "incoming_angle": 1.4285354019302237,
+              "outgoing_angle": -1.7130572516595697
+            },
+            "link": "",
+            "position": {
+              "x": 15.480802536010742,
+              "y": 5.37600040435791
+            }
+          }
+        ],
+        "rotations": [
+          {
+            "item": {
+              "angle": -1.5707963267948966,
+              "editor_locked": false
+            },
+            "position": 1.0
+          },
+          {
+            "item": {
+              "angle": -1.5707963267948966,
+              "editor_locked": false
+            },
+            "position": 2.660753680107375
+          },
+          {
+            "item": {
+              "angle": 0.0,
+              "editor_locked": false
+            },
+            "position": 3.9687496647677
+          }
+        ],
+        "settings": {
+          "max_angular_accel": 4.71238898038469,
+          "max_angular_velocity": 4.71238898038469,
+          "max_centripetal_accel": 19.62,
+          "max_linear_accel": 2.0,
+          "max_linear_velocity": 2.0
+        },
+        "start_rotation": 3.141592653589793
+      },
+      "Right 1 Part 1": {
+        "end_rotation": 3.141592653589793,
+        "points": [
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0,
+              "outgoing_weight": 0.8427530488113358
+            },
+            "headings": {
+              "incoming_angle": -2.0158031075071254,
+              "outgoing_angle": 1.1257895460826677
+            },
+            "link": "",
+            "position": {
+              "x": 12.832840919494629,
+              "y": 5.815816879272461
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 0.47934435368994904,
+              "outgoing_weight": 1.0
+            },
+            "headings": {
+              "incoming_angle": -1.1235724416622546,
+              "outgoing_angle": 2.0180202119275386
+            },
+            "link": "",
+            "position": {
+              "x": 12.867391586303711,
+              "y": 7.492760181427002
+            }
+          }
+        ],
+        "settings": {
+          "max_angular_accel": 4.71238898038469,
+          "max_angular_velocity": 4.71238898038469,
+          "max_centripetal_accel": 19.62,
+          "max_linear_accel": 2.0,
+          "max_linear_velocity": 2.0
+        },
+        "start_rotation": 3.141592653589793
+      },
+      "Right 1 Part 2": {
+        "end_rotation": -1.5707963267948966,
+        "points": [
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0,
+              "outgoing_weight": 1.6914541534079761
+            },
+            "headings": {
+              "incoming_angle": -0.07324328018485766,
+              "outgoing_angle": 3.0683493734049354
+            },
+            "link": "",
+            "position": {
+              "x": 12.869999885559082,
+              "y": 7.489999771118164
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 0.5627387711752424,
+              "outgoing_weight": 1.0
+            },
+            "headings": {
+              "incoming_angle": 0.31226209515070813,
+              "outgoing_angle": -2.8293305584390853
+            },
+            "link": "",
+            "position": {
+              "x": 8.876869201660156,
+              "y": 6.801236629486084
+            }
+          }
+        ],
+        "settings": {
+          "max_angular_accel": 4.71238898038469,
+          "max_angular_velocity": 4.71238898038469,
+          "max_centripetal_accel": 19.62,
+          "max_linear_accel": 2.0,
+          "max_linear_velocity": 2.0
+        },
+        "start_rotation": 3.141592653589793
+      },
+      "Right 1 Part 3": {
+        "end_rotation": -1.5707963267948966,
+        "points": [
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0,
+              "outgoing_weight": 1.3301011323928833
+            },
+            "headings": {
+              "incoming_angle": 1.5707963267948968,
+              "outgoing_angle": -1.5707963267948966
+            },
+            "link": "",
+            "position": {
+              "x": 8.880000114440918,
+              "y": 6.800000190734863
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 0.5627387762069702,
+              "outgoing_weight": 1.0
+            },
+            "headings": {
+              "incoming_angle": 1.5707963267948968,
+              "outgoing_angle": -1.5707963267948966
+            },
+            "link": "",
+            "position": {
+              "x": 8.880000114440918,
+              "y": 4.372262954711914
+            }
+          }
+        ],
+        "settings": {
+          "max_angular_accel": 4.71238898038469,
+          "max_angular_velocity": 4.71238898038469,
+          "max_centripetal_accel": 19.62,
+          "max_linear_accel": 2.0,
+          "max_linear_velocity": 2.0
+        },
+        "start_rotation": -1.5707963267948966
+      },
+      "Right 1 Part 4": {
+        "end_rotation": 0.0,
+        "points": [
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0,
+              "outgoing_weight": 1.7452585842716448
+            },
+            "headings": {
+              "incoming_angle": -2.17408712407441,
+              "outgoing_angle": 0.9675055295153832
+            },
+            "link": "",
+            "position": {
+              "x": 8.880000114440918,
+              "y": 4.369999885559082
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.7027869079755409,
+              "outgoing_weight": 1.0
+            },
+            "headings": {
+              "incoming_angle": -2.19363633567039,
+              "outgoing_angle": 0.9479563179194033
+            },
+            "link": "",
+            "position": {
+              "x": 11.044880867004395,
+              "y": 7.449539661407471
+            }
+          }
+        ],
+        "settings": {
+          "max_angular_accel": 4.71238898038469,
+          "max_angular_velocity": 4.71238898038469,
+          "max_centripetal_accel": 19.62,
+          "max_linear_accel": 2.0,
+          "max_linear_velocity": 2.0
+        },
+        "start_rotation": -1.5707963267948966
+      },
+      "Right 1 Part 5": {
+        "end_rotation": 0.0,
+        "points": [
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0,
+              "outgoing_weight": 2.8233180046081543
+            },
+            "headings": {
+              "incoming_angle": 3.141592653589793,
+              "outgoing_angle": -0.0
+            },
+            "link": "",
+            "position": {
+              "x": 11.039999961853027,
+              "y": 7.449999809265137
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 2.3325252532958984,
+              "outgoing_weight": 1.0
+            },
+            "headings": {
+              "incoming_angle": -3.141592653589793,
+              "outgoing_angle": 0.0
+            },
+            "link": "",
+            "position": {
+              "x": 16.141002655029297,
+              "y": 7.423607349395752
+            }
+          }
+        ],
+        "settings": {
+          "max_angular_accel": 4.71238898038469,
+          "max_angular_velocity": 4.71238898038469,
+          "max_centripetal_accel": 19.62,
+          "max_linear_accel": 2.0,
+          "max_linear_velocity": 2.0
+        },
+        "start_rotation": 0.0
+      },
+      "Right 1 Part 6": {
+        "end_rotation": -2.4084025256566957,
+        "points": [
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0,
+              "outgoing_weight": 0.8041477330431842
+            },
+            "headings": {
+              "incoming_angle": 0.7378800769393867,
+              "outgoing_angle": -2.4037125766504066
+            },
+            "link": "",
+            "position": {
+              "x": 16.139999389648438,
+              "y": 7.420000076293945
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 0.9765543278267467,
+              "outgoing_weight": 1.0
+            },
+            "headings": {
+              "incoming_angle": 0.9365053862230992,
+              "outgoing_angle": -2.205087267366694
+            },
+            "link": "",
+            "position": {
+              "x": 14.76763916015625,
+              "y": 6.01462984085083
+            }
+          }
+        ],
+        "settings": {
+          "max_angular_accel": 4.71238898038469,
+          "max_angular_velocity": 4.71238898038469,
+          "max_centripetal_accel": 19.62,
+          "max_linear_accel": 2.0,
+          "max_linear_velocity": 2.0
+        },
+        "start_rotation": 0.0
+      },
+      "Right 1 Part 7": {
+        "end_rotation": -3.115937658387699,
+        "points": [
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0,
+              "outgoing_weight": 0.2594270807147654
+            },
+            "headings": {
+              "incoming_angle": 2.2440026803785313,
+              "outgoing_angle": -0.8975899732112618
+            },
+            "link": "",
+            "position": {
+              "x": 14.770000457763672,
+              "y": 6.010000228881836
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 0.25,
+              "outgoing_weight": 1.0
+            },
+            "headings": {
+              "incoming_angle": 2.466474809036794,
+              "outgoing_angle": -0.6751178445529996
+            },
+            "link": "",
+            "position": {
+              "x": 15.415451049804688,
+              "y": 5.245310306549072
+            }
+          }
+        ],
+        "settings": {
+          "max_angular_accel": 4.71238898038469,
+          "max_angular_velocity": 4.71238898038469,
+          "max_centripetal_accel": 19.62,
+          "max_linear_accel": 2.0,
+          "max_linear_velocity": 2.0
+        },
+        "start_rotation": -2.4083799307007747
+      },
       "ShootFromStart": {
         "end_rotation": 0.0,
         "points": [
@@ -153,7 +908,7 @@
               "outgoing_weight": 0.2838896753846713
             },
             "headings": {
-              "incoming_angle": -0.04086123276161368,
+              "incoming_angle": -0.04086123276161371,
               "outgoing_angle": 3.1007314208281795
             },
             "link": "",
@@ -242,11 +997,11 @@
             "editor_locked": false,
             "heading_weights": {
               "incoming_weight": 1.0,
-              "outgoing_weight": 1.0395920276641846
+              "outgoing_weight": 1.158930778503418
             },
             "headings": {
-              "incoming_angle": 1.2246467991473532e-16,
-              "outgoing_angle": -3.141592653589793
+              "incoming_angle": -0.0034578483593589284,
+              "outgoing_angle": 3.1381348052304343
             },
             "link": "",
             "position": {
@@ -257,12 +1012,12 @@
           {
             "editor_locked": false,
             "heading_weights": {
-              "incoming_weight": 0.6170077323913574,
+              "incoming_weight": 0.5983566370976607,
               "outgoing_weight": 0.9718061685562134
             },
             "headings": {
-              "incoming_angle": -1.5707963267948968,
-              "outgoing_angle": 1.5707963267948966
+              "incoming_angle": -1.55493633036319,
+              "outgoing_angle": 1.586656323226603
             },
             "link": "",
             "position": {
@@ -303,7 +1058,7 @@
           "max_linear_accel": 2.0,
           "max_linear_velocity": 2.0
         },
-        "start_rotation": 0.020417959919771696
+        "start_rotation": 0.02041796089612233
       }
     },
     "trajectory_end_behavior_links": [],
