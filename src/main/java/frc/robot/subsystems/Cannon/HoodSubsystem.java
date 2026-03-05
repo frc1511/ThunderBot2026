@@ -37,6 +37,8 @@ public class HoodSubsystem extends ThunderSubsystem {
 
     private boolean isUsingInbuiltEncoder = false;
 
+    private double trueSetpoint = 0;
+
     private DoubleSupplier optimalAngleSupplier = () -> 0;
 
     public HoodSubsystem() {
@@ -65,9 +67,6 @@ public class HoodSubsystem extends ThunderSubsystem {
             } else if (Broken.hoodBeamBreakDisabled) {
                 forceZeroEncoders();
             }
-            new Trigger(this::isAtZero).onTrue(new InstantCommand(() -> {
-                forceZeroEncoders();
-            }));
 
             if (!Helpers.onCANChain(m_encoder)) {
                 forceZeroEncoders();
@@ -101,17 +100,13 @@ public class HoodSubsystem extends ThunderSubsystem {
         SmartDashboard.putNumber("hood_vel", m_encoder.getVelocity().getValueAsDouble());
         SmartDashboard.putBoolean("hood_atPos", atPosition());
         SmartDashboard.putNumber("hood_output_V", m_motor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("hood_target", m_motor.getClosedLoopReference().getValueAsDouble());
+        SmartDashboard.putNumber("hood_target", trueSetpoint);
         SmartDashboard.putBoolean("hood_isZeroed", isZeroed());
         SmartDashboard.putBoolean("hood_zeroSensorTripped", isAtZero());
         SmartDashboard.putNumber("hood_err", m_motor.getClosedLoopError().getValueAsDouble());
 
-        if (m_motor.getPosition().getValueAsDouble() < Constants.Hood.Position.BOTTOM.get() || m_motor.getPosition().getValueAsDouble() > Constants.Hood.Position.TOP.get()) {
-            halt();
-        }
-
         if (!isZeroed()) {
-            CommandScheduler.getInstance().schedule(zero());
+            // CommandScheduler.getInstance().schedule(zero().withName("HoodZeroInbuilt"));
         }
     }
 
@@ -152,16 +147,32 @@ public class HoodSubsystem extends ThunderSubsystem {
         }
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motor.set(-Hood.kZeroingSpeed))
-            .isFinished(this::isZeroed)
-            .onEnd(() -> m_motor.stopMotor());
+            .onExecute(() -> {
+                if (!isZeroed()) 
+                    m_motor.set(-Hood.kZeroingSpeed);
+                else 
+                    m_motor.stopMotor();
+            })
+            .isFinished(() -> {
+                if (isAtZero()) {
+                    forceZeroEncoders();
+                    m_motor.stopMotor();
+                }
+                return isAtZero();
+            });
     }
 
     public Command toPosition(Supplier<Double> targetPosition) {
         if (Broken.hoodDisabled) return Commands.none();
 
         return new CommandBuilder(this) 
-            .onExecute(() -> m_motor.setControl(new PositionVoltage(targetPosition.get())))
+            .onInitialize(() -> {
+                trueSetpoint = targetPosition.get();
+            })
+            .onExecute(() -> {
+                trueSetpoint = targetPosition.get();
+                m_motor.setControl(new PositionVoltage(trueSetpoint));
+            })
             .isFinished(this::atPosition)
             .onlyIf(this::isZeroed);
     }
@@ -178,7 +189,7 @@ public class HoodSubsystem extends ThunderSubsystem {
     public boolean safeForTrench() {
         if (Broken.hoodDisabled) return false;
         
-        return (m_motor.getClosedLoopReference().getValueAsDouble() == Constants.Hood.Position.BOTTOM.get() && atPosition()) || isAtZero();
+        return (trueSetpoint == Constants.Hood.Position.BOTTOM.get() && atPosition()) || isAtZero();
     }
 
     public Command stowForTrench() {
@@ -187,7 +198,13 @@ public class HoodSubsystem extends ThunderSubsystem {
         double currentSetpoint = m_motor.getClosedLoopReference().getValueAsDouble();
 
         return new CommandBuilder(this) 
-            .onExecute(() -> m_motor.setControl(new PositionVoltage(Constants.Hood.Position.TRENCH.get())))
+            .onInitialize(() -> {
+                trueSetpoint = Constants.Hood.Position.TRENCH.get();
+            })
+            .onExecute(() -> {
+                trueSetpoint = Constants.Hood.Position.TRENCH.get();
+                m_motor.setControl(new PositionVoltage(trueSetpoint));
+            })
             .onEnd(() -> m_motor.setControl(new PositionVoltage(currentSetpoint)))
             .onlyIf(this::isZeroed);
     }
@@ -234,15 +251,20 @@ public class HoodSubsystem extends ThunderSubsystem {
         if (Broken.hoodDisabled) return Commands.none();
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motor.setControl(new PositionVoltage(optimalAngleSupplier.getAsDouble())))
+            .onInitialize(() -> {
+                trueSetpoint = optimalAngleSupplier.getAsDouble();
+            })
+            .onExecute(() -> {
+                trueSetpoint = optimalAngleSupplier.getAsDouble();
+                m_motor.setControl(new PositionVoltage(trueSetpoint));
+            })
             .isFinished(this::atPosition)
             .onlyIf(this::isZeroed);
     }
 
     public Constants.Hood.Position getTargetPosition() {
-        double target = m_motor.getClosedLoopReference().getValueAsDouble();
         for (Constants.Hood.Position preset : Constants.Hood.Position.getAll()) {
-            if (target == preset.get()) {
+            if (trueSetpoint == preset.get()) {
                 return preset;
             }
         }

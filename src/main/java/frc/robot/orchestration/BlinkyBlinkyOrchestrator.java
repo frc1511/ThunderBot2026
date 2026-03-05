@@ -86,6 +86,7 @@ public class BlinkyBlinkyOrchestrator {
                     m_currentMode = Constants.BlinkyBlinky.Mode.NONE;
                 }
             })
-            .ignoringDisable(true);
+            .ignoringDisable(true)
+            .withName("BlinkySet");
     }
 }
