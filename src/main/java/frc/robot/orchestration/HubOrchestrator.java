@@ -118,7 +118,11 @@ public class HubOrchestrator {
     }
 
     public double getOptimalShootSpeed() {
-        return latestConvergance.getFirst().speedRPM;
+        if (cannonOrchestrator.hood.getTargetPosition() == Constants.Hood.Position.FEED) {
+            return Constants.Shooter.kFeedRPM;
+        } else {
+            return latestConvergance.getFirst().speedRPM;
+        }
     }
 
     public double getOptimalHoodAngle() {

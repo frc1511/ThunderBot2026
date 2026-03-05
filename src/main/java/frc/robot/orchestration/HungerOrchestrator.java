@@ -37,7 +37,7 @@ public class HungerOrchestrator {
 
     public Command jostle() {
         return pivot.jostle()
-            .alongWith(intake.eat());
+            .raceWith(intake.eat());
     }
 
     public boolean isIntaking() {
