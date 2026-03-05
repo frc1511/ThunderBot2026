@@ -37,7 +37,7 @@ public class BlinkyBlinkyOrchestrator {
             switch (m_currentMode) {
                 case NONE:
                     m_buffer.forEach((index, r, g, b) -> {
-                        m_buffer.setHSV(index, ((index / Constants.BlinkyBlinky.kLength * 180) + frame * 10) % 180, 0, 0);
+                        m_buffer.setHSV(index, ((index / Constants.BlinkyBlinky.kLength * 180) + frame / 5) % 180, 255, 255);
                     });
                     break;
                 case INTAKING:
@@ -59,7 +59,7 @@ public class BlinkyBlinkyOrchestrator {
                     break;
                 case HOME:
                     m_buffer.forEach((index, r, g, b) -> {
-                        m_buffer.setHSV(index, 0, 0, 255);
+                        m_buffer.setHSV(index, 50, 20, 255);
                     });
                     break;
                 case TRENCH_SAFE:

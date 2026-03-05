@@ -137,6 +137,12 @@ public class PivotSubsystem extends ThunderSubsystem {
             .onExecute(() -> m_motor.setVoltage(voltage.getAsDouble()));
     }
 
+    public boolean isIn() {
+        if (Broken.pivotDisabled) return true;
+
+        return Helpers.ensureTarget(Constants.Hunger.Pivot.Position.TOP.get(), m_builtinEncoder.getPosition(), 0.1);
+    }
+
     public Status status() {
         if (Broken.pivotDisabled) return Status.DISABLED;
         if (!Helpers.onCANChain(m_motor)) return Status.DISCONNECTED;
