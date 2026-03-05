@@ -1,6 +1,7 @@
 package frc.robot.orchestration;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.Robot;
 import frc.robot.subsystems.Cannon.HoodSubsystem;
@@ -23,17 +24,25 @@ public class FiringOrchestrator {
     }
 
     public Command fire() {
-        return new ParallelCommandGroup(
-            shooter.preheat(),
-            hood.toOptimalPosition()
-        ).andThen(
-            new ParallelCommandGroup(
-                shooter.holdSpeedForShoot(),
-                kicker.run(),
-                spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER),
+        return new ConditionalCommand(new ParallelCommandGroup(
+                shooter.preheat(),
                 hood.toOptimalPosition()
-            ))
-        .withName("fire");
+            ).andThen(
+                new ParallelCommandGroup(
+                    shooter.holdSpeedForShoot(),
+                    kicker.run(),
+                    spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER),
+                    hood.toOptimalPosition()
+                ))
+            .withName("fire"),
+            shooter.preheat().andThen(
+                new ParallelCommandGroup(
+                    shooter.holdSpeedForShoot(),
+                    kicker.run(),
+                    spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
+                ))
+            .withName("feed"),
+            () -> hood.getTargetPosition() != Constants.Hood.Position.FEED);
     }
 
     public Command halt() {

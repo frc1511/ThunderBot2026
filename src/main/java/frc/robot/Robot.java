@@ -272,17 +272,22 @@ public class Robot extends TimedRobot {
         auxController.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).onlyIf(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff()).withName("OneDriveBackupDriveSeedFieldCentric")); // reset IMU
 
         // MARK: Aux
-        auxController.y() // Feed
+        auxController.povUp() // Speen
             .whileTrue(
                 new ParallelCommandGroup(
-                    spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER),
-                    hood.toPosition(() -> Constants.Hood.Position.TOP.get()),
-                    pivot.up()
+                    spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
                 )
                 .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
-                .withName("PresetFeed")
+                .withName("SpindexerSpin")
             )
             .onFalse(spindexer.halt());
+
+        auxController.y() // Feed
+            .onTrue(
+                hood.toPosition(() -> Constants.Hood.Position.FEED.get())
+                .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
+                .withName("PresetFeed")
+            );
 
         auxController.x() // Tower
             .onTrue(

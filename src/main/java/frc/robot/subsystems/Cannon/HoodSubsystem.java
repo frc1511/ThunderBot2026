@@ -159,7 +159,7 @@ public class HoodSubsystem extends ThunderSubsystem {
 
     public Command toPosition(Supplier<Double> targetPosition) {
         if (Broken.hoodDisabled) return Commands.none();
-        
+
         return new CommandBuilder(this) 
             .onExecute(() -> m_motor.setControl(new PositionVoltage(targetPosition.get())))
             .isFinished(this::atPosition)
@@ -237,5 +237,15 @@ public class HoodSubsystem extends ThunderSubsystem {
             .onExecute(() -> m_motor.setControl(new PositionVoltage(optimalAngleSupplier.getAsDouble())))
             .isFinished(this::atPosition)
             .onlyIf(this::isZeroed);
+    }
+
+    public Constants.Hood.Position getTargetPosition() {
+        double target = m_motor.getClosedLoopReference().getValueAsDouble();
+        for (Constants.Hood.Position preset : Constants.Hood.Position.getAll()) {
+            if (target == preset.get()) {
+                return preset;
+            }
+        }
+        return Constants.Hood.Position.BOTTOM;
     }
 }

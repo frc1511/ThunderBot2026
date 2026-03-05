@@ -11,6 +11,9 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
@@ -189,6 +192,7 @@ public class Constants {
         double kMaxShooterSpeed = 0.5d;
         double kShooterAtSpeedTolerance = 40d;
         double kTargetShooterRPM = 1900d;
+        double kFeedRPM = 1900d;
         
         public interface TurretPID extends BasePID {}
         double kTurretTolerance = 0.5d;
@@ -209,7 +213,7 @@ public class Constants {
         double kHoodTolerance = 0.005d;
         double kZeroingSpeed = 0.1d; // Just know that zeroing doesn't need to be precise, just needs to see it within a rotation
         enum Position {
-            BOTTOM(0), TOP(2), TRENCH(.1), HUB(1.9);
+            BOTTOM(0), TOP(2), FEED(1), TRENCH(.1), HUB(1.9);
 
             private double m_value;
 
@@ -219,6 +223,10 @@ public class Constants {
 
             private Position(double value) {
                 m_value = value;
+            }
+
+            static public Set<Position> getAll() {
+                return Set.of(BOTTOM, TOP, FEED, TRENCH, HUB);
             }
         }
         public interface HoodPID extends BasePID {
