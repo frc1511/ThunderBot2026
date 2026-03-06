@@ -356,7 +356,7 @@ public class Robot extends TimedRobot {
                 .withName("HoodBottom")
             );
 
-        hood.setDefaultCommand(hood.halt().withName("HoodHalt"));
+        hood.setDefaultCommand(hood.zero().withName("HoodHalt"));
         shooter.setDefaultCommand(shooter.halt().withName("ShooterHalt"));
         kicker.setDefaultCommand(kicker.halt().withName("KickerHalt"));
         hang.setDefaultCommand(hang.zeroHang().withName("HangZero"));
