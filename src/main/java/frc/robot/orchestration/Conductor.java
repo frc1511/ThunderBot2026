@@ -28,7 +28,7 @@ public class Conductor {
         return m_robot.cannonOrchestrator.ready();
     }
 
-    public boolean inStartingConfiguration() {
+    public boolean inStartingConfiguration() {  
         return m_robot.hood.safeForTrench() && m_robot.pivot.isIn();
     }
 

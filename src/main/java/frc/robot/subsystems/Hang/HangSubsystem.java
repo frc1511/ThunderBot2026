@@ -13,6 +13,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -26,7 +27,6 @@ import frc.util.Constants.HangConstants;
 import frc.util.Constants.IOMap;
 import frc.util.Constants.Status;
 import frc.util.Constants.HangConstants.HangPID;
-import frc.util.Thunder.Modifiable;
 import frc.util.Thunder.ThunderSubsystem;
 
 public class HangSubsystem extends ThunderSubsystem {
@@ -36,6 +36,7 @@ public class HangSubsystem extends ThunderSubsystem {
 
     private DigitalInput m_lowerLimitSensor;
     private DigitalInput m_upperLimitSensor;
+    private AnalogInput m_distanceSensor;
     private boolean m_isZeroed;
     private boolean m_isClimbing;
 
@@ -60,6 +61,7 @@ public class HangSubsystem extends ThunderSubsystem {
             // For broken functionality, these still "work" when the sensors are disconnected so we don't have to null them to avoid errors
             m_lowerLimitSensor = new DigitalInput(IOMap.Hang.kDIOlowerLimit);
             m_upperLimitSensor = new DigitalInput(IOMap.Hang.kDIOupperLimit);
+            m_distanceSensor = new AnalogInput(IOMap.Hang.kAnalogDistance);
         }
 
         if (Broken.hangLowerLimitDisabled) {
@@ -79,6 +81,7 @@ public class HangSubsystem extends ThunderSubsystem {
         SmartDashboard.putNumber("Hang_pidSetpoint", m_pidController.getSetpoint());
         SmartDashboard.putBoolean("Hang_atSetpoint", atSetpoint());
         SmartDashboard.putNumber("Hang_output_A", m_motor.getOutputCurrent());
+        SmartDashboard.putNumber("hang_distance_sensor", m_distanceSensor.getValue());
     }
 
     private boolean isAtLowerLimit() {

@@ -443,7 +443,9 @@ public class Robot extends TimedRobot {
     }
     
     @Override
-    public void autonomousExit() {}
+    public void autonomousExit() {
+        CommandScheduler.getInstance().schedule(drivetrain.setHubLock(false).ignoringDisable(true));
+    }
     
     @Override
     public void teleopInit() {

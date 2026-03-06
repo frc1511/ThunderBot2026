@@ -11,7 +11,6 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import com.ctre.phoenix6.CANBus;
@@ -79,6 +78,7 @@ public class Constants {
             public static final int kHangMotor = 14;
             public static final int kDIOlowerLimit = 0;
             public static final int kDIOupperLimit = 1;
+            public static final int kAnalogDistance = 0;
         }
       
         public class Intake {

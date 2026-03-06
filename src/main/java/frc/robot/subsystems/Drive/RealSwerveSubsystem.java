@@ -557,11 +557,31 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         SmartDashboard.putNumber("SetSpeeds_y", speeds.vyMetersPerSecond);
         SmartDashboard.putNumber("SetSpeeds_theta", speeds.omegaRadiansPerSecond);
 
+        double vRot = speeds.omegaRadiansPerSecond;
+
+        if (m_hubLock) {
+            m_arcLockCenter = Helpers.allianceHub();
+
+            double dX = currentPose().getX() - m_arcLockCenter.getX();
+            double dY = currentPose().getY() - m_arcLockCenter.getY();
+            
+            Rotation2d targetAngle = new Rotation2d(Math.atan2(dY, dX) + Math.PI/2 - getShooterAngleCompensation());
+
+            vRot = m_driveController.calculate(
+                currentPose(),
+                new Pose2d(currentPose().getTranslation(), targetAngle),
+                Math.hypot(dX, dY),
+                targetAngle
+            ).omegaRadiansPerSecond * Swerve.kMaxAngularRate;
+        }
+
+        final double vRotFin = vRot;
+
         Command command = applyRequest(() -> m_robotCentricRequest
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
             .withVelocityX(speeds.vxMetersPerSecond)
             .withVelocityY(speeds.vyMetersPerSecond)
-            .withRotationalRate(speeds.omegaRadiansPerSecond)
+            .withRotationalRate(vRotFin)
             .withDeadband(Swerve.kVelocityDeadband * 0.5)
             .withRotationalDeadband(Swerve.kAngularVelocityDeadband)
         ).withName("driveSetSpeeds");
