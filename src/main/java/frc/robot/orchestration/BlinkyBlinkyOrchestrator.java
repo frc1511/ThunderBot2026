@@ -34,7 +34,7 @@ public class BlinkyBlinkyOrchestrator {
 
 
     public void sparkle() {
-        if(!Broken.blinkyBlinkyDisableStatus()) {
+        if (!Broken.blinkyBlinkyDisableStatus()) {
             switch (m_currentMode) {
                 case NONE:
                     m_buffer.forEach((index, r, g, b) -> {
@@ -72,10 +72,20 @@ public class BlinkyBlinkyOrchestrator {
                         m_buffer.setHSV(index, 140, 255, 255);
                     });
                     break;
+                case OFF:
+                    m_buffer.forEach((index, r, g, b) -> {
+                        m_buffer.setHSV(index, 0, 0, 0);
+                    });
+                    break;
                 default: break;
             }
-            m_led.setData(m_buffer);
             ++frame;
+            m_led.setData(m_buffer);
+        } else {
+            m_buffer.forEach((index, r, g, b) -> {
+                m_buffer.setHSV(index, 0, 0, 0);
+            });
+            m_led.setData(m_buffer);
         }
     }
 

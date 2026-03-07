@@ -135,16 +135,17 @@ public class HoodSubsystem extends ThunderSubsystem {
     public boolean atPosition() {
         if (Broken.hoodDisabled) return true;
 
-        return Math.abs(m_motor.getClosedLoopError().getValueAsDouble()) < Constants.Hood.kHoodTolerance && Math.abs(m_motor.getClosedLoopOutput().getValueAsDouble()) < Constants.Hood.kHoodSetpointMaxVelocity;
+        return Math.abs(trueSetpoint - m_motor.getPosition().getValueAsDouble()) < Constants.Hood.kHoodTolerance && Math.abs(m_encoder.getVelocity().getValueAsDouble()) < Constants.Hood.kHoodSetpointMaxVelocity;
     }
 
     public Command zero() {
-        if (Broken.hoodDisabled) return Commands.none();
+        if (Broken.hoodDisabled) return new InstantCommand(() -> {}, this);
         if (Broken.hoodBeamBreakDisabled) {
+            forceZeroEncoders();
             // Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
             // if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) isConfirmedZeroed.withValue(() -> true);
             isConfirmedZeroed = true;
-            return Commands.none();
+            return new InstantCommand(() -> {}, this);
         }
 
         return new CommandBuilder(this)

@@ -40,7 +40,7 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
         return Commands.none();
     }
 
-    public Command toggleHubLock() {
+    public Command hubLock() {
         return Commands.none();
     }
 

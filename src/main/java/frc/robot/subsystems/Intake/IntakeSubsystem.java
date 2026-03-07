@@ -55,9 +55,24 @@ public class IntakeSubsystem extends ThunderSubsystem {
         return new CommandBuilder(this)
             .onExecute(() -> {
                 // m_motor.setControl(new VelocityVoltage(Helpers.RPMtoRPS(Constants.Hunger.Intake.kEatRPM)));
-                m_motor.set(.85);
+                m_motor.set(Constants.Hunger.Intake.kEatPercent);
             })
             .onEnd(m_motor::stopMotor)
+            .withName(Constants.Hunger.Intake.intakeCommandName);
+    }
+
+    /**
+     * Intake
+     */
+    public Command eatStart() {
+        if (Broken.intakeDisabled) return Commands.none();
+
+        return new CommandBuilder(this)
+            .onExecute(() -> {
+                // m_motor.setControl(new VelocityVoltage(Helpers.RPMtoRPS(Constants.Hunger.Intake.kEatRPM)));
+                m_motor.set(Constants.Hunger.Intake.kEatPercent);
+            })
+            .isFinished(true)
             .withName(Constants.Hunger.Intake.intakeCommandName);
     }
 
@@ -68,7 +83,7 @@ public class IntakeSubsystem extends ThunderSubsystem {
         return new CommandBuilder(this)
             .onExecute(() -> {
                 // m_motor.setControl(new VelocityVoltage(-Helpers.RPMtoRPS(Constants.Hunger.Intake.kEatRPM)));
-                m_motor.set(-.85);
+                m_motor.set(-Constants.Hunger.Intake.kEatPercent);
             })
             .onEnd(m_motor::stopMotor)
             .withName(Constants.Hunger.Intake.intakeCommandName);

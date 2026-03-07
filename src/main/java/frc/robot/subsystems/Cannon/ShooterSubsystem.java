@@ -36,7 +36,8 @@ public class ShooterSubsystem extends ThunderSubsystem {
         shooterConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         shooterConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         shooterConfig.Slot0 = new Slot0Configs()
-            .withKP(Constants.Shooter.ShooterPID.kP).withKI(Constants.Shooter.ShooterPID.kI).withKD(Constants.Shooter.ShooterPID.kD);
+            .withKP(Constants.Shooter.ShooterPID.kP).withKI(Constants.Shooter.ShooterPID.kI).withKD(Constants.Shooter.ShooterPID.kD)
+            .withKS(Constants.Shooter.ShooterPID.kS).withKV(Constants.Shooter.ShooterPID.kV).withKA(Constants.Shooter.ShooterPID.kA);
         shooterConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.5;
         shooterConfig.MotionMagic.MotionMagicAcceleration = Constants.Shooter.ShooterMotionMagic.kAccel;
         shooterConfig.MotionMagic.MotionMagicJerk = Constants.Shooter.ShooterMotionMagic.kJerk;
@@ -103,7 +104,6 @@ public class ShooterSubsystem extends ThunderSubsystem {
 
         return new CommandBuilder(this)
             .onExecute(() -> runAtSpeed(speedRPM.getAsDouble()))
-            // .isFinished(this::shooterAtSpeed)
             .onEnd(this::halt);
     }
 
@@ -136,10 +136,32 @@ public class ShooterSubsystem extends ThunderSubsystem {
             .isFinished(() -> false);
     }
 
+    public Command manual_voltage(DoubleSupplier voltage) {
+        if (Broken.shooterFullyDisabled) return Commands.none();
+
+        return new CommandBuilder(this)
+            .onExecute(() ->
+                m_primaryMotor.setVoltage(voltage.getAsDouble())
+            )
+            .isFinished(() -> false);
+    }
+
     public Status status() {
         if (Broken.shooterFullyDisabled) return Status.DISABLED;
         if (!Helpers.onCANChain(m_primaryMotor)) return Status.DISCONNECTED;
         if (Helpers.isRunning(m_primaryMotor)) return Status.ACTIVE;
         return Status.IDLE;
+    }
+
+    public double getMotorOutput() {
+        return m_primaryMotor.get();
+    }
+
+    public double getMotorRotations() {
+        return m_primaryMotor.getPosition().getValueAsDouble();
+    }
+
+    public double getMotorRate() {
+        return m_primaryMotor.getVelocity().getValueAsDouble();
     }
 }

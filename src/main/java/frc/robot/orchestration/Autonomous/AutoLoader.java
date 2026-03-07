@@ -18,11 +18,14 @@ public class AutoLoader {
             autoProject.registerActionCommand("Shoot", robot.firingOrchestrator.fireThenStop());
             autoProject.registerActionCommand("HangUp", robot.hang.extend());
             autoProject.registerActionCommand("HangDown", robot.hang.retract());
-            autoProject.registerActionCommand("Intake", robot.hungerOrchestrator.consume());
-            autoProject.registerActionCommand("StopIntake", robot.hungerOrchestrator.excuseYourself());
+            autoProject.registerActionCommand("Intake", robot.intake.eatStart());
+            autoProject.registerActionCommand("StopIntake", robot.intake.stopEating());
             autoProject.registerActionCommand("Wait_short", new WaitCommand(5));
             autoProject.registerActionCommand("Stop_shoot", robot.firingOrchestrator.halt());
             autoProject.registerActionCommand("Pivot_down", robot.pivot.down());
+            autoProject.registerActionCommand("Pivot_up", robot.pivot.up());
+            autoProject.registerActionCommand("Pivot_down_soft", robot.pivot.downSoft());
+            autoProject.registerActionCommand("Pivot_up_soft", robot.pivot.upSoft());
         } else {
             Alert.warning("Auto failed to load");
         }

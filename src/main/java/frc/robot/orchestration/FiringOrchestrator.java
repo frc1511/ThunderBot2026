@@ -55,7 +55,7 @@ public class FiringOrchestrator {
                     kicker.run(),
                     spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER),
                     hood.toOptimalPosition()
-                ).withTimeout(2));
+                ));
     }
 
     public Command halt() {

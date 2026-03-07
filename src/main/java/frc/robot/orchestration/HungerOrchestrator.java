@@ -28,6 +28,14 @@ public class HungerOrchestrator {
     }
 
     /**
+     * Put the intake down while intaking FUEL
+     */
+    public Command consumeStart() {
+        return pivot.down()
+            .alongWith(intake.eatStart());
+    }
+
+    /**
      * Retract intake from ground and stop intaking FUEL
      */
     public Command excuseYourself() {

@@ -97,7 +97,8 @@ public class PivotSubsystem extends ThunderSubsystem {
 
         return new CommandBuilder(this)
             .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.BOTTOM.get(), ControlType.kPosition))
-            .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(Constants.Hunger.Pivot.Position.BOTTOM.get(), m_pidController.getSetpoint(), Constants.Hunger.Pivot.kTolerance));
+            .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(Constants.Hunger.Pivot.Position.BOTTOM.get(), m_pidController.getSetpoint(), Constants.Hunger.Pivot.kTolerance))
+            .onEnd(() -> m_motor.stopMotor());
     }
 
     public Command up() {
@@ -106,6 +107,22 @@ public class PivotSubsystem extends ThunderSubsystem {
         return new CommandBuilder(this)
             .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.TOP.get(), ControlType.kPosition))
             .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(Constants.Hunger.Pivot.Position.TOP.get(), m_pidController.getSetpoint(), Constants.Hunger.Pivot.kTolerance));
+    }
+
+    public Command upSoft() {
+        if (Broken.pivotDisabled) return Commands.none();
+
+        return new CommandBuilder(this)
+            .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.TOP.get(), ControlType.kPosition))
+            .isFinished(true);
+    }
+
+    public Command downSoft() {
+        if (Broken.pivotDisabled) return Commands.none();
+
+        return new CommandBuilder(this)
+            .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.BOTTOM.get(), ControlType.kPosition))
+            .isFinished(true);
     }
 
     public Command middle() {

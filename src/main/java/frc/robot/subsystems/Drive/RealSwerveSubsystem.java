@@ -12,6 +12,9 @@ import com.thunder.lib.trajectory.ThunderTrajectoryRunnerProperties;
 
 import com.opencsv.CSVWriter;
 
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -194,12 +197,14 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         });
     }
 
-    public Command toggleHubLock() {
+    public Command hubLock() {
         return new CommandBuilder()
             .onExecute(() -> {
-                m_hubLock = !m_hubLock;
+                m_hubLock = true;
             })
-            .isFinished(true);
+            .onEnd(() -> {
+                m_hubLock = false;
+            });
     }
 
     public Command toggleTrenchLock() {
@@ -234,7 +239,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
                 Rotation2d targetAngle = new Rotation2d(Math.atan2(dY, dX) + Math.PI/2 - getShooterAngleCompensation());
 
-                m_targetField.setRobotPose(new Pose2d(0d, 0d, new Rotation2d(m_optimalRotationSupplier.getAsDouble())));
+                SmartDashboard.putNumber("Drive intended hub lock theta", m_optimalRotationSupplier.getAsDouble());
 
                 vRot = m_driveController.calculate(
                         currentPose(),
@@ -260,9 +265,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             }
 
             if (DriverStation.isAutonomous()) {
-                vx = autoXSupplier.getAsDouble();
-                vy = autoYSupplier.getAsDouble();
-                vRot = autoTSupplier.getAsDouble();
+                vx = m_autoXSupplier.getAsDouble();
+                vy = m_autoYSupplier.getAsDouble();
+                vRot = m_autoTSupplier.getAsDouble();
             }
 
             if (m_fieldCentric && !DriverStation.isAutonomous()) {
@@ -343,13 +348,23 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
         if (!m_limelightDisable) {
             LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+            LimelightHelpers.PoseEstimate limelightRearMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-rear");
             if (limelightMeasurement != null) {
                 if (limelightMeasurement.tagCount >= 2 ||
                     (limelightMeasurement.tagCount == 1 && limelightMeasurement.rawFiducials[0].ambiguity < 0.2)) {
                     addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
                 }
             } else {
-                Alert.warning("Couldn't find limelight");
+                Alert.warning("Couldn't find main limelight");
+            }
+
+            if (limelightRearMeasurement != null) {
+                if (limelightRearMeasurement.tagCount >= 2 ||
+                    (limelightRearMeasurement.tagCount == 1 && limelightRearMeasurement.rawFiducials[0].ambiguity < 0.2)) {
+                    addVisionMeasurement(limelightRearMeasurement.pose, limelightRearMeasurement.timestampSeconds);
+                }
+            } else {
+                Alert.warning("Couldn't find rear limelight");
             }
         }
 
@@ -384,14 +399,21 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         m_currentField.setRobotPose(currentPose());
         SmartDashboard.putData("currentPose", m_currentField);
         SmartDashboard.putData("targetPose", m_targetField);
+        SmartDashboard.putNumber("Drive_speedMultiplier", m_speedMultipler);
 
         SmartDashboard.putString("currentZone", currentZone.fullName());
 
         SmartDashboard.putString("Robot drive mode", m_fieldCentric ? "Field Centric" : "Robot Centric");
+        SmartDashboard.putNumber("trenchX", m_trenchXPos);
 
         SmartDashboard.putData(m_driveController.getXController());
         SmartDashboard.putData(m_driveController.getYController());
         SmartDashboard.putData(m_driveController.getThetaController());
+        SmartDashboard.putNumber("Drive_theta_target_deg", m_driveController.getThetaController().getGoal().position / Math.PI * 180);
+
+        SmartDashboard.putNumber("Drive_auto_vx", m_autoXSupplier.getAsDouble());
+        SmartDashboard.putNumber("Drive_auto_vy", m_autoYSupplier.getAsDouble());
+        SmartDashboard.putNumber("Drive_auto_vtheta", m_autoTSupplier.getAsDouble());
     }
 
     private void startSimThread() {
@@ -562,9 +584,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         return Math.PI/2 - Math.acos(Constants.Swerve.kShooterOffset / Math.hypot(dX, dY));
     }
 
-    private DoubleSupplier autoXSupplier = () -> 0;
-    private DoubleSupplier autoYSupplier = () -> 0;
-    private DoubleSupplier autoTSupplier = () -> 0;
+    private DoubleSupplier m_autoXSupplier = () -> 0;
+    private DoubleSupplier m_autoYSupplier = () -> 0;
+    private DoubleSupplier m_autoTSupplier = () -> 0;
     private void setSpeeds(ChassisSpeeds speeds) {
         SmartDashboard.putNumber("SetSpeeds_x", speeds.vxMetersPerSecond);
         SmartDashboard.putNumber("SetSpeeds_y", speeds.vyMetersPerSecond);
@@ -580,6 +602,8 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             
             Rotation2d targetAngle = new Rotation2d(Math.atan2(dY, dX) + Math.PI/2 - getShooterAngleCompensation());
 
+            System.out.println(m_optimalRotationSupplier.getAsDouble());
+
             vRot = m_driveController.calculate(
                 currentPose(),
                 new Pose2d(currentPose().getTranslation(), targetAngle),
@@ -590,9 +614,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
         final double vRotFin = vRot;
 
-        autoXSupplier = () -> speeds.vxMetersPerSecond;
-        autoYSupplier = () -> speeds.vyMetersPerSecond;
-        autoTSupplier = () -> vRotFin;
+        m_autoXSupplier = () -> speeds.vxMetersPerSecond;
+        m_autoYSupplier = () -> speeds.vyMetersPerSecond;
+        m_autoTSupplier = () -> vRotFin;
     }
 
     public void resetControl(Pose2d pose) {
@@ -654,4 +678,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     public void setOptimalRotationGetter(DoubleSupplier supplier) {
         m_optimalRotationSupplier = supplier;
     }
+
+    // public Command alignToTowerY() {
+    //     return driveToPose()
+            // .withTarget(new Pose2d(currentPose().getX(), DriverStation.getAlliance().get() == DriverStation.Alliance.Blue ? Constants.HangConstants.kTowerDistanceFromWallY : AprilTagFields.k2026RebuiltWelded.))
+    // }
 }

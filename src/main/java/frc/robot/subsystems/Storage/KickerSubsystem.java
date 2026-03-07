@@ -28,7 +28,8 @@ public class KickerSubsystem extends ThunderSubsystem {
         kickerConfig.MotionMagic.MotionMagicAcceleration = Constants.Storage.Kicker.KickerMotionMagic.kAccel;
         kickerConfig.MotionMagic.MotionMagicJerk = Constants.Storage.Kicker.KickerMotionMagic.kJerk;
         kickerConfig.Slot0 = new Slot0Configs()
-            .withKP(KickerPID.kP).withKI(KickerPID.kI).withKD(KickerPID.kD);
+            .withKP(KickerPID.kP).withKI(KickerPID.kI).withKD(KickerPID.kD)
+            .withKS(KickerPID.kS).withKV(KickerPID.kV).withKA(KickerPID.kA);
 
         if (!Broken.kickerDisabled) {
             m_motor = new TalonFX(Constants.IOMap.Storage.kKickerMotor);

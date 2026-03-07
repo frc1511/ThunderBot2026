@@ -272,4 +272,17 @@ public class HangSubsystem extends ThunderSubsystem {
             })
             .isFinished(true);
     }
+
+    /**
+     * In meters
+     */
+    public double getDistanceSensor() {
+        double volts = m_distanceSensor.getVoltage();
+
+        double centimeters = Math.pow(volts / 9.6654, -0.902);
+
+        double meters = centimeters / 100;
+
+        return meters;
+    }
 }

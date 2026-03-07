@@ -188,3 +188,5 @@ compile_commands.json
 
 # Git data on deploy
 src/main/java/frc/robot/BuildConstants.java
+
+*.csv

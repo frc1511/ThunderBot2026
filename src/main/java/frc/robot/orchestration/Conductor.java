@@ -1,7 +1,10 @@
 package frc.robot.orchestration;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
+import frc.robot.subsystems.Drive.SwerveSubsystem;
+import frc.robot.subsystems.Hang.HangSubsystem;
 import frc.util.Constants;
 
 public class Conductor {
@@ -39,4 +42,20 @@ public class Conductor {
     public void periodic() {
         if (m_robot.ledDisable.isOff()) m_robot.blinkyBlinkyOrchestrator.sparkle();
     }
+
+    // public Command autoHang() {
+    //     HangSubsystem hang = m_robot.hang;
+    //     SwerveSubsystem swerve = m_robot.drivetrain;
+    //     return hang.extend()
+    //         .andThen(
+    //             swerve.
+    //         );
+        // Step 1: Lineup to the Y Position of the tower.
+        
+        // Step 2: Ensure that swerve is pointing in the correct direction
+        // Step 3: Extend Hang
+        // Step 4: Lineup to the correct X position using the hang sensor
+        // Step 5: Retract Hang
+        // Step 6: Done
+    // }
 }

@@ -11,6 +11,7 @@ import com.thunder.lib.auto.ThunderAutoProject;
 import com.thunder.lib.auto.ThunderAutoSendableChooser;
 import com.thunder.lib.trajectory.ThunderTrajectoryRunnerProperties;
 
+import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -83,7 +84,7 @@ public class Robot extends TimedRobot {
     public final Conductor conductor;
 
     private ThunderAutoSendableChooser autoChooser;
-
+    
     public ThunderSwitch driveDisable = switchBoard.button(1);
     public ThunderSwitch auxDisable = switchBoard.button(2);
     public ThunderSwitch placeholder3 = switchBoard.button(3);
@@ -99,9 +100,11 @@ public class Robot extends TimedRobot {
     public Robot() {
         CommandScheduler.getInstance().registerSubsystem(pivot);
         CommandScheduler.getInstance().registerSubsystem(intake);
-        // DataLogManager.start(); //* Uncomment for logs
-        
-        ledDisable.get().onTrue(new InstantCommand(() -> Broken.blinkyBlinkyButtonBopped = true)).onFalse(new InstantCommand(() -> Broken.blinkyBlinkyButtonBopped = false));
+        CommandScheduler.getInstance().registerSubsystem(kicker);
+        CommandScheduler.getInstance().registerSubsystem(hood);
+        CommandScheduler.getInstance().registerSubsystem(spindexer);
+        CommandScheduler.getInstance().registerSubsystem(hang);
+        DataLogManager.start(); //* Uncomment for logs
     
         // MARK: Orchestration
 
@@ -114,16 +117,31 @@ public class Robot extends TimedRobot {
         conductor = new Conductor(this);
 
         safetyWatchdog = new SafetyWatchdog(this);
-
+        
         shooter.setOptimalSpeedGetter(hubOrchestrator::getOptimalShootSpeed);
         hood.setOptimalAngleGetter(hubOrchestrator::getOptimalHoodAngle);
         drivetrain.setOptimalRotationGetter(hubOrchestrator::getOptimalDriveOrientation);
-
+        
         kicker.getField("optimalRPM").withValue(hubOrchestrator::getOptimalShootSpeed);
-
+        
         Alert.info("The robot has restarted");
         DriverStation.silenceJoystickConnectionWarning(true); // trying to fix radio problem
-        SignalLogger.enableAutoLogging(false);
+        SignalLogger.enableAutoLogging(true);
+        
+        ledDisable.get()
+            .onTrue(
+                new InstantCommand(() -> {
+                    Broken.blinkyBlinkyButtonBopped = true;
+                })
+                .alongWith(
+                    blinkyBlinkyOrchestrator.set(Constants.BlinkyBlinky.Mode.OFF)
+                )
+            )
+            .onFalse(
+                new InstantCommand(() -> {
+                    Broken.blinkyBlinkyButtonBopped = false;
+                })
+            );
 
         // MARK: Drive
         if (!Broken.drivetrainFullyDisabled) { // driving with joysticks
@@ -162,7 +180,7 @@ public class Robot extends TimedRobot {
         RobotModeTriggers.disabled().onTrue(drivetrain.idle().withTimeout(.1));
 
         driverController.x().and(driveDisable::isOff).whileTrue(drivetrain.brick().withName("DriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
-        driverController.y().and(driveDisable::isOff).whileTrue(drivetrain.toggleHubLock().withName("DriveHubLockToggle")); // lock and shoot
+        driverController.y().and(driveDisable::isOff).whileTrue(drivetrain.hubLock().withName("DriveHubLockToggle")); // lock and shoot
         driverController.b().and(driveDisable::isOff).whileTrue(hang.jostle().withName("HangJostle"));
         driverController.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).withName("DriveSeedFieldCentric")); // reset IMU
 
@@ -171,18 +189,22 @@ public class Robot extends TimedRobot {
         driverController.povLeft().and(driveDisable::isOff).onTrue(drivetrain.increaseSpeed().withName("DriveSpeedInc")); // drive go weeee
         driverController.povRight().and(driveDisable::isOff).onTrue(drivetrain.decreaseSpeed().withName("DriveSpeedDesc")); // drive go snail
 
+        fieldCentric.get()
+            .onTrue(new InstantCommand(() -> drivetrain.setFieldCentric(true)))
+            .onFalse(new InstantCommand(() -> drivetrain.setFieldCentric(false)));
+
         driverController.leftTrigger().and(driveDisable::isOff).whileTrue(drivetrain.toggleTrenchLock().withName("DriveTrenchLockToggle"));
         driverController.rightTrigger() // temporary robot centric
-            .whileTrue(
+            .onTrue(
                 new CommandBuilder()
-                    .onExecute(() -> drivetrain.setFieldCentric(fieldCentric.isOn()))
+                    .onExecute(() -> drivetrain.setFieldCentric(false))
                     .isFinished(true)
                     .onlyIf(() -> driveDisable.isOff() && oneDriverMode.isOff())
                     .withName("DriveRobotCentricSetOn")
             )
             .onFalse(
                 new CommandBuilder()
-                    .onExecute(() -> drivetrain.setFieldCentric(!fieldCentric.isOn()))
+                    .onExecute(() -> drivetrain.setFieldCentric(fieldCentric.isOn()))
                     .isFinished(true)
                     .withName("DriveRobotCentricSetOff")
             );
@@ -268,7 +290,7 @@ public class Robot extends TimedRobot {
         auxController.povLeft().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).onTrue(drivetrain.increaseSpeed().withName("OneDriveBackupDriveIncSpeed")); // drive go weeee
         auxController.povRight().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).onTrue(drivetrain.decreaseSpeed().withName("OneDriveBackupDriveDescSpeed")); // drive go snail
         auxController.x().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(drivetrain.brick().withName("OneDriveBackupDriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
-        auxController.y().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(drivetrain.toggleHubLock().withName("OneDriveBackupDriveHubLock")); // lock and shoot
+        auxController.y().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(drivetrain.hubLock().withName("OneDriveBackupDriveHubLock")); // lock and shoot
         auxController.b().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(hang.jostle().withName("OneDriveBackupJostle")); // lock and shoot
         auxController.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).onlyIf(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff()).withName("OneDriveBackupDriveSeedFieldCentric")); // reset IMU
 
@@ -379,6 +401,12 @@ public class Robot extends TimedRobot {
             Alert.error("Auto trajectory property fail");
         }
 
+        // ShooterSysID shooterSysID = new ShooterSysID(shooter);
+        // auxController.povUp().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        // auxController.povRight().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        // auxController.povDown().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        // auxController.povLeft().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
         SmartDashboard.putData(CommandScheduler.getInstance());
 
         SmartDashboard.putData("SwitchBoard", switchBoard);
@@ -408,9 +436,8 @@ public class Robot extends TimedRobot {
         SmartDashboard.putBoolean("drive disabled", driveDisable.isOn());
         SmartDashboard.putBoolean("aux disabled", auxDisable.isOn());
 
-        m_timeAndJoystickReplay.update();
+        // m_timeAndJoystickReplay.update();
         
-        drivetrain.setFieldCentric(fieldCentric.isOn());
         drivetrain.setLimelightDisable(limelightDisable.isOn());
         
         conductor.periodic();
@@ -448,6 +475,8 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousExit() {
         CommandScheduler.getInstance().schedule(drivetrain.setHubLock(false).ignoringDisable(true));
+        intake.stopEating().execute();
+        // CommandScheduler.getInstance().schedule(intake.stopEating().ignoringDisable(true));
     }
     
     @Override
