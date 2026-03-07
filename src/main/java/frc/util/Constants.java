@@ -193,7 +193,7 @@ public class Constants {
         double kMaxShooterSpeed = 0.5d;
         double kShooterAtSpeedTolerance = 40d;
         double kTargetShooterRPM = 1900d;
-        double kFeedRPM = 1900d;
+        double kFeedRPM = 2200d;
         
         public interface TurretPID extends BasePID {}
         double kTurretTolerance = 0.5d;
@@ -339,8 +339,8 @@ public class Constants {
         public static final double kMaxAngularRate = .8 * RotationsPerSecond.of(1.5).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
         public static final double kMaxAngularAcceleration = .25 * RotationsPerSecondPerSecond.of(.75).in(RadiansPerSecondPerSecond);
 
-        public static final double kVelocityDeadband = 0.40 * kMaxSpeed; // % Multiplier 
-        public static final double kAngularVelocityDeadband = 0.10 * kMaxAngularRate; // % Multiplier
+        public static final double kVelocityDeadband = 0.05 * kMaxSpeed; // % Multiplier 
+        public static final double kAngularVelocityDeadband = 0.05 * kMaxAngularRate; // % Multiplier
 
         private interface XYPID extends BasePID {
             double kP = 3;
