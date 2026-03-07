@@ -8,6 +8,7 @@ import frc.robot.subsystems.Hang.HangSubsystem;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
+import frc.util.Helpers;
 
 public class BlinkyBlinkyOrchestrator {
     private Constants.BlinkyBlinky.Mode m_currentMode = Constants.BlinkyBlinky.Mode.NONE;
@@ -47,8 +48,12 @@ public class BlinkyBlinkyOrchestrator {
                     break;
                 case HUNG:
                     double position = hang.getPosition();
+                    double hangPercent = position / Constants.HangConstants.kMaxDeployDistanceRotations;
+                    int fullNumber = Helpers.clamp((int) Math.floor(hangPercent * 9) - 1, 0, 9);
+                    double leftover = (hangPercent * 9) - fullNumber;
                     m_buffer.forEach((index, r, g, b) -> {
-                        m_buffer.setHSV(index, 150, 255, 255);
+                        int value = index % 9 <= fullNumber ? 255 : (int) Math.floor(leftover * 255);
+                        m_buffer.setHSV(index, 150, 255, value);
                     });
                     break;
                 case FIRE_READY:

@@ -68,4 +68,12 @@ public class Helpers {
     public static boolean ensureTarget(double wantedTarget, double realTarget, double tolerance) {
         return Math.abs(realTarget - wantedTarget) < tolerance;
     }
+
+    public static int clamp(int x, int lo, int hi) {
+        return Math.min(Math.max(x, lo), hi);
+    }
+
+    public static double clamp(double x, double lo, double hi) {
+        return Math.min(Math.max(x, lo), hi);
+    }
 }
