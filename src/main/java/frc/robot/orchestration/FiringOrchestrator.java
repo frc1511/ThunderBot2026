@@ -45,6 +45,19 @@ public class FiringOrchestrator {
             () -> hood.getTargetPosition() != Constants.Hood.Position.FEED);
     }
 
+    public Command fireThenStop() {
+        return new ParallelCommandGroup(
+                shooter.preheat(),
+                hood.toOptimalPosition()
+            ).andThen(
+                new ParallelCommandGroup(
+                    shooter.holdSpeedForShoot(),
+                    kicker.run(),
+                    spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER),
+                    hood.toOptimalPosition()
+                ).withTimeout(2));
+    }
+
     public Command halt() {
         return new ParallelCommandGroup(
             shooter.halt(),

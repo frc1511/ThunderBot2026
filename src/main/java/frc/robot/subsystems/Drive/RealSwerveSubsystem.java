@@ -97,6 +97,8 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     FileWriter outputfile;
     ZoneInfo lastZone = ZoneInfo.none();
 
+    DoubleSupplier m_optimalRotationSupplier = () -> 0;
+
     public RealSwerveSubsystem() {
         super();
 
@@ -229,8 +231,10 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
                 double dX = currentPose().getX() - m_arcLockCenter.getX();
                 double dY = currentPose().getY() - m_arcLockCenter.getY();
-                
+
                 Rotation2d targetAngle = new Rotation2d(Math.atan2(dY, dX) + Math.PI/2 - getShooterAngleCompensation());
+
+                m_targetField.setRobotPose(new Pose2d(0d, 0d, new Rotation2d(m_optimalRotationSupplier.getAsDouble())));
 
                 vRot = m_driveController.calculate(
                         currentPose(),
@@ -255,7 +259,13 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                 vRot = m_driveController.getThetaController().calculate(currentPose().getRotation().getDegrees(), m_ensuredThetaSupplier.getAsDouble());
             }
 
-            if (m_fieldCentric) {
+            if (DriverStation.isAutonomous()) {
+                vx = autoXSupplier.getAsDouble();
+                vy = autoYSupplier.getAsDouble();
+                vRot = autoTSupplier.getAsDouble();
+            }
+
+            if (m_fieldCentric && !DriverStation.isAutonomous()) {
                 return m_fieldCentricRequest
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
                     .withVelocityX(vx)
@@ -552,6 +562,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         return Math.PI/2 - Math.acos(Constants.Swerve.kShooterOffset / Math.hypot(dX, dY));
     }
 
+    private DoubleSupplier autoXSupplier = () -> 0;
+    private DoubleSupplier autoYSupplier = () -> 0;
+    private DoubleSupplier autoTSupplier = () -> 0;
     private void setSpeeds(ChassisSpeeds speeds) {
         SmartDashboard.putNumber("SetSpeeds_x", speeds.vxMetersPerSecond);
         SmartDashboard.putNumber("SetSpeeds_y", speeds.vyMetersPerSecond);
@@ -577,17 +590,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
         final double vRotFin = vRot;
 
-        Command command = applyRequest(() -> m_robotCentricRequest
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
-            .withVelocityX(speeds.vxMetersPerSecond)
-            .withVelocityY(speeds.vyMetersPerSecond)
-            .withRotationalRate(vRotFin)
-            .withDeadband(Swerve.kVelocityDeadband * 0.5)
-            .withRotationalDeadband(Swerve.kAngularVelocityDeadband)
-        ).withName("driveSetSpeeds");
-        command.addRequirements(this);
-
-        CommandScheduler.getInstance().schedule(command);
+        autoXSupplier = () -> speeds.vxMetersPerSecond;
+        autoYSupplier = () -> speeds.vyMetersPerSecond;
+        autoTSupplier = () -> vRotFin;
     }
 
     public void resetControl(Pose2d pose) {
@@ -644,5 +649,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             if (leftDistance < rightDistance) return ZoneConstants.Zones.kLeftRedTrench;
             return ZoneConstants.Zones.kRightRedTrench;
         }
+    }
+
+    public void setOptimalRotationGetter(DoubleSupplier supplier) {
+        m_optimalRotationSupplier = supplier;
     }
 }

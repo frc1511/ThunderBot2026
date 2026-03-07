@@ -138,4 +138,8 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
     public ChassisSpeeds getSpeed() {
         return new ChassisSpeeds(0, 0, 0);
     }
+
+    public void setOptimalRotationGetter(DoubleSupplier supplier) {
+
+    }
 }

@@ -117,6 +117,7 @@ public class Robot extends TimedRobot {
 
         shooter.setOptimalSpeedGetter(hubOrchestrator::getOptimalShootSpeed);
         hood.setOptimalAngleGetter(hubOrchestrator::getOptimalHoodAngle);
+        drivetrain.setOptimalRotationGetter(hubOrchestrator::getOptimalDriveOrientation);
 
         kicker.getField("optimalRPM").withValue(hubOrchestrator::getOptimalShootSpeed);
 
@@ -356,10 +357,10 @@ public class Robot extends TimedRobot {
                 .withName("HoodBottom")
             );
 
-        hood.setDefaultCommand(hood.zero().withName("HoodHalt"));
-        shooter.setDefaultCommand(shooter.halt().withName("ShooterHalt"));
-        kicker.setDefaultCommand(kicker.halt().withName("KickerHalt"));
-        hang.setDefaultCommand(hang.zeroHang().withName("HangZero"));
+        if (!Broken.hoodDisabled) hood.setDefaultCommand(hood.zero().withName("HoodHalt"));
+        if (!Broken.shooterFullyDisabled) shooter.setDefaultCommand(shooter.halt().withName("ShooterHalt"));
+        if (!Broken.kickerDisabled) kicker.setDefaultCommand(kicker.halt().withName("KickerHalt"));
+        if (!Broken.hangFullyDisabled) hang.setDefaultCommand(hang.zeroHang().withName("HangZero"));
 
         // MARK: Auto
         ThunderAutoProject autoProject = AutoLoader.load(this);
@@ -368,12 +369,14 @@ public class Robot extends TimedRobot {
 
         autoChooser.includeProjectSource(autoProject);
         autoChooser.addAllAutoModesFromProject(autoProject.getName());
-        autoChooser.addTrajectoryFromProject(autoProject.getName(), "ShootFromStart");
-        autoChooser.addTrajectoryFromProject(autoProject.getName(), "test_teehee");
-        autoChooser.addTrajectoryFromProject(autoProject.getName(), "test_complex_shoot");
+        // autoChooser.addTrajectoryFromProject(autoProject.getName(), "ShootFromStart");
+        // autoChooser.addTrajectoryFromProject(autoProject.getName(), "test_teehee");
+        // autoChooser.addTrajectoryFromProject(autoProject.getName(), "test_complex_shoot");
         ThunderTrajectoryRunnerProperties props = drivetrain.getTrajectoryRunnerProperties();
         if (props != null) {
             autoChooser.setTrajectoryRunnerProperties(drivetrain.getTrajectoryRunnerProperties());
+        } else {
+            Alert.error("Auto trajectory property fail");
         }
 
         SmartDashboard.putData(CommandScheduler.getInstance());

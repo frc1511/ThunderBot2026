@@ -78,4 +78,6 @@ public interface SwerveSubsystem extends ThunderInterface {
     public void clearEnsuredTheta();
 
     public ChassisSpeeds getSpeed();
+
+    public void setOptimalRotationGetter(DoubleSupplier supplier);
 }

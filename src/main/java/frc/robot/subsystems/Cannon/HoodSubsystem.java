@@ -41,7 +41,7 @@ public class HoodSubsystem extends ThunderSubsystem {
     private DoubleSupplier optimalAngleSupplier = () -> 0;
 
     public HoodSubsystem() {
-        new Modifiable("isConfirmedZeroed", this, () -> Boolean.FALSE);
+        // new Modifiable("isConfirmedZeroed", this, () -> Boolean.FALSE);
         TalonFXConfiguration hoodConfig = new TalonFXConfiguration(); 
         hoodConfig.Slot0 = new Slot0Configs()
             .withKP(Constants.Hood.HoodPID.kP).withKI(Constants.Hood.HoodPID.kI).withKD(Constants.Hood.HoodPID.kD);
@@ -110,8 +110,9 @@ public class HoodSubsystem extends ThunderSubsystem {
     }
 
     private void zeroEncodersLightly() {
-        Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
-        if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) isConfirmedZeroed.withValue(() -> Boolean.TRUE);
+        // Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
+        // if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) isConfirmedZeroed.withValue(() -> Boolean.TRUE);
+        isConfirmedZeroed = true;
 
         double currentPosition = m_encoder.getPosition().getValueAsDouble();
         double newPos = currentPosition - Math.floor(currentPosition);
@@ -124,10 +125,11 @@ public class HoodSubsystem extends ThunderSubsystem {
         return m_beamBreakZero.get();
     }
 
+    private boolean isConfirmedZeroed = false;
     public boolean isZeroed() {
-        Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
-        if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) return (Boolean) isConfirmedZeroed.getValue();
-        return false;
+        // Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
+        // if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) return (Boolean) isConfirmedZeroed.getValue();
+        return isConfirmedZeroed;
     }
 
     public boolean atPosition() {
@@ -139,26 +141,34 @@ public class HoodSubsystem extends ThunderSubsystem {
     public Command zero() {
         if (Broken.hoodDisabled) return Commands.none();
         if (Broken.hoodBeamBreakDisabled) {
-            Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
-            if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) isConfirmedZeroed.withValue(() -> true);
-
+            // Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
+            // if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) isConfirmedZeroed.withValue(() -> true);
+            isConfirmedZeroed = true;
             return Commands.none();
         }
 
         return new CommandBuilder(this)
             .onExecute(() -> {
-                if (!isZeroed()) 
+                if (!isConfirmedZeroed) {
                     m_motor.set(-Hood.kZeroingSpeed);
-                else 
-                    m_motor.stopMotor();
-            })
-            .isFinished(() -> {
-                if (isAtZero()) {
-                    forceZeroEncoders();
+                    if (isAtZero()) {
+                        forceZeroEncoders();
+                        m_motor.stopMotor();
+                    }
+                } else {
                     m_motor.stopMotor();
                 }
-                return isAtZero();
+            })
+            .isFinished(() -> {
+                return false;
+                // if (isAtZero()) {
+                // }
+                // return isAtZero();
             });
+            // .onEnd(() -> {
+            //     forceZeroEncoders();
+            //     m_motor.stopMotor();
+            // });
     }
 
     public Command toPosition(Supplier<Double> targetPosition) {
@@ -211,8 +221,9 @@ public class HoodSubsystem extends ThunderSubsystem {
     public void forceZeroEncoders() {
         if (Broken.hoodDisabled) return;
 
-        Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
-        if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) isConfirmedZeroed.withValue(() -> Boolean.TRUE);
+        // Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
+        // if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) isConfirmedZeroed.withValue(() -> Boolean.TRUE);
+        isConfirmedZeroed = true;
         m_encoder.setPosition(0);
         m_motor.setPosition(0);
     }
