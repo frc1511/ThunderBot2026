@@ -204,13 +204,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             });
     }
 
-    public Command toggleTrenchLock() {
+    public Command trenchLock() {
         return new CommandBuilder()
             .onExecute(() -> {
-                if (m_trenchLock) {
-                    m_trenchLock = false;
-                    return;
-                }
                 Translation2d closestTrench = ZoneConstants.closestTrench(currentPose().getTranslation());
 
                 System.out.println(Math.abs(closestTrench.getX() - currentPose().getX()));
@@ -220,7 +216,10 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                 m_trenchXPos = closestTrench.getX();
                 m_trenchLock = true;
             })
-            .isFinished(true);
+            .onEnd(() -> {
+                m_trenchLock = false;
+                return;
+            });
     }
 
     public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX) {
@@ -400,10 +399,12 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         SmartDashboard.putData("targetPose", m_targetField);
         SmartDashboard.putNumber("Drive_speedMultiplier", m_speedMultipler);
 
-        SmartDashboard.putString("currentZone", currentZone.fullName());
+        SmartDashboard.putString("Drive_currentZone", currentZone.fullName());
 
-        SmartDashboard.putString("Robot drive mode", m_fieldCentric ? "Field Centric" : "Robot Centric");
-        SmartDashboard.putNumber("trenchX", m_trenchXPos);
+        SmartDashboard.putString("Drive_Robot drive mode", m_fieldCentric ? "Field Centric" : "Robot Centric");
+        SmartDashboard.putNumber("Drive_trenchX", m_trenchXPos);
+        SmartDashboard.putBoolean("Drive_trenchLock", m_trenchLock);
+        SmartDashboard.putBoolean("Drive_hubLock", m_hubLock);
 
         SmartDashboard.putData(m_driveController.getXController());
         SmartDashboard.putData(m_driveController.getYController());

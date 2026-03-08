@@ -22,9 +22,9 @@ public class FiringTable {
 
     public FiringTable() {
         firingTable.add(new FiringDataPoint(2.99, 1820, 0.25, 0.86)); // -10
-        firingTable.add(new FiringDataPoint(3.485, 1935, .247, .945));
-        firingTable.add(new FiringDataPoint(3.76, 1890, 0.2, 1.0174));
-        firingTable.add(new FiringDataPoint(4.95, 2090, 0.241, 1.1875));
+        firingTable.add(new FiringDataPoint(3.485, 1935, .247, .945)); // -10
+        firingTable.add(new FiringDataPoint(3.76, 1890, 0.2, 1.0174)); // -10
+        firingTable.add(new FiringDataPoint(4.95, 2090, 0.241, 1.1875)); // -10
 
         // firingTable.add(new FiringDataPoint(2.99, 1880, 0.25, 0.86));
         // firingTable.add(new FiringDataPoint(3.76, 1980, 0.245, 1.0174));

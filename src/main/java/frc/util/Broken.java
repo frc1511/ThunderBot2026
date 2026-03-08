@@ -26,7 +26,7 @@ public class Broken {
     public static boolean pivotDisabled = false;
 
     /** Disable everything hang related */
-    public static boolean hangFullyDisabled = false;
+    public static boolean hangFullyDisabled = true;
     /** Disable the upper hang mag limit */
     public static boolean hangUpperLimitDisabled = false;
     /** Disable the lower hang mag limit */

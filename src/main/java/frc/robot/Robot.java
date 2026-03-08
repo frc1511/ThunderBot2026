@@ -200,7 +200,7 @@ public class Robot extends TimedRobot {
             .onTrue(new InstantCommand(() -> drivetrain.setFieldCentric(true)))
             .onFalse(new InstantCommand(() -> drivetrain.setFieldCentric(false)));
 
-        driverController.leftTrigger().and(driveDisable::isOff).whileTrue(drivetrain.toggleTrenchLock().withName("DriveTrenchLockToggle"));
+        driverController.leftTrigger().and(driveDisable::isOff).whileTrue(drivetrain.trenchLock().withName("DriveTrenchLockToggle"));
         driverController.rightTrigger() // temporary robot centric
             .onTrue(
                 new CommandBuilder()

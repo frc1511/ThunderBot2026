@@ -49,7 +49,7 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
         return Commands.none();
     }
 
-    public Command toggleTrenchLock() {
+    public Command trenchLock() {
         return Commands.none();
     }
 
