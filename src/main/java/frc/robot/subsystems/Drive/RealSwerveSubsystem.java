@@ -19,6 +19,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -190,7 +191,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     public Command setHubLock(Boolean isOn) {
         return new CommandBuilder().onExecute(() -> {
             m_hubLock = isOn;
-        });
+        }).isFinished(true);
     }
 
     public Command hubLock() {
@@ -586,6 +587,14 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         return Math.PI/2 - Math.acos(Constants.Swerve.kShooterOffset / Math.hypot(dX, dY));
     }
 
+    public void setupTheta(boolean isAuto) {
+        if (isAuto) {
+            m_driveController.getThetaController().setPID(Constants.Swerve.ThetaAutoPID.kP, Constants.Swerve.ThetaAutoPID.kI, Constants.Swerve.ThetaAutoPID.kD);
+        } else {
+            m_driveController.getThetaController().setPID(Constants.Swerve.ThetaPID.kP, Constants.Swerve.ThetaPID.kI, Constants.Swerve.ThetaPID.kD);
+        }
+    }
+
     private DoubleSupplier m_autoXSupplier = () -> 0;
     private DoubleSupplier m_autoYSupplier = () -> 0;
     private DoubleSupplier m_autoTSupplier = () -> 0;
@@ -595,6 +604,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         SmartDashboard.putNumber("SetSpeeds_theta", speeds.omegaRadiansPerSecond);
 
         double vRot = speeds.omegaRadiansPerSecond;
+        
+        Pose2d whatIThinkThePoseIsButIDK = new Pose2d(Units.Meter.of(m_driveController.getXController().getSetpoint()), Units.Meter.of(m_driveController.getYController().getSetpoint()), new Rotation2d(m_driveController.getThetaController().getSetpoint().position));
+        m_targetField.setRobotPose(whatIThinkThePoseIsButIDK);
 
         if (m_hubLock) {
             m_arcLockCenter = Helpers.allianceHub();
@@ -613,6 +625,8 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                 targetAngle
             ).omegaRadiansPerSecond * Swerve.kMaxAngularRate;
         }
+
+        
 
         final double vRotFin = vRot;
 

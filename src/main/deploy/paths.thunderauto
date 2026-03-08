@@ -21,8 +21,8 @@
       "img_type": 1
     },
     "robot_corner_radius": 0.2,
-    "robot_length": 0.6349999904632568,
-    "robot_width": 0.7620000243186951,
+    "robot_length": 0.7874000072479248,
+    "robot_width": 0.9143999814987183,
     "version_major": 2026
   },
   "state": {
@@ -66,6 +66,9 @@
       "StopIntake": {
         "type": "command"
       },
+      "Stop_n_shoot": {
+        "type": "command"
+      },
       "Stop_shoot": {
         "type": "command"
       },
@@ -88,29 +91,10 @@
       "Pivot_down",
       "Pivot_up",
       "Pivot_up_soft",
-      "Pivot_down_soft"
+      "Pivot_down_soft",
+      "Stop_n_shoot"
     ],
     "auto_modes": {
-      "Basic": {
-        "steps": [
-          {
-            "trajectory": "ShootFromStart",
-            "type": "trajectory"
-          },
-          {
-            "action": "Shoot",
-            "type": "action"
-          },
-          {
-            "trajectory": "HangFromShootPosition",
-            "type": "trajectory"
-          },
-          {
-            "action": "HangUp",
-            "type": "action"
-          }
-        ]
-      },
       "Left 1": {
         "steps": [
           {
@@ -127,6 +111,30 @@
           },
           {
             "trajectory": "Left 1 Part 3",
+            "type": "trajectory"
+          },
+          {
+            "action": "StopIntake",
+            "type": "action"
+          },
+          {
+            "action": "DB_Hub_AL_Start",
+            "type": "action"
+          },
+          {
+            "action": "Stop_n_shoot",
+            "type": "action"
+          },
+          {
+            "action": "Stop_shoot",
+            "type": "action"
+          },
+          {
+            "action": "DB_Hub_AL_End",
+            "type": "action"
+          },
+          {
+            "trajectory": "Left 1 Part 4",
             "type": "trajectory"
           }
         ]
@@ -155,6 +163,14 @@
           }
         ]
       },
+      "Test": {
+        "steps": [
+          {
+            "trajectory": "test_teehee",
+            "type": "trajectory"
+          }
+        ]
+      },
       "forward": {
         "steps": [
           {
@@ -169,7 +185,7 @@
         "current_auto_mode_name": "Left 1"
       },
       "trajectory_editor_state": {
-        "current_trajectory_name": "Left 1 Part 1"
+        "current_trajectory_name": "Left 1 Part 4"
       },
       "view": 1
     },
@@ -212,7 +228,7 @@
         ],
         "settings": {
           "max_angular_accel": 0.37489671533889873,
-          "max_angular_velocity": 1.1999138607461015,
+          "max_angular_velocity": 7.5398223686155035,
           "max_centripetal_accel": 10.0,
           "max_linear_accel": 2.0,
           "max_linear_velocity": 4.624000072479248
@@ -235,8 +251,8 @@
             },
             "link": "",
             "position": {
-              "x": 3.656898260116577,
-              "y": 5.936779499053955
+              "x": 3.5520527362823486,
+              "y": 5.941437244415283
             }
           },
           {
@@ -251,17 +267,17 @@
             },
             "link": "",
             "position": {
-              "x": 1.0,
-              "y": 5.940000057220459
+              "x": 1.0922961235046387,
+              "y": 5.951167106628418
             }
           }
         ],
         "settings": {
-          "max_angular_accel": 0.37489671533889873,
-          "max_angular_velocity": 1.1999138607461015,
+          "max_angular_accel": 4.014257279586958,
+          "max_angular_velocity": 7.5398223686155035,
           "max_centripetal_accel": 10.0,
-          "max_linear_accel": 2.0,
-          "max_linear_velocity": 4.624000072479248
+          "max_linear_accel": 4.0,
+          "max_linear_velocity": 4.900000095367432
         },
         "start_rotation": 3.141592653589793
       },
@@ -281,8 +297,8 @@
             },
             "link": "",
             "position": {
-              "x": 1.0,
-              "y": 5.940000057220459
+              "x": 1.0922961235046387,
+              "y": 5.951167106628418
             }
           },
           {
@@ -297,53 +313,24 @@
             },
             "link": "",
             "position": {
-              "x": 1.0,
-              "y": 5.940000057220459
+              "x": 1.0950559377670288,
+              "y": 5.954080581665039
             }
           }
         ],
         "settings": {
-          "max_angular_accel": 0.37489671533889873,
-          "max_angular_velocity": 1.1999138607461015,
+          "max_angular_accel": 4.014257279586958,
+          "max_angular_velocity": 7.5398223686155035,
           "max_centripetal_accel": 10.0,
-          "max_linear_accel": 2.0,
-          "max_linear_velocity": 4.624000072479248
+          "max_linear_accel": 4.0,
+          "max_linear_velocity": 4.900000095367432
         },
         "start_behavior_link": "L1P1_end",
         "start_rotation": 3.141592653589793
       },
       "Left 1 Part 3": {
-        "actions": [
-          {
-            "item": {
-              "action": "DB_Hub_AL_Start",
-              "editor_locked": false
-            },
-            "position": 0.6296798815551053
-          },
-          {
-            "item": {
-              "action": "Shoot",
-              "editor_locked": false
-            },
-            "position": 1.0
-          },
-          {
-            "item": {
-              "action": "Wait_short",
-              "editor_locked": false
-            },
-            "position": 1.0
-          },
-          {
-            "item": {
-              "action": "DB_Hub_AL_End",
-              "editor_locked": false
-            },
-            "position": 1.3331840182708854
-          }
-        ],
-        "end_rotation": 3.141592653589793,
+        "end_behavior_link": "L1P3_end",
+        "end_rotation": -1.996937781008414,
         "points": [
           {
             "editor_locked": false,
@@ -357,70 +344,116 @@
             },
             "link": "",
             "position": {
-              "x": 1.0,
-              "y": 5.940000057220459
+              "x": 1.0950559377670288,
+              "y": 5.954080581665039
             }
           },
           {
             "editor_locked": false,
             "heading_weights": {
-              "incoming_weight": 0.30856374391588004,
-              "outgoing_weight": 0.34538656075686286
+              "incoming_weight": 0.2600848484798786,
+              "outgoing_weight": 0.25
             },
             "headings": {
-              "incoming_angle": 2.8596193470621887,
-              "outgoing_angle": -3.0283564435364165
-            },
-            "link": "",
-            "max_velocity_override": 0.0,
-            "position": {
-              "x": 2.1573333740234375,
-              "y": 5.170736312866211
-            },
-            "stop_rotation": 0.0
-          },
-          {
-            "editor_locked": false,
-            "heading_weights": {
-              "incoming_weight": 0.44893860816955566,
-              "outgoing_weight": 1.0
-            },
-            "headings": {
-              "incoming_angle": 1.5707963267948968,
-              "outgoing_angle": -1.5707963267948966
+              "incoming_angle": 2.4548668992763854,
+              "outgoing_angle": -0.6867257543134079
             },
             "link": "",
             "position": {
-              "x": 0.9397934675216675,
-              "y": 4.650478839874268
+              "x": 1.8087114095687866,
+              "y": 5.183028221130371
             }
           }
         ],
         "rotations": [
           {
             "item": {
-              "angle": -2.0922148246642824,
+              "angle": -1.98940686142175,
               "editor_locked": false
             },
-            "position": 0.5757626358727763
-          },
-          {
-            "item": {
-              "angle": -2.127006476873611,
-              "editor_locked": false
-            },
-            "position": 1.4000672503337477
+            "position": 0.6538481403270506
           }
         ],
         "settings": {
-          "max_angular_accel": 2.356194490192345,
+          "max_angular_accel": 4.014257279586958,
           "max_angular_velocity": 7.5398223686155035,
           "max_centripetal_accel": 20.0,
           "max_linear_accel": 4.0,
-          "max_linear_velocity": 5.760000228881836
+          "max_linear_velocity": 4.900000095367432
         },
         "start_behavior_link": "L1P2_end",
         "start_rotation": 3.141592653589793
+      },
+      "Left 1 Part 4": {
+        "end_rotation": -3.141592653589793,
+        "points": [
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.0,
+              "outgoing_weight": 0.25
+            },
+            "headings": {
+              "incoming_angle": -0.014601202129677431,
+              "outgoing_angle": 3.126991451460116
+            },
+            "link": "",
+            "position": {
+              "x": 1.8087114095687866,
+              "y": 5.183028221130371
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 0.25,
+              "outgoing_weight": 0.3801880629278581
+            },
+            "headings": {
+              "incoming_angle": 0.051540907109736814,
+              "outgoing_angle": -3.0900517464800563
+            },
+            "link": "",
+            "position": {
+              "x": 1.3643934726715088,
+              "y": 5.063460350036621
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 0.3398738095313684,
+              "outgoing_weight": 1.0
+            },
+            "headings": {
+              "incoming_angle": 1.5904060239411184,
+              "outgoing_angle": -1.551186629648675
+            },
+            "link": "",
+            "position": {
+              "x": 0.9815609455108643,
+              "y": 4.71811056137085
+            }
+          }
+        ],
+        "rotations": [
+          {
+            "item": {
+              "angle": 3.141592653589793,
+              "editor_locked": false
+            },
+            "position": 1.0
+          }
+        ],
+        "settings": {
+          "max_angular_accel": 4.014257279586958,
+          "max_angular_velocity": 4.71238898038469,
+          "max_centripetal_accel": 19.6200008392334,
+          "max_linear_accel": 2.0,
+          "max_linear_velocity": 3.0
+        },
+        "start_behavior_link": "L1P3_end",
+        "start_rotation": -1.9969377875661818
       },
       "Right 1 Part 1": {
         "actions": [
@@ -593,11 +626,11 @@
           }
         ],
         "settings": {
-          "max_angular_accel": 0.37489671533889873,
-          "max_angular_velocity": 1.1999138607461015,
+          "max_angular_accel": 2.2689280275926285,
+          "max_angular_velocity": 7.5398223686155035,
           "max_centripetal_accel": 10.0,
-          "max_linear_accel": 2.0,
-          "max_linear_velocity": 4.624000072479248
+          "max_linear_accel": 4.0,
+          "max_linear_velocity": 5.760000228881836
         },
         "start_rotation": 0.0
       },
@@ -720,59 +753,14 @@
           }
         ],
         "settings": {
-          "max_angular_accel": 0.37489671533889873,
-          "max_angular_velocity": 1.1999138607461015,
+          "max_angular_accel": 2.2689280275926285,
+          "max_angular_velocity": 7.5398223686155035,
           "max_centripetal_accel": 10.0,
-          "max_linear_accel": 2.0,
-          "max_linear_velocity": 4.624000072479248
+          "max_linear_accel": 4.0,
+          "max_linear_velocity": 5.760000228881836
         },
         "start_behavior_link": "R1P1_end",
         "start_rotation": -1.5707963267948966
-      },
-      "ShootFromStart": {
-        "end_rotation": 0.0,
-        "points": [
-          {
-            "editor_locked": false,
-            "heading_weights": {
-              "incoming_weight": 1.0,
-              "outgoing_weight": 0.6017702847777551
-            },
-            "headings": {
-              "incoming_angle": 0.02440330028508823,
-              "outgoing_angle": -3.117189353304705
-            },
-            "link": "",
-            "position": {
-              "x": 3.5972583293914795,
-              "y": 4.018954753875732
-            }
-          },
-          {
-            "editor_locked": false,
-            "heading_weights": {
-              "incoming_weight": 0.5392071641897517,
-              "outgoing_weight": 0.2838896753846713
-            },
-            "headings": {
-              "incoming_angle": -0.040861232761613735,
-              "outgoing_angle": 3.1007314208281795
-            },
-            "link": "",
-            "position": {
-              "x": 2.0680770874023438,
-              "y": 4.040981292724609
-            }
-          }
-        ],
-        "settings": {
-          "max_angular_accel": 0.37489671533889873,
-          "max_angular_velocity": 1.1999138607461015,
-          "max_centripetal_accel": 10.0,
-          "max_linear_accel": 2.0,
-          "max_linear_velocity": 4.624000072479248
-        },
-        "start_rotation": 0.0
       },
       "forward": {
         "end_rotation": 3.141592653589793,
@@ -811,79 +799,16 @@
           }
         ],
         "settings": {
-          "max_angular_accel": 0.37489671533889873,
-          "max_angular_velocity": 1.1999138607461015,
+          "max_angular_accel": 2.2689280275926285,
+          "max_angular_velocity": 7.5398223686155035,
           "max_centripetal_accel": 10.0,
           "max_linear_accel": 2.0,
           "max_linear_velocity": 4.624000072479248
         },
         "start_rotation": 3.141592653589793
       },
-      "test_complex_shoot": {
-        "actions": [
-          {
-            "item": {
-              "action": "Shoot",
-              "editor_locked": false
-            },
-            "position": 0.3958304822444916
-          }
-        ],
-        "end_rotation": -2.4464820427326472,
-        "points": [
-          {
-            "editor_locked": false,
-            "heading_weights": {
-              "incoming_weight": 1.0,
-              "outgoing_weight": 1.0085456371307373
-            },
-            "headings": {
-              "incoming_angle": -1.325995629917614,
-              "outgoing_angle": 1.8155970236721792
-            },
-            "link": "",
-            "position": {
-              "x": 3.611067056655884,
-              "y": 4.040981292724609
-            }
-          },
-          {
-            "editor_locked": false,
-            "heading_weights": {
-              "incoming_weight": 0.8327189683914185,
-              "outgoing_weight": 1.0
-            },
-            "headings": {
-              "incoming_angle": -0.7468337266003379,
-              "outgoing_angle": 2.3947589269894554
-            },
-            "link": "",
-            "position": {
-              "x": 1.2583892345428467,
-              "y": 7.037566184997559
-            }
-          }
-        ],
-        "rotations": [
-          {
-            "item": {
-              "angle": -2.358320491690555,
-              "editor_locked": false
-            },
-            "position": 0.3958304822444916
-          }
-        ],
-        "settings": {
-          "max_angular_accel": 0.37489671533889873,
-          "max_angular_velocity": 1.1999138607461015,
-          "max_centripetal_accel": 10.0,
-          "max_linear_accel": 2.0,
-          "max_linear_velocity": 4.624000072479248
-        },
-        "start_rotation": -1.5707963267948966
-      },
       "test_teehee": {
-        "end_rotation": -1.5707963267948966,
+        "end_rotation": -2.580564884495843,
         "points": [
           {
             "editor_locked": false,
@@ -920,43 +845,67 @@
           {
             "editor_locked": false,
             "heading_weights": {
-              "incoming_weight": 1.1226887702941895,
-              "outgoing_weight": 1.0
+              "incoming_weight": 1.3430399490255416,
+              "outgoing_weight": 1.3987841571506476
             },
             "headings": {
-              "incoming_angle": 1.5707963267948966,
-              "outgoing_angle": -1.5707963267948966
+              "incoming_angle": 1.9781520949726084,
+              "outgoing_angle": -1.163440558617185
             },
             "link": "",
             "position": {
-              "x": 3.6089541912078857,
-              "y": 5.36446475982666
+              "x": 1.6950823068618774,
+              "y": 4.696033000946045
+            }
+          },
+          {
+            "editor_locked": false,
+            "heading_weights": {
+              "incoming_weight": 1.6194214000526255,
+              "outgoing_weight": 1.0
+            },
+            "headings": {
+              "incoming_angle": 0.550025415546463,
+              "outgoing_angle": -2.5915672380433303
+            },
+            "link": "",
+            "position": {
+              "x": 2.2687015533447266,
+              "y": 1.3587373495101929
             }
           }
         ],
         "rotations": [
           {
             "item": {
-              "angle": -3.141592653589793,
+              "angle": 1.9228996095966329,
               "editor_locked": false
             },
             "position": 1.0
+          },
+          {
+            "item": {
+              "angle": 0.36859600473265713,
+              "editor_locked": false
+            },
+            "position": 2.2500098362103977
           }
         ],
         "settings": {
-          "max_angular_accel": 0.37489671533889873,
-          "max_angular_velocity": 1.1999138607461015,
+          "max_angular_accel": 4.014257279586958,
+          "max_angular_velocity": 7.5398223686155035,
           "max_centripetal_accel": 10.0,
-          "max_linear_accel": 2.0,
-          "max_linear_velocity": 4.624000072479248
+          "max_linear_accel": 4.0,
+          "max_linear_velocity": 5.760000228881836
         },
-        "start_rotation": 0.02041796089612233
+        "start_rotation": 3.141592653589793
       }
     },
     "trajectory_end_behavior_links": [
       "L1P1_end",
       "L1P2_end",
-      "R1P1_end"
+      "R1P1_end",
+      "L1P3_end"
     ],
     "waypoint_links": []
   },

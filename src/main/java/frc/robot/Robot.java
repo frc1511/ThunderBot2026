@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Watchdog;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -104,7 +105,7 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().registerSubsystem(hood);
         CommandScheduler.getInstance().registerSubsystem(spindexer);
         CommandScheduler.getInstance().registerSubsystem(hang);
-        DataLogManager.start(); //* Uncomment for logs
+        // DataLogManager.start(); //* Uncomment for logs
     
         // MARK: Orchestration
 
@@ -126,7 +127,7 @@ public class Robot extends TimedRobot {
         
         Alert.info("The robot has restarted");
         DriverStation.silenceJoystickConnectionWarning(true); // trying to fix radio problem
-        SignalLogger.enableAutoLogging(true);
+        SignalLogger.enableAutoLogging(false);
         
         ledDisable.get()
             .whileTrue(
@@ -440,7 +441,6 @@ public class Robot extends TimedRobot {
         drivetrain.setLimelightDisable(limelightDisable.isOn());
         
         conductor.periodic();
-        blinkyBlinkyOrchestrator.sparkle();
         CommandScheduler.getInstance().run();
     }
     
@@ -460,6 +460,7 @@ public class Robot extends TimedRobot {
     
     @Override
     public void autonomousInit() {
+        drivetrain.setupTheta(true);
         drivetrain.setSpeedMultiplier(1.0);
         Command autoCommand = autoChooser.getSelectedCommand();
         if (autoCommand != Commands.none()) {
@@ -474,6 +475,7 @@ public class Robot extends TimedRobot {
     
     @Override
     public void autonomousExit() {
+        drivetrain.setupTheta(false);
         CommandScheduler.getInstance().schedule(drivetrain.setHubLock(false).ignoringDisable(true));
         intake.stopEating().execute();
         // CommandScheduler.getInstance().schedule(intake.stopEating().ignoringDisable(true));

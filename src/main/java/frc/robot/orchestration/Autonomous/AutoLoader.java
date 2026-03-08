@@ -16,6 +16,7 @@ public class AutoLoader {
             autoProject.registerActionCommand("DB_Hub_AL_Start", robot.drivetrain.setHubLock(true));
             autoProject.registerActionCommand("DB_Hub_AL_End", robot.drivetrain.setHubLock(false));
             autoProject.registerActionCommand("Shoot", robot.firingOrchestrator.fireThenStop());
+            autoProject.registerActionCommand("AutoHang", robot.conductor.autoHang());
             autoProject.registerActionCommand("HangUp", robot.hang.extend());
             autoProject.registerActionCommand("HangDown", robot.hang.retract());
             autoProject.registerActionCommand("Intake", robot.intake.eatStart());
@@ -26,6 +27,8 @@ public class AutoLoader {
             autoProject.registerActionCommand("Pivot_up", robot.pivot.up());
             autoProject.registerActionCommand("Pivot_down_soft", robot.pivot.downSoft());
             autoProject.registerActionCommand("Pivot_up_soft", robot.pivot.upSoft());
+            autoProject.registerActionCommand("Stop_n_shoot", robot.firingOrchestrator.fireThenStop()
+                                                                                                 .withTimeout(5));
         } else {
             Alert.warning("Auto failed to load");
         }

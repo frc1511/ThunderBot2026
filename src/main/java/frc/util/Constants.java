@@ -309,7 +309,7 @@ public class Constants {
         public static final int kTimeOfFlightConvergenceMaxRecursions = 10;
 
         // Max Speed
-        public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(5.76); // DON"T TOUCH, USE MULTIPLIER FOR MAX SPEED INSTEAD
+        public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.9); // DON"T TOUCH, USE MULTIPLIER FOR MAX SPEED INSTEAD
 
         public static final double kSpeedStep = 0.1; // Amount to step speed for the inc/dec btns
 
@@ -346,8 +346,13 @@ public class Constants {
             double kP = 3;
             double kI = .1;
         }
-        private interface ThetaPID extends BasePID {
+        public interface ThetaPID extends BasePID {
             double kP = 1.5;
+            double kD = 0.5;
+        }
+
+        public interface ThetaAutoPID extends BasePID {
+            double kP = 9.5;
             double kD = 0.5;
         }
         public static final PIDController kHolonomicXPIDController = new PIDController(XYPID.kP, XYPID.kI, XYPID.kD);
@@ -392,7 +397,7 @@ public class Constants {
 
         // The stator current at which the wheels start to slip;
         // This needs to be tuned to your individual robot
-        private static final Current kSlipCurrent = Amps.of(120);
+        private static final Current kSlipCurrent = Amps.of(106);
 
         private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration();
             // .withClosedLoopRamps(

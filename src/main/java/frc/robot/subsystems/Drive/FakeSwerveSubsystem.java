@@ -148,6 +148,8 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
 
     }
 
+    public void setupTheta(boolean isAuto) {};
+
     public Command alignToTowerY() {
         return Commands.none();
     }

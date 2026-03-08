@@ -62,6 +62,7 @@ public interface SwerveSubsystem extends ThunderInterface {
 
     public Pose2d currentPose();
 
+    public void setupTheta(boolean isAuto);
 
     public boolean isCANSafe();
 
