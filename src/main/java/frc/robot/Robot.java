@@ -217,11 +217,7 @@ public class Robot extends TimedRobot {
             );
 
         // Puts the hang and hood in down mode when going under trench
-        new Trigger(
-            () -> {
-                ZoneConstants.ZoneInfo zone = ZoneConstants.checkZone(drivetrain.currentPose().getTranslation());
-                return zone.isWithinOne && !zone.isBump;
-        }).whileTrue(
+        driverController.start().and(driveDisable::isOff).whileTrue(
             hang.stowForTrench()
                 .alongWith(
                     hood.stowForTrench()
