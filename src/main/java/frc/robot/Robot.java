@@ -129,18 +129,18 @@ public class Robot extends TimedRobot {
         SignalLogger.enableAutoLogging(true);
         
         ledDisable.get()
-            .onTrue(
+            .whileTrue(
                 new InstantCommand(() -> {
                     Broken.blinkyBlinkyButtonBopped = true;
                 })
-                .alongWith(
+                .beforeStarting(
                     blinkyBlinkyOrchestrator.set(Constants.BlinkyBlinky.Mode.OFF)
-                )
+                ).ignoringDisable(true).repeatedly()
             )
             .onFalse(
                 new InstantCommand(() -> {
                     Broken.blinkyBlinkyButtonBopped = false;
-                })
+                }).ignoringDisable(true)
             );
 
         // MARK: Drive

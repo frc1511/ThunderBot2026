@@ -155,7 +155,7 @@ public class Constants {
 
     public interface Storage {
         interface Spindexer {
-           double kSpeed = 1d;
+           double kSpeed = 0.8d;
 
             /** Seconds */
             enum Duration {
@@ -191,7 +191,7 @@ public class Constants {
     
     public interface Shooter {
         double kMaxShooterSpeed = 0.5d;
-        double kShooterAtSpeedTolerance = 40d;
+        double kShooterAtSpeedTolerance = 100d;
         double kTargetShooterRPM = 1900d;
         double kFeedRPM = 2200d;
         
@@ -199,7 +199,7 @@ public class Constants {
         double kTurretTolerance = 0.5d;
 
         public interface ShooterPID extends BasePID {
-            double kP = 8;
+            double kP = 6;
             double kI = 1;
             double kD = .5;
             double kS = 0.20916;

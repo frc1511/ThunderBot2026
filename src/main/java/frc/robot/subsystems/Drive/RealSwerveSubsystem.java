@@ -212,7 +212,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                 }
                 Translation2d closestTrench = ZoneConstants.closestTrench(currentPose().getTranslation());
 
-                if (closestTrench.getDistance(currentPose().getTranslation()) > Constants.Swerve.kTrenchLockMaxDist) return;
+                System.out.println(Math.abs(closestTrench.getX() - currentPose().getX()));
+
+                if (Math.abs(closestTrench.getX() - currentPose().getX()) > Constants.Swerve.kTrenchLockMaxDist) return;
 
                 m_trenchXPos = closestTrench.getX();
                 m_trenchLock = true;
