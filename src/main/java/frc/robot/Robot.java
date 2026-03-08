@@ -279,10 +279,10 @@ public class Robot extends TimedRobot {
                 .onlyIf(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff())
                 .withName("OneDriveBackupHungerIntake")
             );
-        auxController.rightBumper() // fire (hold)
+        auxController.rightBumper()
+            .and(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff()) // fire (hold)
             .whileTrue(
                 firingOrchestrator.fire()
-                .onlyIf(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff())
                 .withName("OneDriveBackupFiringFire")
             );
         auxController.povUp().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(hang.extend().withName("OneDriveBackupHangExtend")).onFalse(hang.halt().withName("OneDriveBackupHangStop")); // hang go uppies (hold)

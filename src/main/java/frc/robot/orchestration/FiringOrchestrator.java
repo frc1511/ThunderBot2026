@@ -24,7 +24,9 @@ public class FiringOrchestrator {
     }
 
     public Command fire() {
-        return new ConditionalCommand(new ParallelCommandGroup(
+        return new ConditionalCommand(
+            // If not feeding (normal hub shot)
+            new ParallelCommandGroup(
                 shooter.preheat(),
                 hood.toOptimalPosition()
             ).andThen(
@@ -33,15 +35,21 @@ public class FiringOrchestrator {
                     kicker.run(),
                     spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER),
                     hood.toOptimalPosition()
-                ))
+                )
+            )
             .withName("fire"),
-            shooter.preheat().andThen(
-                new ParallelCommandGroup(
-                    shooter.holdSpeedForShoot(),
-                    kicker.run(),
-                    spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
-                ))
+
+            // If feeding (across field)
+            shooter.preheat()
+                .andThen(
+                    new ParallelCommandGroup(
+                        shooter.holdSpeedForShoot(),
+                        kicker.run(),
+                        spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
+                    ))
             .withName("feed"),
+
+            // The condition for the above commands (true == top, false == bottom)
             () -> hood.getTargetPosition() != Constants.Hood.Position.FEED);
     }
 
