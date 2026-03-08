@@ -142,6 +142,12 @@ public class Robot extends TimedRobot {
                     Broken.blinkyBlinkyButtonBopped = false;
                 }).ignoringDisable(true)
             );
+        
+        pitMode.get()
+        .whileTrue(
+            blinkyBlinkyOrchestrator.set(Constants.BlinkyBlinky.Mode.PIT)
+                .ignoringDisable(true)
+        );
 
         // MARK: Drive
         if (!Broken.drivetrainFullyDisabled) { // driving with joysticks

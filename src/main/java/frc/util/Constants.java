@@ -149,7 +149,7 @@ public class Constants {
         int kLength = 72;
 
         enum Mode {
-            NONE, INTAKING, HUNG, FIRE_READY, HOME, TRENCH_SAFE, OFF
+            NONE, INTAKING, HUNG, FIRE_READY, HOME, TRENCH_SAFE, PIT, OFF
         }
     }
 
