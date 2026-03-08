@@ -22,6 +22,10 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
         
     }
 
+    public void setSpeedMultiplier(double speedMultipler) {
+        
+    }
+
     public void setFieldCentric(boolean isOn) {
     }
 

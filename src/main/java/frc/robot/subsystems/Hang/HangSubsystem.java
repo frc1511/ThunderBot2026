@@ -81,7 +81,7 @@ public class HangSubsystem extends ThunderSubsystem {
         SmartDashboard.putNumber("Hang_pidSetpoint", m_pidController.getSetpoint());
         SmartDashboard.putBoolean("Hang_atSetpoint", atSetpoint());
         SmartDashboard.putNumber("Hang_output_A", m_motor.getOutputCurrent());
-        SmartDashboard.putNumber("hang_distance_sensor", m_distanceSensor.getValue());
+        SmartDashboard.putNumber("hang_distance_sensor", getDistanceSensor());
     }
 
     private boolean isAtLowerLimit() {
@@ -280,6 +280,8 @@ public class HangSubsystem extends ThunderSubsystem {
         double volts = m_distanceSensor.getVoltage();
 
         double centimeters = Math.pow(volts / 9.6654, -0.902);
+
+        centimeters = Helpers.clamp(centimeters, 2.5, 40);
 
         double meters = centimeters / 100;
 

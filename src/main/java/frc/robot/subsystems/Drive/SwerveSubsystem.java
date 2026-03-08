@@ -18,6 +18,8 @@ import frc.util.Thunder.ThunderInterface;
 
 public interface SwerveSubsystem extends ThunderInterface {
 
+    public void setSpeedMultiplier(double speed);
+
     public void setFieldCentric(boolean isOn);
 
     public void setLimelightDisable(boolean isDisabled);

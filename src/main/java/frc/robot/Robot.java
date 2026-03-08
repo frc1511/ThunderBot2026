@@ -253,7 +253,7 @@ public class Robot extends TimedRobot {
                 .withName("OneDrivePivotUp")
             );
 
-        driverController.start()
+        auxController.start()
             .onTrue(
                 hungerOrchestrator.jostle()
                 .onlyIf(() -> driveDisable.isOff())
@@ -287,8 +287,8 @@ public class Robot extends TimedRobot {
             );
         auxController.povUp().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(hang.extend().withName("OneDriveBackupHangExtend")).onFalse(hang.halt().withName("OneDriveBackupHangStop")); // hang go uppies (hold)
         auxController.povDown().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(hang.retract().withName("OneDriveBackupHangRetract")).onFalse(hang.halt().withName("OneDriveBackupHangStop")); // hang go downies (hold)
-        auxController.povLeft().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).onTrue(drivetrain.increaseSpeed().withName("OneDriveBackupDriveIncSpeed")); // drive go weeee
-        auxController.povRight().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).onTrue(drivetrain.decreaseSpeed().withName("OneDriveBackupDriveDescSpeed")); // drive go snail
+        auxController.povLeft().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).onTrue(drivetrain.decreaseSpeed().withName("OneDriveBackupDriveDescSpeed")); // drive go weeee
+        auxController.povRight().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).onTrue(drivetrain.increaseSpeed().withName("OneDriveBackupDriveIncSpeed")); // drive go snail
         auxController.x().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(drivetrain.brick().withName("OneDriveBackupDriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
         auxController.y().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(drivetrain.hubLock().withName("OneDriveBackupDriveHubLock")); // lock and shoot
         auxController.b().and(driveDisable::isOn).and(auxDisable::isOff).and(oneDriverMode::isOn).whileTrue(hang.jostle().withName("OneDriveBackupJostle")); // lock and shoot
@@ -370,13 +370,6 @@ public class Robot extends TimedRobot {
                 pivot.up()
                 .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
                 .withName("PivotUp")
-            );
-
-        auxController.start() // Hood down
-            .onTrue(
-                hood.toPosition(() -> Constants.Hood.Position.BOTTOM.get())
-                .onlyIf(() -> auxDisable.isOff() && oneDriverMode.isOff())
-                .withName("HoodBottom")
             );
 
         if (!Broken.hoodDisabled) hood.setDefaultCommand(hood.zero().withName("HoodHalt"));
@@ -461,6 +454,7 @@ public class Robot extends TimedRobot {
     
     @Override
     public void autonomousInit() {
+        drivetrain.setSpeedMultiplier(1.0);
         Command autoCommand = autoChooser.getSelectedCommand();
         if (autoCommand != Commands.none()) {
             CommandScheduler.getInstance().schedule(autoCommand);

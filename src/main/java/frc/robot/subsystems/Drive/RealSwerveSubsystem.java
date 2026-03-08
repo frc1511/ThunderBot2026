@@ -10,11 +10,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.thunder.lib.trajectory.ThunderTrajectoryRunnerProperties;
 
-import com.opencsv.CSVWriter;
-
-import edu.wpi.first.apriltag.AprilTag;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -33,7 +28,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.util.Alert;
 import frc.util.Broken;
@@ -48,7 +42,6 @@ import frc.util.Helpers;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 
 public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     private static final double kSimLoopPeriod = 0.004; // 4 ms
@@ -89,7 +82,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
     private boolean m_limelightDisable;
 
-    private double m_speedMultipler = 1.0; // 0% - 100% of max speed
+    public double m_speedMultipler = 1.0; // 0% - 100% of max speed
 
     private boolean m_ensureTheta = false;
     private DoubleSupplier m_ensuredThetaSupplier = () -> 0;
@@ -188,6 +181,10 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     
     public Command decreaseSpeed() {
         return new InstantCommand(() -> m_speedMultipler = Math.max(m_speedMultipler - Swerve.kSpeedStep, 0d));
+    }
+
+    public void setSpeedMultiplier(double speedMultipler) {
+        m_speedMultipler = speedMultipler;
     }
 
     public Command setHubLock(Boolean isOn) {
