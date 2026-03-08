@@ -1,5 +1,9 @@
 package frc.util;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.REVLibError;
@@ -75,5 +79,16 @@ public class Helpers {
 
     public static double clamp(double x, double lo, double hi) {
         return Math.min(Math.max(x, lo), hi);
+    }
+
+    // Will return true if the average distance to the average value is less than the tolerance
+    public static boolean standardDeviation(HashSet<Double> values, double tolerance) {
+        double total = values.stream().mapToDouble(Double::doubleValue).sum();
+        double average = total / values.size();
+
+        double totalDistance = values.stream().mapToDouble(value -> average - value).sum();
+        double averageDistance = totalDistance / values.size();
+
+        return Math.abs(averageDistance) < tolerance;
     }
 }

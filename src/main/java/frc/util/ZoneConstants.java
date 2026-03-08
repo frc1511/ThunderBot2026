@@ -7,8 +7,11 @@ import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.DriverStation;
 
 public class ZoneConstants {
+    public static final Distance kFieldLength = Units.Meters.of(16.541);
+    public static final Distance kFieldWidth = Units.Meters.of(8.069);
     public static final Translation2d kRightBlueTrenchCenterSidePoint = new Translation2d(Units.Meters.zero(), Units.Meters.of(4.624));
     public static final Distance kTrenchWidth = Units.Meters.of(1.427);
     public static final Distance kDepth = Units.Meters.of(0.5715);
@@ -158,5 +161,11 @@ public class ZoneConstants {
         }
 
         return closestPoint;
+    }
+
+    public static boolean isOnLeftSide(Translation2d position) {
+        double x = position.getX();
+        if (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) return x < kFieldWidth.magnitude() / 2;
+        return x > kFieldWidth.magnitude() / 2;
     }
 }

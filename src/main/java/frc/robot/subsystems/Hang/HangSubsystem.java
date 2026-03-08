@@ -1,5 +1,8 @@
 package frc.robot.subsystems.Hang;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.function.DoubleSupplier;
 
 import com.revrobotics.PersistMode;
@@ -13,6 +16,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -81,7 +85,8 @@ public class HangSubsystem extends ThunderSubsystem {
         SmartDashboard.putNumber("Hang_pidSetpoint", m_pidController.getSetpoint());
         SmartDashboard.putBoolean("Hang_atSetpoint", atSetpoint());
         SmartDashboard.putNumber("Hang_output_A", m_motor.getOutputCurrent());
-        SmartDashboard.putNumber("hang_distance_sensor", getDistanceSensor());
+        SmartDashboard.putNumber("hang_distance_sensorDistance", getDistanceSensor().getFirst());
+        SmartDashboard.putBoolean("hang_distance_sensorValid", getDistanceSensor().getSecond());
     }
 
     private boolean isAtLowerLimit() {
@@ -276,15 +281,30 @@ public class HangSubsystem extends ThunderSubsystem {
     /**
      * In meters
      */
-    public double getDistanceSensor() {
+    private LinkedHashSet<Double> m_trackedDistances = new LinkedHashSet<Double>();
+    public Pair<Double, Boolean> getDistanceSensor() {
         double volts = m_distanceSensor.getVoltage();
 
         double centimeters = Math.pow(volts / 9.6654, -0.902);
 
         centimeters = Helpers.clamp(centimeters, 2.5, 40);
 
+        centimeters += 5; // Distance from actual sensor to 'tower closest' (cm)
+
         double meters = centimeters / 100;
 
-        return meters;
+        boolean valid = false;
+        if (m_trackedDistances.size() < 3) {
+            m_trackedDistances.add(meters);
+        } else if (m_trackedDistances.size() >= 3) {
+            Iterator<Double> iter = m_trackedDistances.iterator();
+            iter.next();
+            iter.remove();
+            m_trackedDistances.add(meters);
+        }
+        double average = m_trackedDistances.stream().mapToDouble(Double::doubleValue).sum() / m_trackedDistances.size();
+        valid = Helpers.standardDeviation(m_trackedDistances, .01) && average <= .25;
+
+        return new Pair<Double, Boolean>(average, valid);
     }
 }

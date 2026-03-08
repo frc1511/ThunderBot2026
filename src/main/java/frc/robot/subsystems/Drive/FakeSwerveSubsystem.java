@@ -15,6 +15,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.util.CommandBuilder;
 import frc.util.Constants.Status;
 
 public class FakeSwerveSubsystem implements SwerveSubsystem {
@@ -145,5 +146,13 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
 
     public void setOptimalRotationGetter(DoubleSupplier supplier) {
 
+    }
+
+    public Command alignToTowerY() {
+        return Commands.none();
+    }
+
+    public CommandBuilder driveToPose(Supplier<Pose2d> target) {
+        return new CommandBuilder(this);
     }
 }

@@ -459,6 +459,10 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         return getState().Pose;
     }
 
+    public CommandBuilder driveToPose(Supplier<Pose2d> target) {
+        return driveToPose().withTarget(target);
+    }
+
     public DriveToPose driveToPose() {
         return new DriveToPose();
     }
@@ -677,8 +681,14 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         m_optimalRotationSupplier = supplier;
     }
 
-    // public Command alignToTowerY() {
-    //     return driveToPose()
-            // .withTarget(new Pose2d(currentPose().getX(), DriverStation.getAlliance().get() == DriverStation.Alliance.Blue ? Constants.HangConstants.kTowerDistanceFromWallY : AprilTagFields.k2026RebuiltWelded.))
-    // }
+    public Command alignToTowerY() {
+        return driveToPose()
+            .withTarget(
+                new Pose2d(
+                    currentPose().getX(),
+                    DriverStation.getAlliance().get() == DriverStation.Alliance.Blue ? Constants.HangConstants.kTowerDistanceFromWallY : ZoneConstants.kFieldLength.magnitude() - Constants.HangConstants.kTowerDistanceFromWallY,
+                    // If left - 180, If right - 0
+                    ZoneConstants.isOnLeftSide(currentPose().getTranslation()) ? Rotation2d.k180deg : Rotation2d.kZero
+                ));
+    }
 }
