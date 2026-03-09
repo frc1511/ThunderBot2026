@@ -13,8 +13,12 @@ class BuildTest {
   void robotBuilds() {
     assert HAL.initialize(500, 0); // initialize the HAL, crash if failed
     if (robot == null) {
-      robot = new Robot();
+      try {
+        robot = new Robot();
+      } catch (Exception e) {
+        e.printStackTrace();
       assertNotNull(robot);
+    }
     }
   }
 

@@ -1,0 +1,138 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.539170454545454,
+        "y": 5.962375
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.732502331753301,
+        "y": 5.922381059922871
+      },
+      "isLocked": true,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.323204545455358,
+        "y": 5.962375
+      },
+      "prevControl": {
+        "x": 1.9072232210768931,
+        "y": 6.04072736801474
+      },
+      "nextControl": {
+        "x": 0.5941315603060482,
+        "y": 5.864562040883188
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 0.7151022727280851,
+        "y": 5.962375
+      },
+      "prevControl": {
+        "x": 1.0565839426373063,
+        "y": 5.943183491907114
+      },
+      "nextControl": {
+        "x": 0.32617673520626284,
+        "y": 5.984232886553221
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.6530227272735396,
+        "y": 5.488261363635385
+      },
+      "prevControl": {
+        "x": 1.0844332436335025,
+        "y": 5.657921754633513
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "Left 1 Midpoint"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 2,
+      "rotationDegrees": 180.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "Intake",
+      "waypointRelativePos": 0.0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Intake"
+        }
+      }
+    },
+    {
+      "name": "PivotDown",
+      "waypointRelativePos": 0.0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "PivotDown"
+        }
+      }
+    },
+    {
+      "name": "wait",
+      "waypointRelativePos": 2.2299465240641747,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "wait",
+              "data": {
+                "waitTime": 2.0
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "StopIntake",
+      "waypointRelativePos": 2.8034759358288777,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.9,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -128.21102542567675
+  },
+  "reversed": false,
+  "folder": "Left 1",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "useDefaultConstraints": true
+}

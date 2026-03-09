@@ -1,8 +1,7 @@
 package frc.util;
 
-import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Optional;
 
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -90,5 +89,13 @@ public class Helpers {
         double averageDistance = totalDistance / values.size();
 
         return Math.abs(averageDistance) < tolerance;
+    }
+
+    public static boolean isBlueAlliance() {
+        Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
+        if (alliance.isPresent()) {
+            return alliance.get() == DriverStation.Alliance.Blue;
+        }
+        return false;
     }
 }

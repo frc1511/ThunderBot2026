@@ -8,9 +8,13 @@ import java.util.function.Supplier;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.thunder.lib.trajectory.ThunderTrajectoryRunnerProperties;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rectangle2d;
@@ -19,7 +23,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -59,6 +62,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     private final SwerveRequest.SwerveDriveBrake m_brickRequest = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt m_pointRequest = new SwerveRequest.PointWheelsAt();
     private final SwerveRequest.Idle m_idleRequest = new SwerveRequest.Idle();
+    private final SwerveRequest.ApplyRobotSpeeds m_autoRequest = new SwerveRequest.ApplyRobotSpeeds();
 
     public SysID sysID;
 
@@ -143,6 +147,8 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
+        configurePathPlanner();
 
         // try {
             // boolean needsInit = !file.exists();
@@ -262,13 +268,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                 vRot = m_driveController.getThetaController().calculate(currentPose().getRotation().getDegrees(), m_ensuredThetaSupplier.getAsDouble());
             }
 
-            if (DriverStation.isAutonomous()) {
-                vx = m_autoXSupplier.getAsDouble();
-                vy = m_autoYSupplier.getAsDouble();
-                vRot = m_autoTSupplier.getAsDouble();
-            }
-
-            if (m_fieldCentric && !DriverStation.isAutonomous()) {
+            if (m_fieldCentric) {
                 return m_fieldCentricRequest
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
                     .withVelocityX(vx)
@@ -345,12 +345,20 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         }
 
         if (!m_limelightDisable) {
+            Matrix<N3, N1> visionMeasurementStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
+            visionMeasurementStdDevs.set(0, 0, 0.2);
+            visionMeasurementStdDevs.set(1, 0, 0.2);
+            visionMeasurementStdDevs.set(2, 0, 0.2);
             LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
             LimelightHelpers.PoseEstimate limelightRearMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-rear");
             if (limelightMeasurement != null) {
                 if (limelightMeasurement.tagCount >= 2 ||
                     (limelightMeasurement.tagCount == 1 && limelightMeasurement.rawFiducials[0].ambiguity < 0.2)) {
-                    addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
+                    if (DriverStation.isAutonomousEnabled()) {
+                        addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds, visionMeasurementStdDevs);
+                    } else {
+                        addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
+                    }
                 }
             } else {
                 Alert.warning("Couldn't find main limelight");
@@ -359,7 +367,11 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             if (limelightRearMeasurement != null) {
                 if (limelightRearMeasurement.tagCount >= 2 ||
                     (limelightRearMeasurement.tagCount == 1 && limelightRearMeasurement.rawFiducials[0].ambiguity < 0.2)) {
-                    addVisionMeasurement(limelightRearMeasurement.pose, limelightRearMeasurement.timestampSeconds);
+                    if (DriverStation.isAutonomousEnabled()) {
+                        addVisionMeasurement(limelightRearMeasurement.pose, limelightRearMeasurement.timestampSeconds, visionMeasurementStdDevs);
+                    } else {
+                        addVisionMeasurement(limelightRearMeasurement.pose, limelightRearMeasurement.timestampSeconds);
+                    }
                 }
             } else {
                 Alert.warning("Couldn't find rear limelight");
@@ -410,10 +422,6 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         SmartDashboard.putData(m_driveController.getYController());
         SmartDashboard.putData(m_driveController.getThetaController());
         SmartDashboard.putNumber("Drive_theta_target_deg", m_driveController.getThetaController().getGoal().position / Math.PI * 180);
-
-        SmartDashboard.putNumber("Drive_auto_vx", m_autoXSupplier.getAsDouble());
-        SmartDashboard.putNumber("Drive_auto_vy", m_autoYSupplier.getAsDouble());
-        SmartDashboard.putNumber("Drive_auto_vtheta", m_autoTSupplier.getAsDouble());
     }
 
     private void startSimThread() {
@@ -596,60 +604,41 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         }
     }
 
-    private DoubleSupplier m_autoXSupplier = () -> 0;
-    private DoubleSupplier m_autoYSupplier = () -> 0;
-    private DoubleSupplier m_autoTSupplier = () -> 0;
-    private void setSpeeds(ChassisSpeeds speeds) {
-        SmartDashboard.putNumber("SetSpeeds_x", speeds.vxMetersPerSecond);
-        SmartDashboard.putNumber("SetSpeeds_y", speeds.vyMetersPerSecond);
-        SmartDashboard.putNumber("SetSpeeds_theta", speeds.omegaRadiansPerSecond);
-
-        double vRot = speeds.omegaRadiansPerSecond;
-        
-        Pose2d whatIThinkThePoseIsButIDK = new Pose2d(Units.Meter.of(m_driveController.getXController().getSetpoint()), Units.Meter.of(m_driveController.getYController().getSetpoint()), new Rotation2d(m_driveController.getThetaController().getSetpoint().position));
-        m_targetField.setRobotPose(whatIThinkThePoseIsButIDK);
-
-        if (m_hubLock) {
-            m_arcLockCenter = Helpers.allianceHub();
-
-            double dX = currentPose().getX() - m_arcLockCenter.getX();
-            double dY = currentPose().getY() - m_arcLockCenter.getY();
-            
-            Rotation2d targetAngle = new Rotation2d(Math.atan2(dY, dX) + Math.PI/2 - getShooterAngleCompensation());
-
-            System.out.println(m_optimalRotationSupplier.getAsDouble());
-
-            vRot = m_driveController.calculate(
-                currentPose(),
-                new Pose2d(currentPose().getTranslation(), targetAngle),
-                Math.hypot(dX, dY),
-                targetAngle
-            ).omegaRadiansPerSecond * Swerve.kMaxAngularRate;
+    private void configurePathPlanner() {
+        RobotConfig autonomousConfig = null;
+        try {
+            autonomousConfig = RobotConfig.fromGUISettings();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        
+        if (AutoBuilder.isConfigured()) return;
 
-        final double vRotFin = vRot;
+        AutoBuilder.configure(
+            this::currentPose,
+            this::resetPose,
+            this::getSpeed,
+            (speeds, feeds) -> {
+                SmartDashboard.putNumber("SetSpeeds_x", speeds.vxMetersPerSecond);
+                SmartDashboard.putNumber("SetSpeeds_y", speeds.vyMetersPerSecond);
+                SmartDashboard.putNumber("SetSpeeds_theta", speeds.omegaRadiansPerSecond);
 
-        m_autoXSupplier = () -> speeds.vxMetersPerSecond;
-        m_autoYSupplier = () -> speeds.vyMetersPerSecond;
-        m_autoTSupplier = () -> vRotFin;
+                this.setControl(m_autoRequest.withSpeeds(speeds));
+            },
+            new PPHolonomicDriveController(
+                new PIDConstants(Constants.Swerve.XYPID.kP, Constants.Swerve.XYPID.kI, Constants.Swerve.XYPID.kD),
+                new PIDConstants(Constants.Swerve.ThetaAutoPID.kP, Constants.Swerve.ThetaAutoPID.kI, Constants.Swerve.ThetaAutoPID.kD)
+            ),
+            autonomousConfig, 
+            () -> !Helpers.isBlueAlliance(),
+            this
+        );
     }
-
     public void resetControl(Pose2d pose) {
         resetPose(pose);
         m_driveController.getXController().reset();
         m_driveController.getYController().reset();
         m_driveController.getThetaController().reset(pose.getRotation().getRadians());
-    }
-
-    public ThunderTrajectoryRunnerProperties getTrajectoryRunnerProperties() {
-        return new ThunderTrajectoryRunnerProperties(
-            this::currentPose,
-            pose -> resetControl(pose),
-            speeds -> setSpeeds(speeds),
-            m_driveController
-        );
     }
 
     public Status status() {
@@ -699,11 +688,14 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     public Command alignToTowerY() {
         return driveToPose()
             .withTarget(
-                new Pose2d(
-                    currentPose().getX(),
-                    DriverStation.getAlliance().get() == DriverStation.Alliance.Blue ? Constants.HangConstants.kTowerDistanceFromWallY : ZoneConstants.kFieldLength.magnitude() - Constants.HangConstants.kTowerDistanceFromWallY,
-                    // If left - 180, If right - 0
-                    ZoneConstants.isOnLeftSide(currentPose().getTranslation()) ? Rotation2d.k180deg : Rotation2d.kZero
-                ));
+                () -> {
+                    return new Pose2d(
+                        Constants.HangConstants.kHangCenterDisplacement + (Helpers.isBlueAlliance() ? Constants.HangConstants.kTowerDistanceFromWallX : ZoneConstants.kFieldLength.magnitude() - Constants.HangConstants.kTowerDistanceFromWallX),
+                        currentPose().getY(),
+                        // If left - 0, If right - 180
+                        ZoneConstants.isOnLeftSide(currentPose().getTranslation()) ? Rotation2d.k180deg : Rotation2d.kZero
+                    );
+                }
+            );
     }
 }

@@ -1,6 +1,5 @@
 package frc.robot.subsystems.Hang;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.function.DoubleSupplier;
@@ -289,7 +288,7 @@ public class HangSubsystem extends ThunderSubsystem {
 
         centimeters = Helpers.clamp(centimeters, 2.5, 40);
 
-        centimeters += 5; // Distance from actual sensor to 'tower closest' (cm)
+        centimeters -= 3; // Make the distance make more sense
 
         double meters = centimeters / 100;
 
@@ -303,7 +302,7 @@ public class HangSubsystem extends ThunderSubsystem {
             m_trackedDistances.add(meters);
         }
         double average = m_trackedDistances.stream().mapToDouble(Double::doubleValue).sum() / m_trackedDistances.size();
-        valid = Helpers.standardDeviation(m_trackedDistances, .01) && average <= .25;
+        valid = Helpers.standardDeviation(m_trackedDistances, .01) && average <= .20;
 
         return new Pair<Double, Boolean>(average, valid);
     }

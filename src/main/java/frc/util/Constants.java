@@ -292,7 +292,7 @@ public class Constants {
         }
 
         double kSetpointMaxVelocity = 0.02; // Prevents flybys
-        double kSetpointPositionTolerance = 0.05;
+        double kSetpointPositionTolerance = 0.25;
         double kZeroingSpeed = -0.1;
         double kMaxDeploySpeed = 0.9; // Extending Hanger FINAL DONT CHNAGE
         double kMaxPullSpeed = -0.9;  // Retracting Hanger (pulling the robot up on the bar) FINAL DONT CHANGE
@@ -301,7 +301,8 @@ public class Constants {
         double kJostleAmplitude = 0.5;
         double kTrenchSafeDistanceRotations = 1;
 
-        double kTowerDistanceFromWallY = 1.06045;
+        double kTowerDistanceFromWallX = 1.2065;
+        double kHangCenterDisplacement = 0.12954;
     }
 
     public class Swerve {
@@ -342,7 +343,7 @@ public class Constants {
         public static final double kVelocityDeadband = 0.05 * kMaxSpeed; // % Multiplier 
         public static final double kAngularVelocityDeadband = 0.05 * kMaxAngularRate; // % Multiplier
 
-        private interface XYPID extends BasePID {
+        public interface XYPID extends BasePID {
             double kP = 3;
             double kI = .1;
         }

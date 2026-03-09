@@ -5,7 +5,6 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.thunder.lib.trajectory.ThunderTrajectoryRunnerProperties;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -69,8 +68,6 @@ public interface SwerveSubsystem extends ThunderInterface {
     public Command driveLockedToArcWithJoysticks(DoubleSupplier leftX);
 
     public void resetControl(Pose2d pose);
-
-    public ThunderTrajectoryRunnerProperties getTrajectoryRunnerProperties();
 
     public void seedFieldCentric();
 
