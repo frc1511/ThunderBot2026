@@ -199,9 +199,9 @@ public class Constants {
         double kTurretTolerance = 0.5d;
 
         public interface ShooterPID extends BasePID {
-            double kP = 6;
-            double kI = 1;
-            double kD = .5;
+            double kP = 4.5;
+            double kI = .1;
+            double kD = .7;
             double kS = 0.20916;
             double kV = 0.11678;
             double kA = 0.012514;

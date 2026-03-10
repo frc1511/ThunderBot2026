@@ -182,12 +182,10 @@ public class Robot extends TimedRobot {
 
         RobotModeTriggers.disabled().onTrue(drivetrain.idle().withTimeout(.1));
 
-        // driverController.x().and(driveDisable::isOff).whileTrue(drivetrain.brick().withName("DriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
+        driverController.x().and(driveDisable::isOff).whileTrue(drivetrain.brick().withName("DriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
         driverController.y().and(driveDisable::isOff).whileTrue(drivetrain.hubLock().withName("DriveHubLockToggle")); // lock and shoot
         driverController.b().and(driveDisable::isOff).whileTrue(hang.jostle().withName("HangJostle"));
         driverController.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).withName("DriveSeedFieldCentric")); // reset IMU
-
-        driverController.x().onTrue(conductor.autoHang());
 
         driverController.povUp()  .and(() -> driveDisable.isOff() && climberDisable.isOff()).whileTrue(hang.extend().withName("HangExtend")).onFalse(hang.halt().withName("HangHalt")); // hang go uppies (hold)
         driverController.povDown().and(() -> driveDisable.isOff() && climberDisable.isOff()).whileTrue(hang.retract().withName("HangRetract")).onFalse(hang.halt().withName("HangHalt")); // hang go downies (hold)
