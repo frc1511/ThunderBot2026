@@ -194,7 +194,7 @@ public class Robot extends TimedRobot {
             .onTrue(new InstantCommand(() -> drivetrain.setFieldCentric(true)))
             .onFalse(new InstantCommand(() -> drivetrain.setFieldCentric(false)));
 
-        driverController.leftTrigger().and(driveDisable::isOff).whileTrue(drivetrain.trenchLock().withName("DriveTrenchLockToggle"));
+        driverController.leftTrigger().and(() -> driveDisable.isOff() && oneDriverMode.isOff()).whileTrue(drivetrain.trenchLock().withName("DriveTrenchLockToggle"));
         driverController.rightTrigger() // temporary robot centric
             .and(() -> driveDisable.isOff() && oneDriverMode.isOff())
             .onTrue(
@@ -210,9 +210,9 @@ public class Robot extends TimedRobot {
                     .withName("DriveRobotCentricSetOff")
             );
 
-        driverController.leftBumper().and(driveDisable::isOff).onTrue(drivetrain.decreaseSpeed().withName("DriveSpeedDesc")); // drive go snail
-        driverController.rightBumper().and(driveDisable::isOff).onTrue(drivetrain.increaseSpeed().withName("DriveSpeedInc")); // drive go weeee
-
+        driverController.leftBumper().and(() -> driveDisable.isOff() && oneDriverMode.isOff()).onTrue(drivetrain.decreaseSpeed().withName("DriveSpeedDesc")); // drive go snail
+        driverController.rightBumper().and(() -> driveDisable.isOff() && oneDriverMode.isOff()).onTrue(drivetrain.increaseSpeed().withName("DriveSpeedInc")); // drive go weeee
+        
         // Puts the hang and hood in down mode when going under trench
         driverController.start().and(driveDisable::isOff).whileTrue(
             hang.stowForTrench()
@@ -222,6 +222,9 @@ public class Robot extends TimedRobot {
                 .withName("TrenchStow")
         );
         // MARK: One Driver Mode
+        driverController.povLeft() .and(() -> driveDisable.isOff() && oneDriverMode.isOn()).onTrue(drivetrain.decreaseSpeed().withName("OneDriveDriveDescSpeed")); // drive go weeee
+        driverController.povRight().and(() -> driveDisable.isOff() && oneDriverMode.isOn()).onTrue(drivetrain.increaseSpeed().withName("OneDriveDriveIncSpeed")); // drive go snail
+        
         driverController.leftTrigger() // outtake (hold)
             .and(() -> driveDisable.isOff() && oneDriverMode.isOn())
             .whileTrue(
@@ -253,14 +256,8 @@ public class Robot extends TimedRobot {
                 .withName("OneDrivePivotUp")
             );
 
-        auxController.start()
-            .and(() -> driveDisable.isOff())
-            .onTrue(
-                hungerOrchestrator.jostle()
-                .withName("HungerJostle")
-            );
-
-        // if drive is disabled and one driver mode is enabled
+            
+            // if drive is disabled and one driver mode is enabled
         auxController.leftTrigger() // outtake (hold)
             .and(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff())
             .whileTrue(
@@ -295,8 +292,15 @@ public class Robot extends TimedRobot {
         auxController.y()       .and(() -> driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()).whileTrue(drivetrain.hubLock().withName("OneDriveBackupDriveHubLock")); // lock and shoot
         auxController.b()       .and(() -> driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()).whileTrue(hang.jostle().withName("OneDriveBackupJostle")); // lock and shoot
         auxController.a()       .and(() -> driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).withName("OneDriveBackupDriveSeedFieldCentric")); // reset IMU
-
+        
         // MARK: Aux
+        auxController.start()
+            .and(() -> auxDisable.isOff())
+            .onTrue(
+                hungerOrchestrator.jostle()
+                .withName("HungerJostle")
+            );
+
         auxController.povUp() // Speen
             .and(() -> auxDisable.isOff() && oneDriverMode.isOff())
             .whileTrue(
@@ -368,7 +372,7 @@ public class Robot extends TimedRobot {
             .onFalse(intake.stopEating().withName("IntakeHalt"));
 
         auxController.back() // Intake (hold)
-            .and(() -> auxDisable.isOff() && oneDriverMode.isOff())
+            .and(() -> auxDisable.isOff())
             .whileTrue(
                 pivot.up()
                 .withName("PivotUp")
