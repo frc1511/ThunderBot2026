@@ -34,7 +34,9 @@ public final class Elastic {
     /** Warning message */
     WARNING,
     /** Error message */
-    ERROR
+    ERROR,
+    /** Critical message */
+    CRITICAL
   }
 
   /**

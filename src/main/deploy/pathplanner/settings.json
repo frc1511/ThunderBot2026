@@ -1,0 +1,40 @@
+{
+  "robotWidth": 0.91,
+  "robotLength": 0.79,
+  "holonomicMode": true,
+  "pathFolders": [
+    "Left 1",
+    "Left 2",
+    "Right 1"
+  ],
+  "autoFolders": [],
+  "defaultMaxVel": 4.9,
+  "defaultMaxAccel": 3.0,
+  "defaultMaxAngVel": 540.0,
+  "defaultMaxAngAccel": 720.0,
+  "defaultNominalVoltage": 12.0,
+  "robotMass": 55.0,
+  "robotMOI": 3.98762878,
+  "robotTrackwidth": 0.546,
+  "driveWheelRadius": 0.048,
+  "driveGearing": 5.143,
+  "maxDriveSpeed": 5.45,
+  "driveMotorType": "krakenX60",
+  "driveCurrentLimit": 60.0,
+  "wheelCOF": 1.2,
+  "flModuleX": 0.250825,
+  "flModuleY": 0.3175,
+  "frModuleX": 0.250825,
+  "frModuleY": -0.3175,
+  "blModuleX": -0.251,
+  "blModuleY": 0.3175,
+  "brModuleX": -0.251,
+  "brModuleY": -0.3175,
+  "bumperOffsetX": 0.0,
+  "bumperOffsetY": 0.0,
+  "robotFeatures": [
+    "{\"name\":\"Intake\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":0.4,\"y\":0.0},\"size\":{\"width\":0.8,\"length\":0.2},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}",
+    "{\"name\":\"Spindexer\",\"type\":\"circle\",\"data\":{\"center\":{\"x\":0.1,\"y\":0.0},\"radius\":0.25,\"strokeWidth\":0.02,\"filled\":false}}",
+    "{\"name\":\"Shooter\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":-0.275,\"y\":-0.2},\"size\":{\"width\":0.4,\"length\":0.2},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}"
+  ]
+}

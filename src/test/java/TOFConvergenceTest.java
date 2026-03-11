@@ -1,55 +1,28 @@
-package frc.robot.orchestration;
-
-import edu.wpi.first.wpilibj2.command.Command;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Robot;
-import frc.robot.orchestration.CannonOrchestrator.Orientation;
-import frc.robot.subsystems.Drive.SwerveSubsystem;
 import frc.util.Constants;
 import frc.util.FiringTable;
-import frc.util.Helpers;
 import frc.util.FiringTable.FiringDataPoint;
 
-public class HubOrchestrator {
-    CannonOrchestrator cannonOrchestrator;
-    SwerveSubsystem swerveSubsystem;
-    FiringTable firingTable;
-
-    Pair<FiringDataPoint, Double> latestConvergance;
-
-    public HubOrchestrator(Robot robot) {
-        cannonOrchestrator = robot.cannonOrchestrator;
-        swerveSubsystem = robot.drivetrain;
-        firingTable = new FiringTable();
-
-        runConvergance();
+public class TOFConvergenceTest {
+    @BeforeEach
+    void setup() {
+        assert HAL.initialize(500, 0); // initialize the HAL, crash if failed
     }
 
-    public double hubLockTurretAngle() {
-        Pose2d nearestHub = Helpers.allianceHub();
-
-        Pose2d currentPose = swerveSubsystem.currentPose();
-
-        double dX = currentPose.getX() - nearestHub.getX();
-        double dY = currentPose.getY() - nearestHub.getY();
-
-        return Math.atan2(dY, dX) - currentPose.getRotation().getRadians();
-    }
-
-    public double hubLockHoodAngle() {
-        return 0;
-    }
-
-    public Command turretAutoLock() {
-        return cannonOrchestrator.moveToOrientation(new Orientation(hubLockTurretAngle(), hubLockHoodAngle()));
-    }
+    private FiringTable firingTable = new FiringTable();
 
     private Pair<FiringDataPoint, Double> converge(ChassisSpeeds currentSpeed, Translation2d robotPosition, Translation2d targetPosition) {
         ArrayList<Translation2d> iterations = new ArrayList<Translation2d>();
@@ -106,30 +79,45 @@ public class HubOrchestrator {
         return new Pair<FiringTable.FiringDataPoint,Double>(finalPoint, finalTheta);
     }
 
-    public void runConvergance() {
-        ChassisSpeeds currentSpeed = swerveSubsystem.getSpeed();
-        Pose2d currentPose = swerveSubsystem.currentPose();
-        Pose2d nearestHub = Helpers.allianceHub();
+    @Test
+    void ConvergenceTest() {
+        HashSet<Pair<Pose2d, ChassisSpeeds>> testValues = new HashSet<>();
+        testValues.add(new Pair<Pose2d,ChassisSpeeds>(
+            new Pose2d(Constants.Swerve.blueHubCenterPose.getTranslation().minus(new Translation2d(2, 0)), Rotation2d.kZero),
+            new ChassisSpeeds(1, 1, 0)
+        ));
+        testValues.add(new Pair<Pose2d,ChassisSpeeds>(
+            new Pose2d(2, 2, new Rotation2d(0)),
+            new ChassisSpeeds(1, 1, 0)
+        ));
+        testValues.add(new Pair<Pose2d,ChassisSpeeds>( // 8800 rpm
+            new Pose2d(1, 3, new Rotation2d(0)),
+            new ChassisSpeeds(-1, 1, 0)
+        ));
+        testValues.add(new Pair<Pose2d,ChassisSpeeds>( // 1500 deg hood + 150000000 rpm
+            new Pose2d(4, 1, new Rotation2d(0)),
+            new ChassisSpeeds(0, 3, 0)
+        ));
+        testValues.add(new Pair<Pose2d,ChassisSpeeds>( // Insanely high
+            new Pose2d(2, 1, new Rotation2d(0)),
+            new ChassisSpeeds(-5, -3, 0)
+        ));
 
-        SmartDashboard.putNumber("converge_dist", Math.sqrt(Math.pow(currentPose.getX() - nearestHub.getX(), 2) + Math.pow(currentPose.getY() - nearestHub.getY(), 2)));
-        
-        latestConvergance = converge(currentSpeed, currentPose.getTranslation(), nearestHub.getTranslation());
-        SmartDashboard.putNumber("firingPoint_speed", latestConvergance.getFirst().speedRPM);
-    }
+        testValues.forEach(pair -> {
+            Pose2d pose = pair.getFirst();
+            ChassisSpeeds speeds = pair.getSecond();
+            Pose2d hub = Constants.Swerve.blueHubCenterPose;
 
-    public double getOptimalShootSpeed() {
-        if (cannonOrchestrator.hood.getTargetPosition() == Constants.Hood.Position.FEED) {
-            return Constants.Shooter.kFeedRPM;
-        } else {
-            return latestConvergance.getFirst().speedRPM;
-        }
-    }
+            Pair<FiringDataPoint, Double> convergeResult = converge(speeds, pose.getTranslation(), hub.getTranslation());
 
-    public double getOptimalHoodAngle() {
-        return latestConvergance.getFirst().hoodAngle;
-    }
+            System.out.println("Speed: " + convergeResult.getFirst().speedRPM);
+            System.out.println("Hood: " + convergeResult.getFirst().hoodAngle);
+            System.out.println("Rbt Angle: " + convergeResult.getSecond());
 
-    public double getOptimalDriveOrientation() {
-        return latestConvergance.getSecond();
+            assertTrue(convergeResult.getFirst().speedRPM < 5000);
+            assertTrue(convergeResult.getFirst().speedRPM > 0);
+            assertTrue(convergeResult.getFirst().hoodAngle < Constants.Hood.Position.TOP.get());
+            assertTrue(convergeResult.getFirst().hoodAngle > Constants.Hood.Position.BOTTOM.get());
+        });
     }
 }
