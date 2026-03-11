@@ -35,7 +35,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "DB_Hub_AL_Start"
+                  "name": "Shoot"
                 }
               },
               {
@@ -47,34 +47,10 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "StopShoot"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "DB_Hub_AL_Stop"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": null
+                  "name": "Shoot"
                 }
               }
             ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Right 1 Part 3"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "AutoHang"
           }
         }
       ]

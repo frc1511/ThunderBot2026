@@ -7,7 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Left 1 Part 1"
+            "pathName": "Lef 1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Preheat"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
           }
         },
         {
@@ -17,31 +29,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "DB_Hub_AL_Start"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
                   "name": "Shoot"
-                }
-              },
-              {
-                "type": "wait",
-                "data": {
-                  "waitTime": 5.0
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "StopShoot"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "DB_Hub_AL_Stop"
                 }
               }
             ]
@@ -50,13 +38,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Left 1 Part 2"
+            "pathName": "Lef 1 P2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Par 3"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "AutoHang"
+            "name": "Shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
           }
         }
       ]

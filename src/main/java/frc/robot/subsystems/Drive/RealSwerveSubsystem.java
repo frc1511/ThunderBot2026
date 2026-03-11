@@ -9,6 +9,7 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
@@ -354,11 +355,11 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             if (limelightMeasurement != null) {
                 if (limelightMeasurement.tagCount >= 2 ||
                     (limelightMeasurement.tagCount == 1 && limelightMeasurement.rawFiducials[0].ambiguity < 0.2)) {
-                    if (DriverStation.isAutonomousEnabled()) {
-                        addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds, visionMeasurementStdDevs);
-                    } else {
+                    // if (DriverStation.isAutonomousEnabled()) {
+                    //     addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds, visionMeasurementStdDevs);
+                    // } else {
                         addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
-                    }
+                    // }
                 }
             } else {
                 Alert.warning("Couldn't find main limelight");
@@ -367,11 +368,11 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             if (limelightRearMeasurement != null) {
                 if (limelightRearMeasurement.tagCount >= 2 ||
                     (limelightRearMeasurement.tagCount == 1 && limelightRearMeasurement.rawFiducials[0].ambiguity < 0.2)) {
-                    if (DriverStation.isAutonomousEnabled()) {
-                        addVisionMeasurement(limelightRearMeasurement.pose, limelightRearMeasurement.timestampSeconds, visionMeasurementStdDevs);
-                    } else {
+                    // if (DriverStation.isAutonomousEnabled()) {
+                    //     addVisionMeasurement(limelightRearMeasurement.pose, limelightRearMeasurement.timestampSeconds, visionMeasurementStdDevs);
+                    // } else {
                         addVisionMeasurement(limelightRearMeasurement.pose, limelightRearMeasurement.timestampSeconds);
-                    }
+                    // }
                 }
             } else {
                 Alert.warning("Couldn't find rear limelight");
@@ -633,6 +634,8 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             () -> !Helpers.isBlueAlliance(),
             this
         );
+
+        FollowPathCommand.warmupCommand().schedule();
     }
     public void resetControl(Pose2d pose) {
         resetPose(pose);
