@@ -101,7 +101,7 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().registerSubsystem(hood);
         CommandScheduler.getInstance().registerSubsystem(spindexer);
         CommandScheduler.getInstance().registerSubsystem(hang);
-        // DataLogManager.start(); //* Uncomment for logs
+        DataLogManager.start(); //* Uncomment for logs
 
         // MARK: Orchestration
 
@@ -296,8 +296,8 @@ public class Robot extends TimedRobot {
         // MARK: Aux
         auxController.start()
             .and(() -> auxDisable.isOff())
-            .onTrue(
-                hungerOrchestrator.jostle()
+            .whileTrue(
+                hungerOrchestrator.jostleRepeatedly()
                 .withName("HungerJostle")
             );
 
@@ -435,7 +435,7 @@ public class Robot extends TimedRobot {
         SmartDashboard.putBoolean("drive disabled", driveDisable.isOn());
         SmartDashboard.putBoolean("aux disabled", auxDisable.isOn());
 
-        // m_timeAndJoystickReplay.update();
+        m_timeAndJoystickReplay.update();
         
         drivetrain.setLimelightDisable(limelightDisable.isOn());
         
