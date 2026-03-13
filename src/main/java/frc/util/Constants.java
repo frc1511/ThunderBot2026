@@ -266,7 +266,7 @@ public class Constants {
             }
 
             enum Position {
-                TOP(-0.336914), MIDDLE(-0.175), HALFWAY_DOWN(-0.1), BOTTOM(0.001708984375); //they change alot but should be approx right
+                TOP(-0.336914), MIDDLE(-0.175), HALFWAY_DOWN(-0.13), BOTTOM(0.001708984375); //they change alot but should be approx right
 
                 private double m_value;
 
@@ -297,7 +297,7 @@ public class Constants {
         double kZeroingSpeed = -0.1;
         double kMaxDeploySpeed = 0.9; // Extending Hanger FINAL DONT CHNAGE
         double kMaxPullSpeed = -0.9;  // Retracting Hanger (pulling the robot up on the bar) FINAL DONT CHANGE
-        double kMaxDeployDistanceRotations = 33;
+        double kMaxDeployDistanceRotations = 34; // (changed from 33 -> 34 for FLR)
         double kMaxPullDistanceRotations = 6; // This is NOT a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down (changed from 8 -> 6 at FLR)
         double kJostleAmplitude = 0.5;
         double kTrenchSafeDistanceRotations = 1;
