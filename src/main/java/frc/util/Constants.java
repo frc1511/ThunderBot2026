@@ -450,7 +450,7 @@ public class Constants {
                 .withDriveInertia(kDriveInertia)
                 .withSteerFrictionVoltage(kSteerFrictionVoltage)
                 .withDriveFrictionVoltage(kDriveFrictionVoltage);
-
+//* FIRST THING PUT NEW NUMBERS IN FROM TUNERCONSTANTS */
         // Front Left
         private static final Angle kFrontLeftEncoderOffset = Rotations.of(0.455322265625);
         private static final boolean kFrontLeftSteerMotorInverted = true;
@@ -473,7 +473,7 @@ public class Constants {
         private static final Distance kBackLeftYPos = Inches.of(12.5);
 
         // Back Right
-        private static final Angle kBackRightEncoderOffset = Rotations.of(-0.14501953125);
+        private static final Angle kBackRightEncoderOffset = Rotations.of(-0.14501953125 + .25);
         private static final boolean kBackRightSteerMotorInverted = true;
         private static final boolean kBackRightEncoderInverted = false;
         private static final Distance kBackRightXPos = Inches.of(-9.875);
