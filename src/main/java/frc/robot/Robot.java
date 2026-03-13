@@ -296,6 +296,7 @@ public class Robot extends TimedRobot {
         // MARK: Aux
         auxController.start()
             .and(() -> auxDisable.isOff())
+            // .onTrue(firingOrchestrator.fireThenStop().alongWith(hungerOrchestrator.jostleRepeatedly()).withTimeout(3)); //* emma does not want this right now, we may apply it later emma says the fuel will get jammed if we do this
             .whileTrue(
                 hungerOrchestrator.jostleRepeatedly()
                 .withName("HungerJostle")
@@ -313,10 +314,13 @@ public class Robot extends TimedRobot {
 
         auxController.y() // Feed
             .and(() -> auxDisable.isOff() && oneDriverMode.isOff())
-            .onTrue(
+            .whileTrue(
                 hood.toPosition(() -> Constants.Hood.Position.FEED.get())
                 .withName("PresetFeed")
-            );
+            )
+            .onFalse(
+                hood.toPosition(() -> Constants.Hood.Position.TRENCH.get())
+            ); // (added at FLR) hood now goes down when feed is released BOTTOM preset makes the hood slam down too hard so it goes to TRENCH
 
         auxController.x() // Tower
             .and(() -> auxDisable.isOff() && oneDriverMode.isOff())
@@ -387,7 +391,7 @@ public class Robot extends TimedRobot {
         NamedCommands.registerCommand("DB_Hub_AL_Start", drivetrain.setHubLock(true));
         NamedCommands.registerCommand("DB_Hub_AL_Stop", drivetrain.setHubLock(false));
         NamedCommands.registerCommand("Preheat", shooter.holdSpeedForShoot().withTimeout(0));
-        NamedCommands.registerCommand("Shoot", firingOrchestrator.fireThenStop().withTimeout(3));
+        NamedCommands.registerCommand("Shoot", firingOrchestrator.fireThenStop().alongWith(hungerOrchestrator.jostleRepeatedly()).withTimeout(3));
         NamedCommands.registerCommand("AutoHang", conductor.autoHang());
         NamedCommands.registerCommand("Intake", intake.eatStart());
         NamedCommands.registerCommand("StopIntake", intake.stopEating());
