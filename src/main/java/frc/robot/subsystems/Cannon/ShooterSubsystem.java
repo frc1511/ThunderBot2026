@@ -107,6 +107,12 @@ public class ShooterSubsystem extends ThunderSubsystem {
             .onEnd(this::halt);
     }
 
+    public Command reverse() {
+        return new CommandBuilder(this)
+            .onExecute(() -> m_primaryMotor.set(Constants.Shooter.kReverseSpeed))
+            .isFinished(false);
+    }
+
     // Used only for autos
     public Command preheat() {
         if (Broken.shooterFullyDisabled) return Commands.none();

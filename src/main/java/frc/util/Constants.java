@@ -211,11 +211,13 @@ public class Constants {
             double kAccel = 120;
             double kJerk = 140;
         }
+
+        double kReverseSpeed = -0.2d;
     }
 
     public interface Hood {
         double kHoodTolerance = 0.005d;
-        double kZeroingSpeed = 0.1d; // Just know that zeroing doesn't need to be precise, just needs to see it within a rotation
+        double kZeroingSpeed = 0.08d; // Just know that zeroing doesn't need to be precise, just needs to see it within a rotation
         enum Position {
             BOTTOM(0), TOP(2), FEED(1), TRENCH(.1), HUB(1.9);
 

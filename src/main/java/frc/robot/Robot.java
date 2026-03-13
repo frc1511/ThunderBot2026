@@ -302,6 +302,9 @@ public class Robot extends TimedRobot {
                 .withName("HungerJostle")
             );
 
+        (auxController.leftStick().or(auxController.rightStick())).and(() -> auxDisable.isOff() && oneDriverMode.isOff())
+            .whileTrue(shooter.reverse().withName("ShooterReverse"));
+
         auxController.povUp() // Speen
             .and(() -> auxDisable.isOff() && oneDriverMode.isOff())
             .whileTrue(
