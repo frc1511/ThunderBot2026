@@ -1,9 +1,12 @@
 package frc.robot.subsystems.Cannon;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
@@ -50,6 +53,13 @@ public class HoodSubsystem extends ThunderSubsystem {
         hoodConfig.CurrentLimits.StatorCurrentLimit = Constants.Hood.kStatorCurrentLimit;
         hoodConfig.CurrentLimits.StatorCurrentLimitEnable = true;
         hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        hoodConfig.withCurrentLimits(
+                new CurrentLimitsConfigs()
+                    .withSupplyCurrentLimit(Amps.of(40))
+                    .withSupplyCurrentLimitEnable(true)
+                    .withStatorCurrentLimit(Amps.of(80))
+                    .withStatorCurrentLimitEnable(true)
+            );
         
         if (!Broken.hoodDisabled) {
             m_encoder = new CANcoder(Constants.IOMap.Hood.kCANcoder);

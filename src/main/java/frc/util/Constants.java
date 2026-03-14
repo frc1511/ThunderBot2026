@@ -403,7 +403,14 @@ public class Constants {
         // This needs to be tuned to your individual robot
         private static final Current kSlipCurrent = Amps.of(106);
 
-        private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration();
+        private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration()
+            .withCurrentLimits(
+                new CurrentLimitsConfigs()
+                    .withStatorCurrentLimit(Amps.of(80))
+                    .withStatorCurrentLimitEnable(true)
+                    .withSupplyCurrentLimit(Amps.of(30))
+                    .withSupplyCurrentLimitEnable(true)
+            );
             // .withClosedLoopRamps(
             //     new ClosedLoopRampsConfigs()
             //         .withVoltageClosedLoopRampPeriod(0.1)
@@ -411,8 +418,10 @@ public class Constants {
         private static final TalonFXConfiguration steerInitialConfigs = new TalonFXConfiguration()
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(60))
+                    .withStatorCurrentLimit(Amps.of(80))
                     .withStatorCurrentLimitEnable(true)
+                    .withSupplyCurrentLimit(Amps.of(40))
+                    .withSupplyCurrentLimitEnable(true)
             ).withClosedLoopRamps(
                 new ClosedLoopRampsConfigs()
                     .withVoltageClosedLoopRampPeriod(0.2));
@@ -450,7 +459,7 @@ public class Constants {
                 .withDriveInertia(kDriveInertia)
                 .withSteerFrictionVoltage(kSteerFrictionVoltage)
                 .withDriveFrictionVoltage(kDriveFrictionVoltage);
-//* FIRST THING PUT NEW NUMBERS IN FROM TUNERCONSTANTS */
+
         // Front Left
         private static final Angle kFrontLeftEncoderOffset = Rotations.of(0.455322265625);
         private static final boolean kFrontLeftSteerMotorInverted = true;

@@ -1,7 +1,10 @@
 package frc.robot.subsystems.Cannon;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
@@ -41,6 +44,13 @@ public class ShooterSubsystem extends ThunderSubsystem {
         shooterConfig.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.5;
         shooterConfig.MotionMagic.MotionMagicAcceleration = Constants.Shooter.ShooterMotionMagic.kAccel;
         shooterConfig.MotionMagic.MotionMagicJerk = Constants.Shooter.ShooterMotionMagic.kJerk;
+        shooterConfig.withCurrentLimits(
+                new CurrentLimitsConfigs()
+                    .withSupplyCurrentLimit(Amps.of(40))
+                    .withSupplyCurrentLimitEnable(true)
+                    .withStatorCurrentLimit(Amps.of(80))
+                    .withStatorCurrentLimitEnable(true)
+            );
         
         if (!Broken.shooterFullyDisabled) {
             if (!Broken.shooterADisabled) {
