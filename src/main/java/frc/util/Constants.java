@@ -473,7 +473,7 @@ public class Constants {
         private static final Distance kBackLeftYPos = Inches.of(12.5);
 
         // Back Right
-        private static final Angle kBackRightEncoderOffset = Rotations.of(-0.14501953125 + .25);
+        private static final Angle kBackRightEncoderOffset = Rotations.of(-.405762);
         private static final boolean kBackRightSteerMotorInverted = true;
         private static final boolean kBackRightEncoderInverted = false;
         private static final Distance kBackRightXPos = Inches.of(-9.875);
