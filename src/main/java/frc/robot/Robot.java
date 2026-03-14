@@ -12,8 +12,10 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -93,6 +95,8 @@ public class Robot extends TimedRobot {
     public ThunderSwitch placeHolder9 = switchBoard.button(9);
     public ThunderSwitch oneDriverMode = switchBoard.button(10);
     public ThunderSwitch pitMode = switchBoard.button(11);
+
+    public PowerDistribution PDH = new PowerDistribution(1, ModuleType.kRev);
 
     public Robot() {
         CommandScheduler.getInstance().registerSubsystem(pivot);
@@ -441,6 +445,9 @@ public class Robot extends TimedRobot {
 
         SmartDashboard.putBoolean("drive disabled", driveDisable.isOn());
         SmartDashboard.putBoolean("aux disabled", auxDisable.isOn());
+        if (i % 10 == 0) {
+            SmartDashboard.putNumber("Total PDH Current Draw Amps", PDH.getTotalCurrent());
+        }
 
         m_timeAndJoystickReplay.update();
         
