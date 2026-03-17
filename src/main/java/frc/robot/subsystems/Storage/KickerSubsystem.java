@@ -1,7 +1,10 @@
 package frc.robot.subsystems.Storage;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -30,6 +33,13 @@ public class KickerSubsystem extends ThunderSubsystem {
         kickerConfig.Slot0 = new Slot0Configs()
             .withKP(KickerPID.kP).withKI(KickerPID.kI).withKD(KickerPID.kD)
             .withKS(KickerPID.kS).withKV(KickerPID.kV).withKA(KickerPID.kA);
+        kickerConfig.withCurrentLimits(
+                new CurrentLimitsConfigs()
+                    .withSupplyCurrentLimit(Amps.of(40))
+                    .withSupplyCurrentLimitEnable(true)
+                    .withStatorCurrentLimit(Amps.of(80))
+                    .withStatorCurrentLimitEnable(true)
+            );
 
         if (!Broken.kickerDisabled) {
             m_motor = new TalonFX(Constants.IOMap.Storage.kKickerMotor);

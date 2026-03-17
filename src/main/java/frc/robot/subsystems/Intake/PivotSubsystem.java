@@ -97,8 +97,7 @@ public class PivotSubsystem extends ThunderSubsystem {
 
         return new CommandBuilder(this)
             .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.BOTTOM.get(), ControlType.kPosition))
-            .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(Constants.Hunger.Pivot.Position.BOTTOM.get(), m_pidController.getSetpoint(), Constants.Hunger.Pivot.kTolerance))
-            .onEnd(() -> m_motor.stopMotor());
+            .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(Constants.Hunger.Pivot.Position.BOTTOM.get(), m_pidController.getSetpoint(), Constants.Hunger.Pivot.kTolerance));
     }
 
     public Command up() {
@@ -133,11 +132,27 @@ public class PivotSubsystem extends ThunderSubsystem {
             .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(Constants.Hunger.Pivot.Position.MIDDLE.get(), m_pidController.getSetpoint(), Constants.Hunger.Pivot.kTolerance)); // This extra NONSENSE is because the motor controller is slow or something and, uh, doesn't actually set the setpoint for a bit.
     }
 
+    public Command halfwayDown() {
+        if (Broken.pivotDisabled) return Commands.none();
+
+        return new CommandBuilder(this)
+            .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.HALFWAY_DOWN.get(), ControlType.kPosition))
+            .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(Constants.Hunger.Pivot.Position.HALFWAY_DOWN.get(), m_pidController.getSetpoint(), Constants.Hunger.Pivot.kBigTolerance)); // This extra NONSENSE is because the motor controller is slow or something and, uh, doesn't actually set the setpoint for a bit.
+
+    }
+
     public Command jostle() {
         if (Broken.pivotDisabled) return Commands.none();
 
         return middle()
             .andThen(down());
+    }
+    
+    public Command jostleRepeatedly() {
+        if (Broken.pivotDisabled) return Commands.none();
+
+        return halfwayDown()
+            .andThen(down()).repeatedly();
     }
 
     public Command manual_pivot(DoubleSupplier speed) {

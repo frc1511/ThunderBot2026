@@ -131,15 +131,23 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
                 builder.addDoubleProperty("Module 0 Angle", () -> getModule(0).getCurrentState().angle.getRadians(), null);
                 builder.addDoubleProperty("Module 0 Vel", () -> getModule(0).getCurrentState().speedMetersPerSecond, null);
+                builder.addDoubleProperty("Module 0 Steer Current", () -> getModule(0).getSteerMotor().getSupplyCurrent().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 0 Drive Current", () -> getModule(0).getDriveMotor().getSupplyCurrent().getValueAsDouble(), null);
 
                 builder.addDoubleProperty("Module 1 Angle", () -> getModule(1).getCurrentState().angle.getRadians(), null);
                 builder.addDoubleProperty("Module 1 Vel", () -> getModule(1).getCurrentState().speedMetersPerSecond, null);
+                builder.addDoubleProperty("Module 1 Steer Current", () -> getModule(1).getSteerMotor().getSupplyCurrent().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 1 Drive Current", () -> getModule(1).getDriveMotor().getSupplyCurrent().getValueAsDouble(), null);
                 
                 builder.addDoubleProperty("Module 2 Angle", () -> getModule(2).getCurrentState().angle.getRadians(), null);
                 builder.addDoubleProperty("Module 2 Vel", () -> getModule(2).getCurrentState().speedMetersPerSecond, null);
+                builder.addDoubleProperty("Module 2 Steer Current", () -> getModule(2).getSteerMotor().getSupplyCurrent().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 2 Drive Current", () -> getModule(2).getDriveMotor().getSupplyCurrent().getValueAsDouble(), null);
 
                 builder.addDoubleProperty("Module 3 Angle", () -> getModule(3).getCurrentState().angle.getRadians(), null);
                 builder.addDoubleProperty("Module 3 Vel", () -> getModule(3).getCurrentState().speedMetersPerSecond, null);
+                builder.addDoubleProperty("Module 3 Steer Current", () -> getModule(3).getSteerMotor().getSupplyCurrent().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 3 Drive Current", () -> getModule(3).getDriveMotor().getSupplyCurrent().getValueAsDouble(), null);
 
                 builder.addDoubleProperty("Robot Angle", () -> getPigeon2().getRotation2d().getRadians(), null);
             }

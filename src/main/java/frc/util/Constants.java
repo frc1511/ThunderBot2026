@@ -213,11 +213,13 @@ public class Constants {
             double kAccel = 120;
             double kJerk = 140;
         }
+
+        double kReverseSpeed = -0.2d;
     }
 
     public interface Hood {
         double kHoodTolerance = 0.005d;
-        double kZeroingSpeed = 0.1d; // Just know that zeroing doesn't need to be precise, just needs to see it within a rotation
+        double kZeroingSpeed = 0.08d; // Just know that zeroing doesn't need to be precise, just needs to see it within a rotation
         enum Position {
             BOTTOM(0), TOP(2), FEED(1), TRENCH(.1), HUB(1.9);
 
@@ -262,13 +264,13 @@ public class Constants {
 
         public interface Pivot {
             interface PivotPID extends BasePID { 
-                // double kP = 5;
+                double kP = 0.5;
                 double kI = .003;
                 double kD = 0.05;
             }
 
             enum Position {
-                TOP(-0.336914), MIDDLE(-0.175), BOTTOM(0.001708984375); //they change alot but should be approx right
+                TOP(-0.336914), MIDDLE(-0.175), HALFWAY_DOWN(-0.13), BOTTOM(0.001708984375); //they change alot but should be approx right
 
                 private double m_value;
 
@@ -280,9 +282,10 @@ public class Constants {
                     return this.m_value;
                 }
             }
-            double kCANcoderOffset = 0.322d;
+            double kCANcoderOffset = 0.509256d;
 
             double kTolerance = 0.015d;
+            double kBigTolerance = 0.02d;
         }
     }
 
@@ -298,8 +301,8 @@ public class Constants {
         double kZeroingSpeed = -0.1;
         double kMaxDeploySpeed = 0.9; // Extending Hanger FINAL DONT CHNAGE
         double kMaxPullSpeed = -0.9;  // Retracting Hanger (pulling the robot up on the bar) FINAL DONT CHANGE
-        double kMaxDeployDistanceRotations = 33;
-        double kMaxPullDistanceRotations = 8; // This is NOT a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down
+        double kMaxDeployDistanceRotations = 34; // (changed from 33 -> 34 for FLR)
+        double kMaxPullDistanceRotations = 6; // This is NOT a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down (changed from 8 -> 6 at FLR)
         double kJostleAmplitude = 0.5;
         double kTrenchSafeDistanceRotations = 1;
 
@@ -402,7 +405,14 @@ public class Constants {
         // This needs to be tuned to your individual robot
         private static final Current kSlipCurrent = Amps.of(106);
 
-        private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration();
+        private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration()
+            .withCurrentLimits(
+                new CurrentLimitsConfigs()
+                    .withStatorCurrentLimit(Amps.of(80))
+                    .withStatorCurrentLimitEnable(true)
+                    .withSupplyCurrentLimit(Amps.of(30))
+                    .withSupplyCurrentLimitEnable(true)
+            );
             // .withClosedLoopRamps(
             //     new ClosedLoopRampsConfigs()
             //         .withVoltageClosedLoopRampPeriod(0.1)
@@ -410,8 +420,10 @@ public class Constants {
         private static final TalonFXConfiguration steerInitialConfigs = new TalonFXConfiguration()
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Amps.of(60))
+                    .withStatorCurrentLimit(Amps.of(80))
                     .withStatorCurrentLimitEnable(true)
+                    .withSupplyCurrentLimit(Amps.of(40))
+                    .withSupplyCurrentLimitEnable(true)
             ).withClosedLoopRamps(
                 new ClosedLoopRampsConfigs()
                     .withVoltageClosedLoopRampPeriod(0.2));
@@ -472,7 +484,7 @@ public class Constants {
         private static final Distance kBackLeftYPos = Inches.of(12.5);
 
         // Back Right
-        private static final Angle kBackRightEncoderOffset = Rotations.of(-0.14501953125);
+        private static final Angle kBackRightEncoderOffset = Rotations.of(-.405762);
         private static final boolean kBackRightSteerMotorInverted = true;
         private static final boolean kBackRightEncoderInverted = false;
         private static final Distance kBackRightXPos = Inches.of(-9.875);

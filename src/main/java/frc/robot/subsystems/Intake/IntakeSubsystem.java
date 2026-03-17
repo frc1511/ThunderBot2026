@@ -1,7 +1,10 @@
 package frc.robot.subsystems.Intake;
 
+import static edu.wpi.first.units.Units.Amps;
+
 import java.util.function.DoubleSupplier;
 
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -27,6 +30,13 @@ public class IntakeSubsystem extends ThunderSubsystem {
         intakeConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         intakeConfig.Slot0 = new Slot0Configs()
             .withKP(Constants.Hunger.Intake.IntakePID.kP).withKI(Constants.Hunger.Intake.IntakePID.kI).withKD(Constants.Hunger.Intake.IntakePID.kD);
+        intakeConfig.withCurrentLimits(
+                new CurrentLimitsConfigs()
+                    .withSupplyCurrentLimit(Amps.of(30))
+                    .withSupplyCurrentLimitEnable(true)
+                    .withStatorCurrentLimit(Amps.of(80))
+                    .withStatorCurrentLimitEnable(true)
+            );
         
         if (!Broken.intakeDisabled) {
             m_motor = new TalonFX(Constants.IOMap.Intake.kChompMotor);

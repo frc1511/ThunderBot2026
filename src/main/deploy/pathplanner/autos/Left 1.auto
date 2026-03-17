@@ -11,31 +11,6 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "Preheat"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 1.0
-          }
-        },
-        {
-          "type": "sequential",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Shoot"
-                }
-              }
-            ]
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "Lef 1 P2"
@@ -50,7 +25,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Shoot"
+            "name": "Preheat"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
           }
         },
         {

@@ -48,6 +48,11 @@ public class HungerOrchestrator {
             .raceWith(intake.eat());
     }
 
+    public Command jostleRepeatedly() {
+        return pivot.jostleRepeatedly()
+            .raceWith(intake.eat());
+    }
+
     public boolean isIntaking() {
         Command currentCommand = intake.getCurrentCommand();
         if (currentCommand == null) {
