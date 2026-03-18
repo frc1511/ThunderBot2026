@@ -459,8 +459,9 @@ public class Robot extends TimedRobot {
 
         m_timeAndJoystickReplay.update();
         SmartDashboard.putString("aid_hubTimer", String.format("%.3f", Math.max(25 - hubActiveTimer.get(), -2.0)).replace(".", "s"));
+        SmartDashboard.putNumber("aid_matchTimer", Timer.getMatchTime());
         
-        SmartDashboard.putBoolean("aid_hubActive", Helpers.isHubActive(true));
+        SmartDashboard.putBoolean("aid_hubActive", Helpers.isHubActive(false));
         SmartDashboard.putBoolean("aid_tenchMode", conductor.trenchSafe());
 
         // m_timeAndJoystickReplay.update();
