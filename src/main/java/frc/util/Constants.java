@@ -236,8 +236,8 @@ public class Constants {
             }
         }
         public interface HoodPID extends BasePID {
-            double kP = 15; // TOO Zippy at 23
-            double kI = 5; // TOO Zippy at 40
+            double kP = 23; // TOO Zippy at 23
+            double kI = 40; // TOO Zippy at 40
             double kD = 0;
         }
         double kStatorCurrentLimit = 40;
