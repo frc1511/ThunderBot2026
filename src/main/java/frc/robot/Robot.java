@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -47,6 +48,7 @@ import frc.util.Alert;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
+import frc.util.Helpers;
 import frc.util.Thunder.ThunderSwitchboard;
 import frc.util.Thunder.ThunderSwitchboard.ThunderSwitch;
 
@@ -83,6 +85,8 @@ public class Robot extends TimedRobot {
     public final Conductor conductor;
 
     private final SendableChooser<Command> autoChooser;
+
+    private Timer hubActiveTimer = new Timer();
 
     public ThunderSwitch driveDisable = switchBoard.button(1);
     public ThunderSwitch auxDisable = switchBoard.button(2);
@@ -422,6 +426,10 @@ public class Robot extends TimedRobot {
         SmartDashboard.putData(CommandScheduler.getInstance());
 
         SmartDashboard.putData("SwitchBoard", switchBoard);
+
+        Helpers.hubToBecomeActive().onTrue(new InstantCommand(() -> {
+            hubActiveTimer.restart();
+        }));
     }    
 
     @SuppressWarnings("all") // Identical Expressions Warning Suppression (BuildConsts)
@@ -452,6 +460,12 @@ public class Robot extends TimedRobot {
         }
 
         m_timeAndJoystickReplay.update();
+        SmartDashboard.putString("aid_hubTimer", String.format("%.3f", Math.max(25 - hubActiveTimer.get(), -2.0)).replace(".", "s"));
+        
+        SmartDashboard.putBoolean("aid_hubActive", Helpers.isHubActive(true));
+        SmartDashboard.putBoolean("aid_tenchMode", conductor.trenchSafe());
+
+        // m_timeAndJoystickReplay.update();
         
         drivetrain.setLimelightDisable(limelightDisable.isOn());
         
@@ -475,6 +489,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
+        hubActiveTimer.start();
         drivetrain.setupTheta(true);
         drivetrain.setSpeedMultiplier(1.0);
         drivetrain.setupTheta(true);

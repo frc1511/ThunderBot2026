@@ -52,6 +52,8 @@ public class Constants {
 
     public static final boolean kDisconecctOnCANBroken = false;
 
+    public static final int kTimerAheadTime_sec = 2;
+
     public static enum Status {
         IDLE,
         ACTIVE,
