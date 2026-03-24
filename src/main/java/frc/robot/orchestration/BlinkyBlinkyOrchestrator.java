@@ -32,7 +32,6 @@ public class BlinkyBlinkyOrchestrator {
         hang = robot.hang;
     }
 
-
     public void sparkle() {
         if (!Broken.blinkyBlinkyDisableStatus()) {
             switch (m_currentMode) {

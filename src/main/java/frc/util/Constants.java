@@ -238,8 +238,8 @@ public class Constants {
             }
         }
         public interface HoodPID extends BasePID {
-            double kP = 23; // Zippy at 23
-            double kI = 40; // Zippy at 10
+            double kP = 23; // TOO Zippy at 23
+            double kI = 40; // TOO Zippy at 40
             double kD = 0;
         }
         double kStatorCurrentLimit = 40;
@@ -282,7 +282,7 @@ public class Constants {
                     return this.m_value;
                 }
             }
-            double kCANcoderOffset = 0.509256d;
+            double kCANcoderOffset = -0.669894;
 
             double kTolerance = 0.015d;
             double kBigTolerance = 0.02d;

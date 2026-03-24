@@ -180,4 +180,8 @@ public class ShooterSubsystem extends ThunderSubsystem {
     public double getMotorRate() {
         return m_primaryMotor.getVelocity().getValueAsDouble();
     }
+
+    public boolean isActuallyShooting() {
+        return Math.abs(getMotorRate()) > 5;
+    }
 }

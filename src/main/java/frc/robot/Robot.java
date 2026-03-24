@@ -411,6 +411,8 @@ public class Robot extends TimedRobot {
         NamedCommands.registerCommand("PivotUp", pivot.up());
         NamedCommands.registerCommand("PivotDownSoft", pivot.downSoft());
         NamedCommands.registerCommand("PivotUpSoft", pivot.upSoft());
+        NamedCommands.registerCommand("HoodDown", hood.toPosition(Constants.Hood.Position.BOTTOM::get));
+        NamedCommands.registerCommand("ShootForever", firingOrchestrator.fireThenStop().alongWith(hungerOrchestrator.jostleRepeatedly()).withTimeout(20).until(RobotModeTriggers.disabled()::getAsBoolean));
 
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);
