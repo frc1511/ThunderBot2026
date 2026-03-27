@@ -73,7 +73,7 @@ public class BlinkyBlinkyOrchestrator {
                     break;
                 case PIT:
                     m_buffer.forEach((index, r, g, b) -> {
-                        m_buffer.setHSV(index, 0, 0, 255);
+                        m_buffer.setHSV(index, 0, 0, 40);
                     });
                     break;
                 case OFF:

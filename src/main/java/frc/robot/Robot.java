@@ -109,7 +109,9 @@ public class Robot extends TimedRobot {
         CommandScheduler.getInstance().registerSubsystem(hood);
         CommandScheduler.getInstance().registerSubsystem(spindexer);
         CommandScheduler.getInstance().registerSubsystem(hang);
-        DataLogManager.start(); //* Uncomment for logs
+        if (Constants.kUseDataLog) {
+            DataLogManager.start();
+        }
 
         // MARK: Orchestration
 
@@ -430,6 +432,12 @@ public class Robot extends TimedRobot {
         Helpers.hubToBecomeActive().onTrue(new InstantCommand(() -> {
             hubActiveTimer.restart();
         }));
+
+        if (Constants.kUseHDDL) {
+            addPeriodic(() -> {
+                hood.hddlPeriodic(); // TODO: Make this done automatically for any ThunderSubsystem - UPDATE periodic below as well!!
+            }, 1d/Constants.kHDDLRate, .005d);
+        }
     }    
 
     @SuppressWarnings("all") // Identical Expressions Warning Suppression (BuildConsts)
@@ -449,24 +457,21 @@ public class Robot extends TimedRobot {
         if (!auxController.isConnected()) {
             Alert.error("Aux Controller Disconnected");
         }
-        
-        SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);
-        SmartDashboard.putNumber("BATTERY_voltage", RobotController.getBatteryVoltage());
-
         SmartDashboard.putBoolean("drive disabled", driveDisable.isOn());
         SmartDashboard.putBoolean("aux disabled", auxDisable.isOn());
-        if (i % 10 == 0) {
-            SmartDashboard.putNumber("Total PDH Current Draw Amps", PDH.getTotalCurrent());
-        }
-
         m_timeAndJoystickReplay.update();
-        SmartDashboard.putString("aid_hubTimer", String.format("%.3f", Math.max(25 - hubActiveTimer.get(), -2.0)).replace(".", "s"));
         
+        SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);
+
+        SmartDashboard.putString("aid_hubTimer", String.format("%.3f", Math.max(25 - hubActiveTimer.get(), -2.0)).replace(".", "s"));
         SmartDashboard.putBoolean("aid_hubActive", Helpers.isHubActive(true));
         SmartDashboard.putBoolean("aid_tenchMode", conductor.trenchSafe());
 
-        // m_timeAndJoystickReplay.update();
-        
+        // If the HDDL is not running, run them at the normal rate
+        if (!Constants.kUseHDDL) {
+            hood.hddlPeriodic();
+        }
+
         drivetrain.setLimelightDisable(limelightDisable.isOn());
         
         conductor.periodic();

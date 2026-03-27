@@ -43,6 +43,9 @@ import edu.wpi.first.units.measure.Voltage;
 
 public class Constants {
     public static boolean kUseSignalLogger = false;
+    public static boolean kUseDataLog = true;
+    public static boolean kUseHDDL = true; // High density data logging
+    public static double kHDDLRate = 200d; // Hz
 
     public static final double kCANChainDisconnectTimeout = 0.5; // in seconds
 
@@ -143,6 +146,7 @@ public class Constants {
     }
 
     protected interface ProfiledPID {
+        double kVel = 0;
         double kAccel = 0;
         double kJerk = 0;
     }
@@ -218,7 +222,7 @@ public class Constants {
     }
 
     public interface Hood {
-        double kHoodTolerance = 0.005d;
+        double kHoodTolerance = 0.015d;
         double kZeroingSpeed = 0.08d; // Just know that zeroing doesn't need to be precise, just needs to see it within a rotation
         enum Position {
             BOTTOM(0), TOP(2), FEED(1), TRENCH(.1), HUB(1.9);
@@ -238,10 +242,19 @@ public class Constants {
             }
         }
         public interface HoodPID extends BasePID {
-            double kP = 23; // TOO Zippy at 23
-            double kI = 40; // TOO Zippy at 40
+            double kP = 22; // TOO Zippy at 23
+            double kI = 8; // TOO Zippy at 40
             double kD = 0;
+            double kS = 0;
+            double kV = 0.12;
         }
+
+        public interface HoodMotionMagic extends ProfiledPID {
+            double kVel = 350;
+            double kAccel = 60;
+            double kJerk = 250;
+        }
+
         double kStatorCurrentLimit = 40;
         double kHoodSetpointMaxVelocity = 0.015d; // Prevents flybys
         double kCANcoderOffset = 0.931781d;

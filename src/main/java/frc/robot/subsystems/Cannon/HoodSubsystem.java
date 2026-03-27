@@ -12,7 +12,7 @@ import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -45,11 +45,15 @@ public class HoodSubsystem extends ThunderSubsystem {
 
     public HoodSubsystem() {
         // new Modifiable("isConfirmedZeroed", this, () -> Boolean.FALSE);
-        TalonFXConfiguration hoodConfig = new TalonFXConfiguration(); 
+        TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
         hoodConfig.Slot0 = new Slot0Configs()
-            .withKP(Constants.Hood.HoodPID.kP).withKI(Constants.Hood.HoodPID.kI).withKD(Constants.Hood.HoodPID.kD);
+            .withKP(Constants.Hood.HoodPID.kP).withKI(Constants.Hood.HoodPID.kI).withKD(Constants.Hood.HoodPID.kD)
+            .withKS(Constants.Hood.HoodPID.kS).withKV(Constants.Hood.HoodPID.kV).withKA(Constants.Hood.HoodPID.kA);
         hoodConfig.Feedback.RotorToSensorRatio = Constants.Hood.kGearing;
         hoodConfig.Feedback.SensorToMechanismRatio = 1;
+        hoodConfig.MotionMagic.MotionMagicCruiseVelocity = Constants.Hood.HoodMotionMagic.kVel;
+        hoodConfig.MotionMagic.MotionMagicAcceleration = Constants.Hood.HoodMotionMagic.kAccel;
+        hoodConfig.MotionMagic.MotionMagicJerk = Constants.Hood.HoodMotionMagic.kJerk;
         hoodConfig.CurrentLimits.StatorCurrentLimit = Constants.Hood.kStatorCurrentLimit;
         hoodConfig.CurrentLimits.StatorCurrentLimitEnable = true;
         hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -60,7 +64,7 @@ public class HoodSubsystem extends ThunderSubsystem {
                     .withStatorCurrentLimit(Amps.of(80))
                     .withStatorCurrentLimitEnable(true)
             );
-        
+
         if (!Broken.hoodDisabled) {
             m_encoder = new CANcoder(Constants.IOMap.Hood.kCANcoder);
             m_encoder.getConfigurator().apply(new MagnetSensorConfigs().withMagnetOffset(Constants.Hood.kCANcoderOffset));
@@ -69,6 +73,9 @@ public class HoodSubsystem extends ThunderSubsystem {
             
             m_motor = new TalonFX(Constants.IOMap.Hood.kHoodMotor);
             m_motor.getConfigurator().apply(hoodConfig);
+
+            m_motor.getClosedLoopReference().setUpdateFrequency(100);
+            m_motor.getClosedLoopReferenceSlope().setUpdateFrequency(200);
 
             m_beamBreakZero = new DigitalInput(Constants.IOMap.Hood.kDIObeamBreak);
             if (!Broken.hoodBeamBreakDisabled && isAtZero()) {
@@ -109,7 +116,9 @@ public class HoodSubsystem extends ThunderSubsystem {
         SmartDashboard.putNumber("hood_vel", m_encoder.getVelocity().getValueAsDouble());
         SmartDashboard.putBoolean("hood_atPos", atPosition());
         SmartDashboard.putNumber("hood_output_V", m_motor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("hood_target", trueSetpoint);
+        SmartDashboard.putNumber("hood_setpoint", trueSetpoint);
+        // SmartDashboard.putNumber("hood_profiled_setpoint", m_motor.getClosedLoopReference().getValueAsDouble());
+        // SmartDashboard.putNumber("hood_profiled_setpoint_d-dx", m_motor.getClosedLoopReferenceSlope().getValueAsDouble());
         SmartDashboard.putBoolean("hood_isZeroed", isZeroed());
         SmartDashboard.putBoolean("hood_zeroSensorTripped", isAtZero());
         SmartDashboard.putNumber("hood_err", m_motor.getClosedLoopError().getValueAsDouble());
@@ -117,6 +126,12 @@ public class HoodSubsystem extends ThunderSubsystem {
         if (!isZeroed()) {
             // CommandScheduler.getInstance().schedule(zero().withName("HoodZeroInbuilt"));
         }
+    }
+
+    @Override
+    public void hddlPeriodic() {
+        SmartDashboard.putNumber("hood_profiled_setpoint", m_motor.getClosedLoopReference().getValueAsDouble());
+        SmartDashboard.putNumber("hood_profiled_setpoint_d-dx", m_motor.getClosedLoopReferenceSlope().getValueAsDouble());
     }
 
     private void zeroEncodersLightly() {
@@ -191,7 +206,7 @@ public class HoodSubsystem extends ThunderSubsystem {
             })
             .onExecute(() -> {
                 trueSetpoint = targetPosition.get();
-                m_motor.setControl(new PositionVoltage(trueSetpoint));
+                m_motor.setControl(new MotionMagicVoltage(trueSetpoint));
             })
             .isFinished(this::atPosition)
             .onlyIf(this::isZeroed);
@@ -223,9 +238,9 @@ public class HoodSubsystem extends ThunderSubsystem {
             })
             .onExecute(() -> {
                 trueSetpoint = Constants.Hood.Position.TRENCH.get();
-                m_motor.setControl(new PositionVoltage(trueSetpoint));
+                m_motor.setControl(new MotionMagicVoltage(trueSetpoint));
             })
-            .onEnd(() -> m_motor.setControl(new PositionVoltage(currentSetpoint)))
+            .onEnd(() -> m_motor.setControl(new MotionMagicVoltage(currentSetpoint)))
             .onlyIf(this::isZeroed);
     }
 
@@ -277,7 +292,7 @@ public class HoodSubsystem extends ThunderSubsystem {
             })
             .onExecute(() -> {
                 trueSetpoint = optimalAngleSupplier.getAsDouble();
-                m_motor.setControl(new PositionVoltage(trueSetpoint));
+                m_motor.setControl(new MotionMagicVoltage(trueSetpoint));
             })
             .isFinished(this::atPosition)
             .onlyIf(this::isZeroed);
