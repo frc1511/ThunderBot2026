@@ -418,6 +418,8 @@ public class Robot extends TimedRobot {
 
         SmartDashboard.putString("aid_hubTimer", String.format("%.3f", Math.max(25 - hubActiveTimer.get(), -2.0)).replace(".", "s"));
         SmartDashboard.putBoolean("aid_hubActive", Helpers.isHubActive(true));
+        SmartDashboard.putNumber("aid_matchTimer", Timer.getMatchTime());
+
         SmartDashboard.putBoolean("aid_tenchMode", conductor.trenchSafe());
 
         // If the HDDL is not running, run them at the normal rate
