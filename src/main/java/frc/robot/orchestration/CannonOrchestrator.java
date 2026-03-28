@@ -46,6 +46,6 @@ public class CannonOrchestrator {
     }
 
     public boolean ready() {
-        return shooter.shooterAtSpeed() && hood.atPosition() && turret.turretAtPosition();
+        return shooter.shooterAtSpeed() && hood.atPosition() && turret.turretAtPosition() && shooter.isActuallyShooting();
     }
 }

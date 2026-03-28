@@ -80,7 +80,7 @@ public class BlinkyBlinkyOrchestrator {
                     break;
                 case PIT:
                     m_buffer.forEach((index, r, g, b) -> {
-                        m_buffer.setHSV(index, 0, 0, (int)Math.floor(255 * m_brightnessPercent));
+                        m_buffer.setHSV(index, 0, 0, (int)Math.floor(40 * m_brightnessPercent));
                     });
                     break;
                 case OFF:

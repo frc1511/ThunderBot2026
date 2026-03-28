@@ -22,6 +22,9 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
         
     }
 
+    @Override
+    public void hddlPeriodic() {};
+
     public void setSpeedMultiplier(double speedMultipler) {
         
     }
@@ -73,6 +76,10 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
     }
 
     public Command toggleFieldCentric() {
+        return Commands.none();
+    }
+    
+    public Command resetRotation() {
         return Commands.none();
     }
 

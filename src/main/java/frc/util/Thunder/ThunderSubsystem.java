@@ -21,4 +21,9 @@ public class ThunderSubsystem implements ThunderInterface {
     public Status status() {
         throw new UnsupportedOperationException("ThunderSubsystems must define status()");
     }
+
+    /** High density data logging periodic */
+    public void hddlPeriodic() {
+
+    }
 }

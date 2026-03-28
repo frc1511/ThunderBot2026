@@ -177,6 +177,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         // }
     }
 
+    @Override
+    public void hddlPeriodic() {};
+
     public void setFieldCentric(boolean isOn) {
         m_fieldCentric = isOn;
     }
@@ -189,6 +192,10 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         return new CommandBuilder()
             .onExecute(() -> m_fieldCentric = !m_fieldCentric)
             .isFinished(true);
+    }
+
+    public Command resetRotation() {
+        return runOnce(this::seedFieldCentric);
     }
 
     public Command increaseSpeed() {

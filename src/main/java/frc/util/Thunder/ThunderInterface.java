@@ -5,4 +5,7 @@ import frc.util.Constants.Status;
 
 public interface ThunderInterface extends Subsystem {
     Status status();
+    
+    /** High density data logging periodic */
+    public void hddlPeriodic();
 }

@@ -43,6 +43,9 @@ import edu.wpi.first.units.measure.Voltage;
 
 public class Constants {
     public static boolean kUseSignalLogger = false;
+    public static boolean kUseDataLog = true;
+    public static boolean kUseHDDL = false; // High density data logging
+    public static double kHDDLRate = 200d; // Hz
 
     public static final double kCANChainDisconnectTimeout = 0.5; // in seconds
 
@@ -143,6 +146,7 @@ public class Constants {
     }
 
     protected interface ProfiledPID {
+        double kVel = 0;
         double kAccel = 0;
         double kJerk = 0;
     }
@@ -157,7 +161,7 @@ public class Constants {
 
     public interface Storage {
         interface Spindexer {
-           double kSpeed = 0.8d;
+           double kSpeed = 1.0d;
 
             /** Seconds */
             enum Duration {
@@ -200,13 +204,13 @@ public class Constants {
         public interface TurretPID extends BasePID {}
         double kTurretTolerance = 0.5d;
 
-        public interface ShooterPID extends BasePID {
+        public interface ShooterPID extends BasePID { // TODO: This still needs to be retuned but we're waiting so people don't use the fact that we would have to retune again as an excuse to no do things to the robot :P
             double kP = 4.5;
             double kI = .1;
             double kD = .7;
-            double kS = 0.20916;
-            double kV = 0.11678;
-            double kA = 0.012514;
+            double kS = 0.20022;
+            double kV = 0.11647;
+            double kA = 0.01009;
         }
 
         public interface ShooterMotionMagic extends ProfiledPID {
@@ -218,7 +222,7 @@ public class Constants {
     }
 
     public interface Hood {
-        double kHoodTolerance = 0.005d;
+        double kHoodTolerance = 0.015d;
         double kZeroingSpeed = 0.08d; // Just know that zeroing doesn't need to be precise, just needs to see it within a rotation
         enum Position {
             BOTTOM(0), TOP(2), FEED(1), TRENCH(.1), HUB(1.9);
@@ -238,10 +242,19 @@ public class Constants {
             }
         }
         public interface HoodPID extends BasePID {
-            double kP = 23; // Zippy at 23
-            double kI = 40; // Zippy at 10
+            double kP = 22; // TOO Zippy at 23
+            double kI = 8; // TOO Zippy at 40
             double kD = 0;
+            double kS = 0;
+            double kV = 0.12;
         }
+
+        public interface HoodMotionMagic extends ProfiledPID {
+            double kVel = 350;
+            double kAccel = 60;
+            double kJerk = 250;
+        }
+
         double kStatorCurrentLimit = 40;
         double kHoodSetpointMaxVelocity = 0.015d; // Prevents flybys
         double kCANcoderOffset = 0.931781d;
@@ -282,7 +295,7 @@ public class Constants {
                     return this.m_value;
                 }
             }
-            double kCANcoderOffset = 0.509256d;
+            double kCANcoderOffset = -0.669894;
 
             double kTolerance = 0.015d;
             double kBigTolerance = 0.02d;

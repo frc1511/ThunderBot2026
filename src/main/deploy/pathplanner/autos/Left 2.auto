@@ -19,19 +19,19 @@
         {
           "type": "named",
           "data": {
-            "name": "Shoot"
+            "name": "Preheat"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 1.0
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Shoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot"
+            "name": "ShootForever"
           }
         }
       ]
