@@ -2,6 +2,7 @@ package frc.robot.orchestration;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Robot;
 import frc.robot.subsystems.Hang.HangSubsystem;
@@ -16,10 +17,12 @@ public class BlinkyBlinkyOrchestrator {
     private AddressableLEDBuffer m_buffer;
 
     private HangSubsystem hang;
-    
+
     private int m_strobeProgress = 0;
     private int frame = 0;
-    
+
+    private double m_brightnessPercent;
+
     public BlinkyBlinkyOrchestrator(Robot robot) {
         m_led = new AddressableLED(Constants.IOMap.BlinkyBlinky.kPWMport);
 
@@ -30,15 +33,18 @@ public class BlinkyBlinkyOrchestrator {
         m_led.start();
 
         hang = robot.hang;
+
+        m_brightnessPercent = 1d;
     }
 
-
     public void sparkle() {
+        m_brightnessPercent = SmartDashboard.getNumber("LED_Brightness", 1d);
+
         if (!Broken.blinkyBlinkyDisableStatus()) {
             switch (m_currentMode) {
                 case NONE:
                     m_buffer.forEach((index, r, g, b) -> {
-                        m_buffer.setHSV(index, ((index / Constants.BlinkyBlinky.kLength * 180) + frame / 5) % 180, 255, 255);
+                        m_buffer.setHSV(index, ((index / Constants.BlinkyBlinky.kLength * 180) + frame / 5) % 180, 255, (int)Math.floor(255 * m_brightnessPercent));
                     });
                     break;
                 case INTAKING:
@@ -59,22 +65,22 @@ public class BlinkyBlinkyOrchestrator {
                 case FIRE_READY:
                     m_strobeProgress = (m_strobeProgress + 1) & 0xff;
                     m_buffer.forEach((index, r, g, b) -> {
-                        m_buffer.setHSV(index, 55, m_strobeProgress, 255);
+                        m_buffer.setHSV(index, 55, m_strobeProgress, (int)Math.floor(255 * m_brightnessPercent));
                     });
                     break;
                 case HOME:
                     m_buffer.forEach((index, r, g, b) -> {
-                        m_buffer.setHSV(index, 50, 20, 255);
+                        m_buffer.setHSV(index, 50, 20, (int)Math.floor(255 * m_brightnessPercent));
                     });
                     break;
                 case TRENCH_SAFE:
                     m_buffer.forEach((index, r, g, b) -> {
-                        m_buffer.setHSV(index, 140, 255, 255);
+                        m_buffer.setHSV(index, 140, 255, (int)Math.floor(255 * m_brightnessPercent));
                     });
                     break;
                 case PIT:
                     m_buffer.forEach((index, r, g, b) -> {
-                        m_buffer.setHSV(index, 0, 0, 255);
+                        m_buffer.setHSV(index, 0, 0, (int)Math.floor(255 * m_brightnessPercent));
                     });
                     break;
                 case OFF:
