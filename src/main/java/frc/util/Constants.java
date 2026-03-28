@@ -44,7 +44,7 @@ import edu.wpi.first.units.measure.Voltage;
 public class Constants {
     public static boolean kUseSignalLogger = false;
     public static boolean kUseDataLog = true;
-    public static boolean kUseHDDL = true; // High density data logging
+    public static boolean kUseHDDL = false; // High density data logging
     public static double kHDDLRate = 200d; // Hz
 
     public static final double kCANChainDisconnectTimeout = 0.5; // in seconds
@@ -161,7 +161,7 @@ public class Constants {
 
     public interface Storage {
         interface Spindexer {
-           double kSpeed = 0.8d;
+           double kSpeed = 1.0d;
 
             /** Seconds */
             enum Duration {
@@ -204,13 +204,13 @@ public class Constants {
         public interface TurretPID extends BasePID {}
         double kTurretTolerance = 0.5d;
 
-        public interface ShooterPID extends BasePID {
+        public interface ShooterPID extends BasePID { // TODO: This still needs to be retuned but we're waiting so people don't use the fact that we would have to retune again as an excuse to no do things to the robot :P
             double kP = 4.5;
             double kI = .1;
             double kD = .7;
-            double kS = 0.20916;
-            double kV = 0.11678;
-            double kA = 0.012514;
+            double kS = 0.20022;
+            double kV = 0.11647;
+            double kA = 0.01009;
         }
 
         public interface ShooterMotionMagic extends ProfiledPID {

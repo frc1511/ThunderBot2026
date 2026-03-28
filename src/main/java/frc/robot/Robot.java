@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.HashSet;
+
 import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -27,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.orchestration.BlinkyBlinkyOrchestrator;
 import frc.robot.orchestration.CannonOrchestrator;
 import frc.robot.orchestration.Conductor;
@@ -35,6 +38,7 @@ import frc.robot.orchestration.HubOrchestrator;
 import frc.robot.orchestration.HungerOrchestrator;
 import frc.robot.subsystems.Cannon.HoodSubsystem;
 import frc.robot.subsystems.Cannon.ShooterSubsystem;
+import frc.robot.subsystems.Cannon.ShooterSysID;
 import frc.robot.subsystems.Cannon.TurretSubsystem;
 import frc.robot.subsystems.Drive.FakeSwerveSubsystem;
 import frc.robot.subsystems.Drive.RealSwerveSubsystem;
@@ -49,6 +53,8 @@ import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
 import frc.util.Helpers;
+import frc.util.Thunder.ThunderInterface;
+import frc.util.Thunder.ThunderSubsystem;
 import frc.util.Thunder.ThunderSwitchboard;
 import frc.util.Thunder.ThunderSwitchboard.ThunderSwitch;
 
@@ -102,13 +108,26 @@ public class Robot extends TimedRobot {
 
     public PowerDistribution PDH = new PowerDistribution(1, ModuleType.kRev);
 
+    public HashSet<ThunderInterface> allSubsystems = new HashSet<>();
+
     public Robot() {
-        CommandScheduler.getInstance().registerSubsystem(pivot);
-        CommandScheduler.getInstance().registerSubsystem(intake);
-        CommandScheduler.getInstance().registerSubsystem(kicker);
-        CommandScheduler.getInstance().registerSubsystem(hood);
-        CommandScheduler.getInstance().registerSubsystem(spindexer);
-        CommandScheduler.getInstance().registerSubsystem(hang);
+        allSubsystems.add(shooter);
+        allSubsystems.add(hood);
+        allSubsystems.add(turret);
+        allSubsystems.add(spindexer);
+        allSubsystems.add(kicker);
+        allSubsystems.add(intake);
+        allSubsystems.add(pivot);
+        allSubsystems.add(hang);
+        allSubsystems.add(drivetrain);
+
+        CommandScheduler.getInstance().registerSubsystem(drivetrain);
+        allSubsystems.forEach(
+            subsystem -> {
+                CommandScheduler.getInstance().registerSubsystem(subsystem);
+            }
+        );
+
         if (Constants.kUseDataLog) {
             DataLogManager.start();
         }
@@ -133,7 +152,7 @@ public class Robot extends TimedRobot {
         
         Alert.info("The robot has restarted");
         DriverStation.silenceJoystickConnectionWarning(true); // trying to fix radio problem
-        SignalLogger.enableAutoLogging(false);
+        SignalLogger.enableAutoLogging(Constants.kUseSignalLogger);
         
         ledDisable.get()
             .whileTrue(
@@ -435,7 +454,9 @@ public class Robot extends TimedRobot {
 
         if (Constants.kUseHDDL) {
             addPeriodic(() -> {
-                hood.hddlPeriodic(); // TODO: Make this done automatically for any ThunderSubsystem - UPDATE periodic below as well!!
+                allSubsystems.forEach(subsystem -> {
+                    subsystem.hddlPeriodic();
+                });
             }, 1d/Constants.kHDDLRate, .005d);
         }
     }    
@@ -447,7 +468,7 @@ public class Robot extends TimedRobot {
     }
     
     private int i = 0; // For the Frozen Dashboard Detector 2000
-    
+
     @Override
     public void robotPeriodic() {
         if (!driverController.isConnected()) {
@@ -460,7 +481,7 @@ public class Robot extends TimedRobot {
         SmartDashboard.putBoolean("drive disabled", driveDisable.isOn());
         SmartDashboard.putBoolean("aux disabled", auxDisable.isOn());
         m_timeAndJoystickReplay.update();
-        
+
         SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);
 
         SmartDashboard.putString("aid_hubTimer", String.format("%.3f", Math.max(25 - hubActiveTimer.get(), -2.0)).replace(".", "s"));
@@ -469,7 +490,7 @@ public class Robot extends TimedRobot {
 
         // If the HDDL is not running, run them at the normal rate
         if (!Constants.kUseHDDL) {
-            hood.hddlPeriodic();
+            allSubsystems.forEach(ThunderInterface::hddlPeriodic);
         }
 
         drivetrain.setLimelightDisable(limelightDisable.isOn());

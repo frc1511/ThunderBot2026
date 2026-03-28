@@ -22,6 +22,9 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
         
     }
 
+    @Override
+    public void hddlPeriodic() {};
+
     public void setSpeedMultiplier(double speedMultipler) {
         
     }

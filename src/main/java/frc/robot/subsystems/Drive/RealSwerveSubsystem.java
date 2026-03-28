@@ -177,6 +177,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         // }
     }
 
+    @Override
+    public void hddlPeriodic() {};
+
     public void setFieldCentric(boolean isOn) {
         m_fieldCentric = isOn;
     }
