@@ -194,6 +194,10 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             .isFinished(true);
     }
 
+    public Command resetRotation() {
+        return runOnce(this::seedFieldCentric);
+    }
+
     public Command increaseSpeed() {
         return new InstantCommand(() -> m_speedMultipler = Math.min(m_speedMultipler + Swerve.kSpeedStep, 1d));
     }

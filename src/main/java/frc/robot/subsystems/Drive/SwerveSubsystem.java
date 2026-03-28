@@ -46,6 +46,8 @@ public interface SwerveSubsystem extends ThunderInterface {
 
     public Command toggleFieldCentric();
 
+    public Command resetRotation();
+
     @Override
     public void periodic();
     

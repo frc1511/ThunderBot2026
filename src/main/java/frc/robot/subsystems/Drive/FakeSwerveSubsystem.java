@@ -78,6 +78,10 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
     public Command toggleFieldCentric() {
         return Commands.none();
     }
+    
+    public Command resetRotation() {
+        return Commands.none();
+    }
 
     @Override
     public void periodic() {

@@ -5,6 +5,7 @@
 package frc.robot;
 
 import java.util.HashSet;
+import java.util.function.BooleanSupplier;
 
 import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.SignalLogger;
@@ -15,7 +16,6 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.Timer;
@@ -25,7 +25,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -54,7 +53,6 @@ import frc.util.CommandBuilder;
 import frc.util.Constants;
 import frc.util.Helpers;
 import frc.util.Thunder.ThunderInterface;
-import frc.util.Thunder.ThunderSubsystem;
 import frc.util.Thunder.ThunderSwitchboard;
 import frc.util.Thunder.ThunderSwitchboard.ThunderSwitch;
 
@@ -153,271 +151,210 @@ public class Robot extends TimedRobot {
         Alert.info("The robot has restarted");
         DriverStation.silenceJoystickConnectionWarning(true); // trying to fix radio problem
         SignalLogger.enableAutoLogging(Constants.kUseSignalLogger);
-        
-        ledDisable.get()
-            .whileTrue(
-                new InstantCommand(() -> {
-                    Broken.blinkyBlinkyButtonBopped = true;
-                })
-                .beforeStarting(
-                    blinkyBlinkyOrchestrator.set(Constants.BlinkyBlinky.Mode.OFF)
-                ).ignoringDisable(true).repeatedly()
-            )
-            .onFalse(
-                new InstantCommand(() -> {
-                    Broken.blinkyBlinkyButtonBopped = false;
-                }).ignoringDisable(true)
-            );
-        
-        pitMode.get()
-        .whileTrue(
-            blinkyBlinkyOrchestrator.set(Constants.BlinkyBlinky.Mode.PIT)
-                .ignoringDisable(true)
-        );
 
+        { // Default Commands
+            if (!Broken.hoodDisabled) hood.setDefaultCommand(hood.zero().withName("HoodHalt"));
+            if (!Broken.shooterFullyDisabled) shooter.setDefaultCommand(shooter.halt().withName("ShooterHalt"));
+            if (!Broken.kickerDisabled) kicker.setDefaultCommand(kicker.halt().withName("KickerHalt"));
+            if (!Broken.hangFullyDisabled) hang.setDefaultCommand(hang.zeroHang().withName("HangZero"));
+            if (!Broken.drivetrainFullyDisabled) { // driving with joysticks
+                BooleanSupplier onedriveAuxFallback = () -> driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn();
+
+                drivetrain.setDefaultCommand(
+                    drivetrain
+                        .driveWithJoysticks(
+                            () -> {
+                                if (driveDisable.isOff()) {
+                                    return driverController.getLeftX();
+                                } else if (onedriveAuxFallback.getAsBoolean()) {
+                                    return auxController.getLeftX();
+                                }
+                                return 0;
+                            },
+                            () -> {
+                                if (driveDisable.isOff()) {
+                                    return driverController.getLeftY();
+                                } else if (onedriveAuxFallback.getAsBoolean()) {
+                                    return auxController.getLeftY();
+                                }
+                                return 0;
+                            },
+                            () -> {
+                                if (driveDisable.isOff()) {
+                                    return driverController.getRightX();
+                                } else if (onedriveAuxFallback.getAsBoolean()) {
+                                    return auxController.getRightX();
+                                }
+                                return 0;
+                            })
+                        .onlyIf(() -> !driverController.y().getAsBoolean())
+                        .withName("DriveWithJoysticks")
+                );
+            };
+
+            RobotModeTriggers.disabled().onTrue(drivetrain.idle().withTimeout(.1));
+        }
+        
+        { // Switchboard
+            ledDisable.get()
+                .whileTrue(
+                    new InstantCommand(() -> {
+                        Broken.blinkyBlinkyButtonBopped = true;
+                    })
+                    .beforeStarting(
+                        blinkyBlinkyOrchestrator.set(Constants.BlinkyBlinky.Mode.OFF)
+                    ).ignoringDisable(true).repeatedly()
+                )
+                .onFalse(
+                    new InstantCommand(() -> {
+                        Broken.blinkyBlinkyButtonBopped = false;
+                    }).ignoringDisable(true)
+                );
+    
+            pitMode.get()
+                .whileTrue(blinkyBlinkyOrchestrator.set(Constants.BlinkyBlinky.Mode.PIT).ignoringDisable(true));
+    
+            fieldCentric.get()
+                .onTrue(new InstantCommand(() -> drivetrain.setFieldCentric(true)))
+                .onFalse(new InstantCommand(() -> drivetrain.setFieldCentric(false)));
+        }
+        
+        /**********************/
         // MARK: Drive
-        if (!Broken.drivetrainFullyDisabled) { // driving with joysticks
-            drivetrain.setDefaultCommand(
-                drivetrain
-                    .driveWithJoysticks(
-                        () -> {
-                            if (driveDisable.isOff()) {
-                                return driverController.getLeftX();
-                            } else if (driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()) {
-                                return auxController.getLeftX();
-                            }
-                            return 0;
-                        },
-                        () -> {
-                            if (driveDisable.isOff()) {
-                                return driverController.getLeftY();
-                            } else if (driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()) {
-                                return auxController.getLeftY();
-                            }
-                            return 0;
-                        },
-                        () -> {
-                            if (driveDisable.isOff()) {
-                                return driverController.getRightX();
-                            } else if (driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()) {
-                                return auxController.getRightX();
-                            }
-                            return 0;
-                        })
-                    .onlyIf(() -> !driverController.y().getAsBoolean())
-                    .withName("DriveWithJoysticks")
-            );
-        };
+        /**********************/
 
-        RobotModeTriggers.disabled().onTrue(drivetrain.idle().withTimeout(.1));
+        { // Omnipresent Drive Controls (OneDrive Off/On)
+            BooleanSupplier condition = () -> driveDisable.isOff(); // Always present on drive controller
 
-        driverController.x().and(driveDisable::isOff).whileTrue(drivetrain.brick().withName("DriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
-        driverController.y().and(driveDisable::isOff).whileTrue(drivetrain.hubLock().withName("DriveHubLockToggle")); // lock and shoot
-        driverController.b().and(driveDisable::isOff).whileTrue(hang.jostle().withName("HangJostle"));
-        driverController.a().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).withName("DriveSeedFieldCentric")); // reset IMU
+            driverController.x().and(condition).whileTrue(drivetrain.brick().withName("DriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
+            driverController.y().and(condition).whileTrue(drivetrain.hubLock().withName("DriveHubLockToggle")); // lock and shoot
+            driverController.a().and(condition).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).withName("DriveSeedFieldCentric")); // reset IMU
+        }
 
-        driverController.povUp()  .and(() -> driveDisable.isOff() && climberDisable.isOff()).whileTrue(hang.extend().withName("HangExtend")).onFalse(hang.halt().withName("HangHalt")); // hang go uppies (hold)
-        driverController.povDown().and(() -> driveDisable.isOff() && climberDisable.isOff()).whileTrue(hang.retract().withName("HangRetract")).onFalse(hang.halt().withName("HangHalt")); // hang go downies (hold)
+        { // Hang Controls
+            BooleanSupplier condition = () -> driveDisable.isOff() && climberDisable.isOff();
 
-        fieldCentric.get()
-            .onTrue(new InstantCommand(() -> drivetrain.setFieldCentric(true)))
-            .onFalse(new InstantCommand(() -> drivetrain.setFieldCentric(false)));
+            driverController.b().and(condition).whileTrue(hang.jostle().withName("HangJostle"));
+            driverController.povUp().and(condition).whileTrue(hang.extend().withName("HangExtend")).onFalse(hang.halt().withName("HangHalt")); // hang go uppies (hold)
+            driverController.povDown().and(condition).whileTrue(hang.retract().withName("HangRetract")).onFalse(hang.halt().withName("HangHalt")); // hang go downies (hold)
+        }
 
-        driverController.leftTrigger().and(() -> driveDisable.isOff() && oneDriverMode.isOff()).whileTrue(drivetrain.trenchLock().withName("DriveTrenchLockToggle"));
-        driverController.rightTrigger() // temporary robot centric
-            .and(() -> driveDisable.isOff() && oneDriverMode.isOff())
-            .onTrue(
-                new CommandBuilder()
-                    .onExecute(() -> drivetrain.setFieldCentric(false))
-                    .isFinished(true)
-                    .withName("DriveRobotCentricSetOn")
-            )
-            .onFalse(
-                new CommandBuilder()
-                    .onExecute(() -> drivetrain.setFieldCentric(fieldCentric.isOn()))
-                    .isFinished(true)
-                    .withName("DriveRobotCentricSetOff")
-            );
+        { // Default Drive Controls (OneDrive Off)
+            BooleanSupplier condition = () -> driveDisable.isOff() && oneDriverMode.isOff();
 
-        driverController.leftBumper().and(() -> driveDisable.isOff() && oneDriverMode.isOff()).onTrue(drivetrain.decreaseSpeed().withName("DriveSpeedDesc")); // drive go snail
-        driverController.rightBumper().and(() -> driveDisable.isOff() && oneDriverMode.isOff()).onTrue(drivetrain.increaseSpeed().withName("DriveSpeedInc")); // drive go weeee
-        
-        // Puts the hang and hood in down mode when going under trench
-        driverController.start().and(driveDisable::isOff).whileTrue(
-            hang.stowForTrench()
-                .alongWith(
-                    hood.stowForTrench()
+            driverController.leftTrigger() .and(condition).whileTrue(drivetrain.trenchLock().withName("DriveTrenchLockToggle"));
+            driverController.leftBumper()  .and(condition).onTrue(drivetrain.decreaseSpeed().withName("DriveSpeedDesc")); // Drive go snail
+            driverController.rightBumper() .and(condition).onTrue(drivetrain.increaseSpeed().withName("DriveSpeedInc")); // Drive go weeee
+            driverController.rightTrigger().and(condition) // Temporary robot centric
+                .onTrue(
+                    new CommandBuilder()
+                        .onExecute(() -> drivetrain.setFieldCentric(false))
+                        .isFinished(true)
+                        .withName("DriveRobotCentricSetOn")
                 )
-                .withName("TrenchStow")
-        );
-        // MARK: One Driver Mode
-        driverController.povLeft() .and(() -> driveDisable.isOff() && oneDriverMode.isOn()).onTrue(drivetrain.decreaseSpeed().withName("OneDriveDriveDescSpeed")); // drive go weeee
-        driverController.povRight().and(() -> driveDisable.isOff() && oneDriverMode.isOn()).onTrue(drivetrain.increaseSpeed().withName("OneDriveDriveIncSpeed")); // drive go snail
-        
-        driverController.leftTrigger() // outtake (hold)
-            .and(() -> driveDisable.isOff() && oneDriverMode.isOn())
-            .whileTrue(
-                intake.outtake()
-                .withName("OneDriveIntakeOuttake")
-            );
-        driverController.leftBumper() // preheat (hold)
-            .and(() -> driveDisable.isOff() && oneDriverMode.isOn())
-            .whileTrue(
-                shooter.holdSpeedForShoot()
-                .withName("OneDriveShootPreheat")
-            );
-        driverController.rightTrigger() // intake (hold)
-            .and(() -> driveDisable.isOff() && oneDriverMode.isOn())
-            .whileTrue(
-                hungerOrchestrator.consume()
-                .withName("OneDriveHungerIntake")
-            );
-        driverController.rightBumper() // fire (hold)
-            .and(() -> driveDisable.isOff() && oneDriverMode.isOn())
-            .whileTrue(
-                firingOrchestrator.fire()
-                .withName("OneDriveFiringFire")
-            );
-        driverController.back()
-            .and(() -> driveDisable.isOff() && oneDriverMode.isOn())
-            .onTrue(
-                pivot.up()
-                .withName("OneDrivePivotUp")
-            );
+                .onFalse(
+                    new CommandBuilder()
+                        .onExecute(() -> drivetrain.setFieldCentric(fieldCentric.isOn()))
+                        .isFinished(true)
+                        .withName("DriveRobotCentricSetOff")
+                );
 
-            
-            // if drive is disabled and one driver mode is enabled
-        auxController.leftTrigger() // outtake (hold)
-            .and(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff())
-            .whileTrue(
-                intake.outtake()
-                .withName("OneDriveBackupIntakeOuttake")
+            // Puts the hang and hood in down mode when going under trench
+            driverController.start().and(condition).whileTrue(
+                hang.stowForTrench()
+                    .alongWith(
+                        hood.stowForTrench()
+                    )
+                    .withName("TrenchStow")
             );
-        auxController.leftBumper() // preheat (hold)
-            .and(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff())
-            .whileTrue(
-                shooter.holdSpeedForShoot()
-                .withName("OneDriveBackupShooterPreheat")
-            );
-        auxController.rightTrigger() // intake (hold)
-            .and(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff())
-            .whileTrue(
-                hungerOrchestrator.consume()
-                .withName("OneDriveBackupHungerIntake")
-            );
-        auxController.rightBumper()
-            .and(() -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff()) // fire (hold)
-            .whileTrue(
-                firingOrchestrator.fire()
-                .withName("OneDriveBackupFiringFire")
-            );
-        auxController.povUp()   .and(() -> driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()).whileTrue(hang.extend().withName("OneDriveBackupHangExtend"))
-                                                                                                               .onFalse(hang.halt().withName("OneDriveBackupHangStop")); // hang go uppies (hold)
-        auxController.povDown() .and(() -> driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()).whileTrue(hang.retract().withName("OneDriveBackupHangRetract"))
-                                                                                                               .onFalse(hang.halt().withName("OneDriveBackupHangStop")); // hang go downies (hold)
-        auxController.povLeft() .and(() -> driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()).onTrue(drivetrain.decreaseSpeed().withName("OneDriveBackupDriveDescSpeed")); // drive go weeee
-        auxController.povRight().and(() -> driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()).onTrue(drivetrain.increaseSpeed().withName("OneDriveBackupDriveIncSpeed")); // drive go snail
-        auxController.x()       .and(() -> driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()).whileTrue(drivetrain.brick().withName("OneDriveBackupDriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
-        auxController.y()       .and(() -> driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()).whileTrue(drivetrain.hubLock().withName("OneDriveBackupDriveHubLock")); // lock and shoot
-        auxController.b()       .and(() -> driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()).whileTrue(hang.jostle().withName("OneDriveBackupJostle")); // lock and shoot
-        auxController.a()       .and(() -> driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn()).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).withName("OneDriveBackupDriveSeedFieldCentric")); // reset IMU
-        
+        }
+
+        { // OneDrive Drive Controls (OneDrive On)
+            BooleanSupplier condition = () -> driveDisable.isOff() && oneDriverMode.isOn();
+
+            driverController.povLeft().and(condition).onTrue(drivetrain.decreaseSpeed().withName("OneDriveDriveDescSpeed")); // drive go weeee
+            driverController.povRight().and(condition).onTrue(drivetrain.increaseSpeed().withName("OneDriveDriveIncSpeed")); // drive go snail
+
+            driverController.leftTrigger() .and(condition).whileTrue(intake.outtake().withName("OneDriveIntakeOuttake"));
+            driverController.leftBumper()  .and(condition).whileTrue(shooter.holdSpeedForShoot().withName("OneDriveShootPreheat"));
+            driverController.rightTrigger().and(condition).whileTrue(hungerOrchestrator.consume().withName("OneDriveHungerIntake"));
+            driverController.rightBumper() .and(condition).whileTrue(firingOrchestrator.fire().withName("OneDriveFiringFire"));
+            driverController.back()        .and(condition).onTrue(pivot.up().withName("OneDrivePivotUp"));
+        }
+
+        /**********************/
         // MARK: Aux
-        auxController.start()
-            .and(() -> auxDisable.isOff())
-            // .onTrue(firingOrchestrator.fireThenStop().alongWith(hungerOrchestrator.jostleRepeatedly()).withTimeout(3)); //* emma does not want this right now, we may apply it later emma says the fuel will get jammed if we do this
-            .whileTrue(
-                hungerOrchestrator.jostleRepeatedly()
-                .withName("HungerJostle")
-            );
+        /**********************/
 
-        (auxController.leftStick().or(auxController.rightStick())).and(() -> auxDisable.isOff() && oneDriverMode.isOff())
-            .whileTrue(shooter.reverse().withName("ShooterReverse"));
+        { // OneDrive Aux Fallback
+            BooleanSupplier condition = () -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff();
 
-        auxController.povUp() // Speen
-            .and(() -> auxDisable.isOff() && oneDriverMode.isOff())
-            .whileTrue(
-                new ParallelCommandGroup(
-                    spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER)
-                )
-                .withName("SpindexerSpin")
-            )
-            .onFalse(spindexer.halt());
+            auxController.leftTrigger() // outtake (hold)
+                .and(condition)
+                .whileTrue(
+                    intake.outtake()
+                    .withName("OneDriveBackupIntakeOuttake")
+                );
+            auxController.leftBumper() // preheat (hold)
+                .and(condition)
+                .whileTrue(
+                    shooter.holdSpeedForShoot()
+                    .withName("OneDriveBackupShooterPreheat")
+                );
+            auxController.rightTrigger() // intake (hold)
+                .and(condition)
+                .whileTrue(
+                    hungerOrchestrator.consume()
+                    .withName("OneDriveBackupHungerIntake")
+                );
+            auxController.rightBumper() // fire (hold)
+                .and(condition)
+                .whileTrue(
+                    firingOrchestrator.fire()
+                    .withName("OneDriveBackupFiringFire")
+                );
 
-        auxController.y() // Feed
-            .and(() -> auxDisable.isOff() && oneDriverMode.isOff())
-            .whileTrue(
-                hood.toPosition(() -> Constants.Hood.Position.FEED.get())
-                .withName("PresetFeed")
-            )
-            .onFalse(
-                hood.toPosition(() -> Constants.Hood.Position.TRENCH.get())
-            ); // (added at FLR) hood now goes down when feed is released BOTTOM preset makes the hood slam down too hard so it goes to TRENCH
+            auxController.b().and(condition)      .whileTrue(hang.jostle()             .withName("OneDriveBackupJostle"));
+            auxController.x().and(condition)      .whileTrue(drivetrain.brick()        .withName("OneDriveBackupDriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
+            auxController.y().and(condition)      .whileTrue(drivetrain.hubLock()      .withName("OneDriveBackupDriveHubLock")); // lock and shoot
+            auxController.a().and(condition)         .onTrue(drivetrain.resetRotation().withName("OneDriveBackupDriveSeedFieldCentric")); // reset IMU
+            auxController.povLeft().and(condition)   .onTrue(drivetrain.decreaseSpeed().withName("OneDriveBackupDriveDescSpeed")); // drive go weeee
+            auxController.povRight().and(condition)  .onTrue(drivetrain.increaseSpeed().withName("OneDriveBackupDriveIncSpeed")); // drive go snail
+            auxController.povUp().and(condition)  .whileTrue(hang.extend()             .withName("OneDriveBackupHangExtend")) // hang go uppies (hold)
+                                                    .onFalse(hang.halt()               .withName("OneDriveBackupHangStop"));
+            auxController.povDown().and(condition).whileTrue(hang.retract()            .withName("OneDriveBackupHangRetract")) // hang go downies (hold)
+                                                    .onFalse(hang.halt()               .withName("OneDriveBackupHangStop"));
+        }
 
-        auxController.x() // Tower
-            .and(() -> auxDisable.isOff() && oneDriverMode.isOff())
-            .onTrue(
-                hood.toPosition(() -> Constants.Hood.Position.TRENCH.get()) // TODO: evil trench please change this
-                .withName("PresetTower")
-            );
+        { // Main Aux Controls
+            BooleanSupplier condition = () -> auxDisable.isOff() && oneDriverMode.isOff();
 
-        auxController.b() // Trench
-            .and(() -> auxDisable.isOff() && oneDriverMode.isOff())
-            .onTrue(
-                hood.toPosition(() -> Constants.Hood.Position.TRENCH.get())
-                .withName("PresetTrench")
-            );
-
-        auxController.a() // HUB
-            .and(() -> auxDisable.isOff() && oneDriverMode.isOff())
-            .onTrue(
-                hood.toPosition(() -> Constants.Hood.Position.HUB.get())
-                .withName("PresetHub")
-            );
-
-        auxController.leftBumper() // Preheat (hold)
-            .and(() -> auxDisable.isOff() && oneDriverMode.isOff())
-            .whileTrue(
-                shooter.holdSpeedForShoot()
-                .withName("ShooterPreheat")
-            )
-            .onFalse(shooter.halt().withName("ShooterHalt"));
-
-        auxController.leftTrigger() // Fire (hold)
-            .and(() -> auxDisable.isOff() && oneDriverMode.isOff())
-            .whileTrue(
-                firingOrchestrator.fire()
-                .withName("FiringFire")
-            )
-            .onFalse(firingOrchestrator.halt().withName("FiringHalt"));
-
-        auxController.rightBumper() // Outtake (hold)
-            .and(() -> auxDisable.isOff() && oneDriverMode.isOff())
-            .whileTrue(
-                intake.outtake() 
-                .withName("IntakeOuttake")
-            )
-            .onFalse(intake.stopEating().withName("IntakeHalt"));
-
-        auxController.rightTrigger() // Intake (hold)
-            .and(() -> auxDisable.isOff() && oneDriverMode.isOff())
-            .whileTrue(
-                hungerOrchestrator.consume()
-                .withName("HungerConsume")
-            )
-            .onFalse(intake.stopEating().withName("IntakeHalt"));
-
-        auxController.back() // Intake (hold)
-            .and(() -> auxDisable.isOff())
-            .whileTrue(
-                pivot.up()
-                .withName("PivotUp")
-            );
-
-        if (!Broken.hoodDisabled) hood.setDefaultCommand(hood.zero().withName("HoodHalt"));
-        if (!Broken.shooterFullyDisabled) shooter.setDefaultCommand(shooter.halt().withName("ShooterHalt"));
-        if (!Broken.kickerDisabled) kicker.setDefaultCommand(kicker.halt().withName("KickerHalt"));
-        if (!Broken.hangFullyDisabled) hang.setDefaultCommand(hang.zeroHang().withName("HangZero"));
+            (auxController.leftStick().or(auxController.rightStick())).and(condition)
+                                                       .whileTrue(shooter.reverse()                                           .withName("ShooterReverse"));
+            auxController.povUp().and(condition)       .whileTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER).withName("SpindexerSpin"))
+                                                         .onFalse(spindexer.halt()                                            .withName("SpindexerHalt"));
+            auxController.start().and(condition)       .whileTrue(hungerOrchestrator.jostleRepeatedly()                       .withName("HungerJostle"));
+            auxController.y().and(condition)           .whileTrue(hood.toPosition(() -> Constants.Hood.Position.FEED.get())   .withName("PresetFeed"))
+                                                         .onFalse(hood.toPosition(() -> Constants.Hood.Position.TRENCH.get()) .withName("PresetPostFeed"));
+            auxController.x().and(condition)              .onTrue(hood.toPosition(() -> Constants.Hood.Position.TRENCH.get()) .withName("PresetTower"));
+            auxController.b().and(condition)              .onTrue(hood.toPosition(() -> Constants.Hood.Position.TRENCH.get()) .withName("PresetTrench"));
+            auxController.a().and(condition)              .onTrue(hood.toPosition(() -> Constants.Hood.Position.HUB.get())    .withName("PresetHub"));
+            auxController.leftBumper().and(condition)  .whileTrue(shooter.holdSpeedForShoot()                                 .withName("ShooterPreheat"))
+                                                         .onFalse(shooter.halt()                                              .withName("ShooterHalt"));
+            auxController.leftTrigger().and(condition) .whileTrue(firingOrchestrator.fire()                                   .withName("FiringFire"))
+                                                         .onFalse(firingOrchestrator.halt()                                   .withName("FiringHalt"));
+            auxController.rightBumper().and(condition) .whileTrue(intake.outtake()                                            .withName("IntakeOuttake"))
+                                                         .onFalse(intake.stopEating()                                         .withName("IntakeHalt"));
+            auxController.rightTrigger().and(condition).whileTrue(hungerOrchestrator.consume()                                .withName("HungerConsume"))
+                                                         .onFalse(intake.stopEating()                                         .withName("IntakeHalt"));
+            auxController.back().and(condition)        .whileTrue(pivot.up()                                                  .withName("PivotUp"));
+        }
+        
+        // ShooterSysID shooterSysID = new ShooterSysID(shooter);
+        // auxController.povUp().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        // auxController.povRight().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        // auxController.povDown().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        // auxController.povLeft().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         // MARK: Auto
         NamedCommands.registerCommand("DB_Hub_AL_Start", drivetrain.setHubLock(true));
@@ -438,11 +375,6 @@ public class Robot extends TimedRobot {
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
-        // ShooterSysID shooterSysID = new ShooterSysID(shooter);
-        // auxController.povUp().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        // auxController.povRight().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-        // auxController.povDown().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
-        // auxController.povLeft().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         SmartDashboard.putData(CommandScheduler.getInstance());
 
