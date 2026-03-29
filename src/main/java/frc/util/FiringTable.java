@@ -22,14 +22,15 @@ public class FiringTable {
 
     public FiringTable() {
         // TOF fudged bc we dont need it rn
-        firingTable.add(new FiringDataPoint(2.169, 1700, .05, .7));
-        firingTable.add(new FiringDataPoint(2.476, 1750, .1, .8));
-        firingTable.add(new FiringDataPoint(3.000, 1840, 0.11, 0.86));
-        firingTable.add(new FiringDataPoint(3.465, 1880, .12, .945));
-        firingTable.add(new FiringDataPoint(3.715, 1965, .13, .98));
-        firingTable.add(new FiringDataPoint(3.790, 1970, 0.14, 1));
-        firingTable.add(new FiringDataPoint(4.021, 1990, 0.16, 1.0174));
-        firingTable.add(new FiringDataPoint(4.92, 2120, 0.175, 1.1875));
+        double a = 20;
+        firingTable.add(new FiringDataPoint(2.169, 1700+a, .05, .7));
+        firingTable.add(new FiringDataPoint(2.476, 1750+a, .1, .8));
+        firingTable.add(new FiringDataPoint(3.000, 1840+a, 0.11, 0.86));
+        firingTable.add(new FiringDataPoint(3.465, 1880+a, .12, .945));
+        firingTable.add(new FiringDataPoint(3.715, 1965+a, .13, .98));
+        firingTable.add(new FiringDataPoint(3.790, 1970+a, 0.14, 1));
+        firingTable.add(new FiringDataPoint(4.021, 1990+a, 0.16, 1.0174));
+        firingTable.add(new FiringDataPoint(4.92, 2120+a, 0.175, 1.1875));
 
         // firingTable.add(new FiringDataPoint(2.99, 1880, 0.25, 0.86));
         // firingTable.add(new FiringDataPoint(3.76, 1980, 0.245, 1.0174));

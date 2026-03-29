@@ -3,14 +3,17 @@
   "robotLength": 0.79,
   "holonomicMode": true,
   "pathFolders": [
+    "Center 1",
     "Left 1",
     "Left 2",
+    "Right 1"
     "Left 3 ",
-    "Center 1",
+    "Triple Swipe Left",
     "Right 1",
     "Right 2"
   ],
   "autoFolders": [
+    "Three Swipes",
     "Two Swipes"
   ],
   "defaultMaxVel": 4.9,
@@ -26,7 +29,7 @@
   "maxDriveSpeed": 5.45,
   "driveMotorType": "krakenX60",
   "driveCurrentLimit": 60.0,
-  "wheelCOF": 1.2,
+  "wheelCOF": 0.6,
   "flModuleX": 0.250825,
   "flModuleY": 0.3175,
   "frModuleX": 0.250825,
@@ -40,6 +43,7 @@
   "robotFeatures": [
     "{\"name\":\"Intake\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":0.4,\"y\":0.0},\"size\":{\"width\":0.8,\"length\":0.2},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}",
     "{\"name\":\"Spindexer\",\"type\":\"circle\",\"data\":{\"center\":{\"x\":0.1,\"y\":0.0},\"radius\":0.25,\"strokeWidth\":0.02,\"filled\":false}}",
-    "{\"name\":\"Shooter\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":-0.275,\"y\":-0.2},\"size\":{\"width\":0.4,\"length\":0.2},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}"
+    "{\"name\":\"Shooter\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":-0.275,\"y\":-0.2},\"size\":{\"width\":0.4,\"length\":0.2},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}",
+    "{\"name\":\"Shooter Targeting\",\"type\":\"line\",\"data\":{\"start\":{\"x\":-0.28,\"y\":-0.2},\"end\":{\"x\":-0.28,\"y\":0.5},\"strokeWidth\":0.02}}"
   ]
 }

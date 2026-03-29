@@ -35,6 +35,7 @@ public class BlinkyBlinkyOrchestrator {
         hang = robot.hang;
 
         m_brightnessPercent = 1d;
+        SmartDashboard.putNumber("LED_Brightness", 1d);
     }
 
     public void sparkle() {

@@ -33,12 +33,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.util.Alert;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants.Status;
 import frc.util.Constants.Swerve;
+import frc.util.LimelightHelpers.RawFiducial;
 import frc.util.ZoneConstants.ZoneInfo;
 import frc.util.LimelightHelpers;
 import frc.util.ZoneConstants;
@@ -361,20 +363,48 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         }
 
         if (!m_limelightDisable) {
-            Matrix<N3, N1> visionMeasurementStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
-            visionMeasurementStdDevs.set(0, 0, 0.2);
-            visionMeasurementStdDevs.set(1, 0, 0.2);
-            visionMeasurementStdDevs.set(2, 0, 0.2);
+            Matrix<N3, N1> autoRearStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
+            autoRearStdDevs.set(0, 0, 0.4);
+            autoRearStdDevs.set(1, 0, 0.4);
+            autoRearStdDevs.set(2, 0, 0.4);
+            
+            Matrix<N3, N1> teleRearStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
+            teleRearStdDevs.set(0, 0, 0.1);
+            teleRearStdDevs.set(1, 0, 0.1);
+            teleRearStdDevs.set(2, 0, 0.1);
+            
+            Matrix<N3, N1> teleStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
+            teleStdDevs.set(0, 0, 0.01);
+            teleStdDevs.set(1, 0, 0.01);
+            teleStdDevs.set(2, 0, 99999999);
+
+            Matrix<N3, N1> teleGoodStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
+            teleGoodStdDevs.set(0, 0, 0.001);
+            teleGoodStdDevs.set(1, 0, 0.001);
+            teleGoodStdDevs.set(2, 0, 99999999);
+
+            Matrix<N3, N1> wheelMeasurementStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
+            wheelMeasurementStdDevs.set(0, 0, 0.01);
+            wheelMeasurementStdDevs.set(1, 0, 0.01);
+            wheelMeasurementStdDevs.set(2, 0, 0.01);
+
+            setStateStdDevs(wheelMeasurementStdDevs);
+
+            LimelightHelpers.SetRobotOrientation("limelight", currentPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+            LimelightHelpers.SetRobotOrientation("limelight-rear", currentPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+
             LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+            // LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
             LimelightHelpers.PoseEstimate limelightRearMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-rear");
             if (limelightMeasurement != null) {
                 if (limelightMeasurement.tagCount >= 2 ||
                     (limelightMeasurement.tagCount == 1 && limelightMeasurement.rawFiducials[0].ambiguity < 0.2)) {
-                    // if (DriverStation.isAutonomousEnabled()) {
-                    //     addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds, visionMeasurementStdDevs);
-                    // } else {
-                        addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
-                    // }
+                    if (limelightMeasurement.tagCount >= 2) {
+                        setVisionMeasurementStdDevs(teleGoodStdDevs);
+                    } else {
+                        setVisionMeasurementStdDevs(teleStdDevs);
+                    }
+                    addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
                 }
             } else {
                 Alert.warning("Couldn't find main limelight");
@@ -383,11 +413,18 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             if (limelightRearMeasurement != null) {
                 if (limelightRearMeasurement.tagCount >= 2 ||
                     (limelightRearMeasurement.tagCount == 1 && limelightRearMeasurement.rawFiducials[0].ambiguity < 0.2)) {
-                    // if (DriverStation.isAutonomousEnabled()) {
-                    //     addVisionMeasurement(limelightRearMeasurement.pose, limelightRearMeasurement.timestampSeconds, visionMeasurementStdDevs);
-                    // } else {
+                    double minimumDistance = limelightRearMeasurement.rawFiducials[0].distToRobot;
+                    for (RawFiducial fiducial : limelightRearMeasurement.rawFiducials) {
+                        if (fiducial.distToRobot < minimumDistance) minimumDistance = fiducial.distToRobot;
+                    }
+                    if (minimumDistance <= Constants.Swerve.kMaximumLimelightDistance) {
+                        if (DriverStation.isAutonomousEnabled()) {
+                            setVisionMeasurementStdDevs(autoRearStdDevs);
+                        } else {
+                            setVisionMeasurementStdDevs(teleRearStdDevs);
+                        }
                         addVisionMeasurement(limelightRearMeasurement.pose, limelightRearMeasurement.timestampSeconds);
-                    // }
+                    }
                 }
             } else {
                 Alert.warning("Couldn't find rear limelight");
@@ -471,9 +508,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     public void addVisionMeasurement(
         Pose2d visionRobotPoseMeters,
         double timestampSeconds,
-        Matrix<N3, N1> visionMeasurementStdDevs
+        Matrix<N3, N1> StdDevs
     ) {
-        super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+        super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), StdDevs);
     }
 
     @Override
@@ -632,7 +669,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
         AutoBuilder.configure(
             this::currentPose,
-            this::resetPose,
+            this::resetControl,
             this::getSpeed,
             (speeds, feeds) -> {
                 SmartDashboard.putNumber("SetSpeeds_x", speeds.vxMetersPerSecond);
@@ -650,8 +687,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             this
         );
 
-        FollowPathCommand.warmupCommand().schedule();
+        CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
     }
+
     public void resetControl(Pose2d pose) {
         resetPose(pose);
         m_driveController.getXController().reset();
@@ -680,7 +718,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     }
 
     public ChassisSpeeds getSpeed() {
-        return getKinematics().toChassisSpeeds(getState().ModuleStates);
+        return getState().Speeds;
     }
 
     public Rectangle2d getNearestTrench() {

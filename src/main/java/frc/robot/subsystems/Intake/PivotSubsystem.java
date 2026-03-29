@@ -33,13 +33,15 @@ public class PivotSubsystem extends ThunderSubsystem {
     private SparkClosedLoopController m_pidController;
 
     public PivotSubsystem() {
-        pivotConfig = new SparkMaxConfig(); 
-        pivotConfig.closedLoop
-            .pid(Constants.Hunger.Pivot.PivotPID.kP, Constants.Hunger.Pivot.PivotPID.kI, Constants.Hunger.Pivot.PivotPID.kD)
-            .allowedClosedLoopError(Constants.Hunger.Pivot.kTolerance, ClosedLoopSlot.kSlot0);
-        // .feedForward
-        //     .kCosRatio(Constants.Hunger.Pivot.kCosRatio)
-        //     .kCos(Constants.Hunger.Pivot.PivotPID.kCos);
+        pivotConfig = new SparkMaxConfig();
+        pivotConfig
+            .closedLoop
+                .pid(Constants.Hunger.Pivot.PivotPID.kP, Constants.Hunger.Pivot.PivotPID.kI, Constants.Hunger.Pivot.PivotPID.kD)
+                .allowedClosedLoopError(Constants.Hunger.Pivot.kTolerance, ClosedLoopSlot.kSlot0)
+            .feedForward
+                .kS(Constants.Hunger.Pivot.PivotPID.kS)
+                .kCosRatio(Constants.Hunger.Pivot.kCosRatio)
+                .kCos(Constants.Hunger.Pivot.PivotPID.kCos);
 
         pivotConfig.encoder
             .positionConversionFactor(1d/96d);

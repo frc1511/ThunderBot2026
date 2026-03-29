@@ -15,10 +15,10 @@ public class SafetyWatchdog extends SubsystemBase {
     @Override
     public void periodic() {
         for (ThunderInterface subsystem : subsystems) {
-            String subsystemName = subsystem.getName().toLowerCase().replace("subsystem", "");
-            SmartDashboard.putString(
-                "status_" + subsystemName, 
-                subsystem.status().toString());
+            // String subsystemName = subsystem.getName().toLowerCase().replace("subsystem", "");
+            // SmartDashboard.putString(
+            //     "status_" + subsystemName, 
+            //     subsystem.status().toString());
         }
     }
 }

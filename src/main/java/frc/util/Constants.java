@@ -264,7 +264,7 @@ public class Constants {
     public class Hunger {
         public interface Intake {
             double kEatRPM = 3000;
-            double kEatPercent = .7;
+            double kEatPercent = 1.0;
 
             interface IntakePID extends BasePID { 
                 double kP = 8.0;
@@ -277,13 +277,16 @@ public class Constants {
 
         public interface Pivot {
             interface PivotPID extends BasePID { 
-                double kP = 0.5;
-                double kI = .003;
-                double kD = 0.05;
+                double kP = 4.5;
+                double kI = .00;
+                double kD = 0.085;
+                double kS = .11;
+                double kCos = .22;
             }
+            double kCosRatio = 1;
 
             enum Position {
-                TOP(-0.336914), MIDDLE(-0.175), HALFWAY_DOWN(-0.13), BOTTOM(0.001708984375); //they change alot but should be approx right
+                TOP(-0.336914), MIDDLE(-0.175), HALFWAY_DOWN(-0.13), BOTTOM(0.003708984375); //they change alot but should be approx right
 
                 private double m_value;
 
@@ -295,7 +298,7 @@ public class Constants {
                     return this.m_value;
                 }
             }
-            double kCANcoderOffset = -0.669894;
+            double kCANcoderOffset = -.8497;
 
             double kTolerance = 0.015d;
             double kBigTolerance = 0.02d;
@@ -326,6 +329,7 @@ public class Constants {
     public class Swerve {
         public static final double kTimeOfFlightConvergenceTolerance = 0.1;
         public static final int kTimeOfFlightConvergenceMaxRecursions = 10;
+        public static final double kMaximumLimelightDistance = 3d;
 
         // Max Speed
         public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.9); // DON"T TOUCH, USE MULTIPLIER FOR MAX SPEED INSTEAD

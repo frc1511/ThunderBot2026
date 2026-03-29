@@ -36,12 +36,12 @@
         "y": 7.5
       },
       "prevControl": {
-        "x": 4.2812613636363634,
-        "y": 7.5
+        "x": 4.446170454545454,
+        "y": 7.487784090909091
       },
       "nextControl": {
-        "x": 6.258948047114656,
-        "y": 7.5
+        "x": 6.2589291152191615,
+        "y": 7.504185073598641
       },
       "isLocked": false,
       "linkedName": null
@@ -126,20 +126,24 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.955259975816203,
-      "rotationDegrees": 0.0
+      "waypointRelativePos": 0.95,
+      "rotationDegrees": 180.0
     },
     {
-      "waypointRelativePos": 4.0,
-      "rotationDegrees": -112.06789956241016
+      "waypointRelativePos": 1.5780051150895131,
+      "rotationDegrees": -90.31373004160858
     },
     {
-      "waypointRelativePos": 6.0096735187424395,
-      "rotationDegrees": -178.95837332399003
+      "waypointRelativePos": 3.153452685422004,
+      "rotationDegrees": -90.8280478633074
     },
     {
-      "waypointRelativePos": 6.195888754534472,
+      "waypointRelativePos": 5.195888754534472,
       "rotationDegrees": -86.66556907411697
+    },
+    {
+      "waypointRelativePos": 5.615089514066484,
+      "rotationDegrees": -90.76649552945133
     }
   ],
   "constraintZones": [
@@ -158,8 +162,8 @@
     },
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 5.568181818181818,
-      "maxWaypointRelativePos": 6.213903743315512,
+      "minWaypointRelativePos": 4.568181818181818,
+      "maxWaypointRelativePos": 5.213903743315512,
       "constraints": {
         "maxVelocity": 1.5,
         "maxAcceleration": 1.0,
@@ -183,18 +187,7 @@
       }
     }
   ],
-  "pointTowardsZones": [
-    {
-      "fieldPosition": {
-        "x": 4.6,
-        "y": 4.0
-      },
-      "rotationOffset": -90.0,
-      "minWaypointRelativePos": 4.931818181818182,
-      "maxWaypointRelativePos": 5.540106951871659,
-      "name": "Point Towards Zone"
-    }
-  ],
+  "pointTowardsZones": [],
   "eventMarkers": [
     {
       "name": "PivotDown",
@@ -209,7 +202,7 @@
     },
     {
       "name": "Intake",
-      "waypointRelativePos": 2.2272727272727266,
+      "waypointRelativePos": 1.2272727272727266,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -220,7 +213,7 @@
     },
     {
       "name": "StopIntake",
-      "waypointRelativePos": 5.072192513368986,
+      "waypointRelativePos": 4.072192513368986,
       "endWaypointRelativePos": null,
       "command": null
     }
@@ -235,13 +228,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -84.09497031459087
+    "rotation": -90.64240885090281
   },
   "reversed": false,
   "folder": "Left 1",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }

@@ -228,7 +228,7 @@ public class Robot extends TimedRobot {
 
             driverController.x().and(condition).whileTrue(drivetrain.brick().withName("DriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
             driverController.y().and(condition).whileTrue(drivetrain.hubLock().withName("DriveHubLockToggle")); // lock and shoot
-            driverController.a().and(condition).onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric).withName("DriveSeedFieldCentric")); // reset IMU
+            driverController.a().and(condition).onTrue(drivetrain.resetRotation().withName("DriveSeedFieldCentric")); // reset IMU
         }
 
         { // Hang Controls
@@ -412,7 +412,7 @@ public class Robot extends TimedRobot {
         }
         SmartDashboard.putBoolean("drive disabled", driveDisable.isOn());
         SmartDashboard.putBoolean("aux disabled", auxDisable.isOn());
-        m_timeAndJoystickReplay.update();
+        // m_timeAndJoystickReplay.update();
 
         SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);
 
@@ -452,7 +452,6 @@ public class Robot extends TimedRobot {
         hubActiveTimer.start();
         drivetrain.setupTheta(true);
         drivetrain.setSpeedMultiplier(1.0);
-        drivetrain.setupTheta(true);
         Command autoCommand = autoChooser.getSelected();
         if (autoCommand != Commands.none()) {
             CommandScheduler.getInstance().schedule(autoCommand);
