@@ -149,7 +149,7 @@ public class PivotSubsystem extends ThunderSubsystem {
         return middle()
             .andThen(down());
     }
-    
+
     public Command jostleRepeatedly() {
         if (Broken.pivotDisabled) return Commands.none();
 

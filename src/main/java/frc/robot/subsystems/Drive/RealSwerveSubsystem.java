@@ -249,9 +249,12 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX) {
         return applyRequest(() -> {
             // YES! The y and x are swapped on purpose, it has to do with coordinate systems in the library so just leave it like this please!
-            double vx = -leftY.getAsDouble() * Constants.Swerve.kMaxSpeed * m_speedMultipler;
-            double vy = -leftX.getAsDouble() * Constants.Swerve.kMaxSpeed * m_speedMultipler;
-            double vRot = -rightX.getAsDouble() * Constants.Swerve.kMaxAngularRate * m_speedMultipler;
+            double actualSpeedMultiplier = m_speedMultipler;
+            if (Helpers.isBypassModeEnabled()) actualSpeedMultiplier = 1d;
+
+            double vx = -leftY.getAsDouble() * Constants.Swerve.kMaxSpeed * actualSpeedMultiplier;
+            double vy = -leftX.getAsDouble() * Constants.Swerve.kMaxSpeed * actualSpeedMultiplier;
+            double vRot = -rightX.getAsDouble() * Constants.Swerve.kMaxAngularRate * actualSpeedMultiplier;
 
             if (m_hubLock) {
                 m_arcLockCenter = Helpers.allianceHub();
@@ -361,19 +364,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         }
 
         if (!m_limelightDisable) {
-            Matrix<N3, N1> autoRearStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
-            autoRearStdDevs.set(0, 0, 0.4);
-            autoRearStdDevs.set(1, 0, 0.4);
-            autoRearStdDevs.set(2, 0, 0.4);
-            
-            Matrix<N3, N1> teleRearStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
-            teleRearStdDevs.set(0, 0, 0.1);
-            teleRearStdDevs.set(1, 0, 0.1);
-            teleRearStdDevs.set(2, 0, 0.1);
-            
             Matrix<N3, N1> teleStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
-            teleStdDevs.set(0, 0, 0.01);
-            teleStdDevs.set(1, 0, 0.01);
+            teleStdDevs.set(0, 0, 0.1);
+            teleStdDevs.set(1, 0, 0.1);
             teleStdDevs.set(2, 0, 99999999);
 
             Matrix<N3, N1> teleGoodStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
@@ -397,12 +390,18 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             if (limelightMeasurement != null) {
                 if (limelightMeasurement.tagCount >= 2 ||
                     (limelightMeasurement.tagCount == 1 && limelightMeasurement.rawFiducials[0].ambiguity < 0.2)) {
-                    if (limelightMeasurement.tagCount >= 2) {
-                        setVisionMeasurementStdDevs(teleGoodStdDevs);
-                    } else {
-                        setVisionMeasurementStdDevs(teleStdDevs);
+                    double minimumDistance = limelightMeasurement.rawFiducials[0].distToRobot;
+                    for (RawFiducial fiducial : limelightMeasurement.rawFiducials) {
+                        if (fiducial.distToRobot < minimumDistance) minimumDistance = fiducial.distToRobot;
                     }
-                    addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
+                    if (minimumDistance <= Constants.Swerve.kMaximumLimelightDistance) {
+                        if (limelightMeasurement.tagCount >= 2) {
+                            setVisionMeasurementStdDevs(teleGoodStdDevs);
+                        } else {
+                            setVisionMeasurementStdDevs(teleStdDevs);
+                        }
+                        addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
+                    }
                 }
             } else {
                 Alert.warning("Couldn't find main limelight");
@@ -416,10 +415,10 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                         if (fiducial.distToRobot < minimumDistance) minimumDistance = fiducial.distToRobot;
                     }
                     if (minimumDistance <= Constants.Swerve.kMaximumLimelightDistance) {
-                        if (DriverStation.isAutonomousEnabled()) {
-                            setVisionMeasurementStdDevs(autoRearStdDevs);
+                        if (limelightMeasurement.tagCount >= 2) {
+                            setVisionMeasurementStdDevs(teleGoodStdDevs);
                         } else {
-                            setVisionMeasurementStdDevs(teleRearStdDevs);
+                            setVisionMeasurementStdDevs(teleStdDevs);
                         }
                         addVisionMeasurement(limelightRearMeasurement.pose, limelightRearMeasurement.timestampSeconds);
                     }
@@ -600,6 +599,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     }
 
     public boolean isCANSafe() {
+        if (Helpers.isBypassModeEnabled()) return true;
         for (int i = 0; i < getModules().length; i++) {
             if (!Helpers.onCANChain(getModule(i).getDriveMotor()) || !Helpers.onCANChain(getModule(i).getSteerMotor()) || !Helpers.onCANChain(getModule(i).getEncoder())) {
                 return false;
