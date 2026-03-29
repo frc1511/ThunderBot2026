@@ -1,49 +1,40 @@
 {
-  "robotWidth": 0.91,
-  "robotLength": 0.79,
+  "robotWidth": 0.9,
+  "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
     "Center 1",
     "Left 1",
+    "Left 3",
     "Left 2",
-    "Right 1"
-    "Left 3 ",
-    "Triple Swipe Left",
     "Right 1",
-    "Right 2"
+    "Right 2",
+    "Triple Swipe Left"
   ],
-  "autoFolders": [
-    "Three Swipes",
-    "Two Swipes"
-  ],
-  "defaultMaxVel": 4.9,
+  "autoFolders": [],
+  "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 720.0,
   "defaultNominalVoltage": 12.0,
-  "robotMass": 55.0,
-  "robotMOI": 3.98762878,
+  "robotMass": 74.088,
+  "robotMOI": 6.883,
   "robotTrackwidth": 0.546,
   "driveWheelRadius": 0.048,
   "driveGearing": 5.143,
   "maxDriveSpeed": 5.45,
   "driveMotorType": "krakenX60",
   "driveCurrentLimit": 60.0,
-  "wheelCOF": 0.6,
-  "flModuleX": 0.250825,
-  "flModuleY": 0.3175,
-  "frModuleX": 0.250825,
-  "frModuleY": -0.3175,
-  "blModuleX": -0.251,
-  "blModuleY": 0.3175,
-  "brModuleX": -0.251,
-  "brModuleY": -0.3175,
+  "wheelCOF": 1.2,
+  "flModuleX": 0.273,
+  "flModuleY": 0.273,
+  "frModuleX": 0.273,
+  "frModuleY": -0.273,
+  "blModuleX": -0.273,
+  "blModuleY": 0.273,
+  "brModuleX": -0.273,
+  "brModuleY": -0.273,
   "bumperOffsetX": 0.0,
   "bumperOffsetY": 0.0,
-  "robotFeatures": [
-    "{\"name\":\"Intake\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":0.4,\"y\":0.0},\"size\":{\"width\":0.8,\"length\":0.2},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}",
-    "{\"name\":\"Spindexer\",\"type\":\"circle\",\"data\":{\"center\":{\"x\":0.1,\"y\":0.0},\"radius\":0.25,\"strokeWidth\":0.02,\"filled\":false}}",
-    "{\"name\":\"Shooter\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":-0.275,\"y\":-0.2},\"size\":{\"width\":0.4,\"length\":0.2},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}",
-    "{\"name\":\"Shooter Targeting\",\"type\":\"line\",\"data\":{\"start\":{\"x\":-0.28,\"y\":-0.2},\"end\":{\"x\":-0.28,\"y\":0.5},\"strokeWidth\":0.02}}"
-  ]
+  "robotFeatures": []
 }

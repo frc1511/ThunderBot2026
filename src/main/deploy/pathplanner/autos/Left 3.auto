@@ -21,15 +21,15 @@
                 }
               },
               {
-                "type": "wait",
+                "type": "named",
                 "data": {
-                  "waitTime": 1.0
+                  "name": "Shoot"
                 }
               },
               {
                 "type": "named",
                 "data": {
-                  "name": "Shoot"
+                  "name": "PivotDown"
                 }
               }
             ]
@@ -52,12 +52,6 @@
                 }
               },
               {
-                "type": "wait",
-                "data": {
-                  "waitTime": 1.0
-                }
-              },
-              {
                 "type": "named",
                 "data": {
                   "name": "ShootForever"
@@ -70,6 +64,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Two Swipes",
+  "folder": null,
   "choreoAuto": false
 }

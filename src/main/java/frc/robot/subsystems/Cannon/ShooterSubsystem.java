@@ -69,6 +69,9 @@ public class ShooterSubsystem extends ThunderSubsystem {
                     m_primaryMotor = m_shooterMotorA;
                 }
             }
+
+            m_primaryMotor.getVelocity().setUpdateFrequency(100);
+            m_primaryMotor.getClosedLoopReference().setUpdateFrequency(100);
         } else {
             Broken.shooterFullyDisabled = true;
             m_primaryMotor = null;
@@ -82,19 +85,25 @@ public class ShooterSubsystem extends ThunderSubsystem {
     public boolean shooterAtSpeed() {
         if (Broken.shooterFullyDisabled) return true;
 
-        return Math.abs(Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()) - m_targetSpeed) < Constants.Shooter.kShooterAtSpeedTolerance;
+        return Math.abs(Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()) - m_targetSpeed) < Constants.Shooter.kShooterAtSpeedTolerance && Helpers.RPStoRPM(m_primaryMotor.getClosedLoopError().getValueAsDouble()) < Constants.Shooter.kShooterAtSpeedTolerance;
     }
 
     @Override
     public void periodic() {
         if (Broken.shooterFullyDisabled) return;
 
-        SmartDashboard.putNumber("shooter_rpm", Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()));
-        SmartDashboard.putNumber("shooter_target_rpm", Helpers.RPStoRPM(m_primaryMotor.getClosedLoopReference().getValueAsDouble()));
         SmartDashboard.putNumber("shooter_output_V", m_primaryMotor.getMotorVoltage().getValueAsDouble());
         SmartDashboard.putNumber("shooter_err", Math.abs(Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()) - m_targetSpeed));
-        SmartDashboard.putBoolean("shooter_atSpeed", shooterAtSpeed());
         SmartDashboard.putNumber("shooter_optimalSpeed", optimalSpeedSupplier.getAsDouble());
+
+        SmartDashboard.putNumber("SOTM Shooter RPM", optimalSpeedSupplier.getAsDouble());
+    }
+
+    @Override
+    public void hddlPeriodic() {
+        SmartDashboard.putNumber("shooter_rpm", Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()));
+        SmartDashboard.putNumber("shooter_target_rpm", Helpers.RPStoRPM(m_primaryMotor.getClosedLoopReference().getValueAsDouble()));
+        SmartDashboard.putBoolean("shooter_atSpeed", shooterAtSpeed());
     }
 
     public Command halt() {

@@ -25,6 +25,12 @@
                 "data": {
                   "name": "Shoot"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "PivotDown"
+                }
               }
             ]
           }
@@ -49,6 +55,12 @@
                 "type": "named",
                 "data": {
                   "name": "Shoot"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "PivotDown"
                 }
               }
             ]
@@ -75,6 +87,12 @@
                 "data": {
                   "name": "ShootForever"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "PivotDown"
+                }
               }
             ]
           }
@@ -83,6 +101,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Three Swipes",
+  "folder": null,
   "choreoAuto": false
 }

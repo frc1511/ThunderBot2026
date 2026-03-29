@@ -123,6 +123,7 @@ public class HoodSubsystem extends ThunderSubsystem {
         SmartDashboard.putBoolean("hood_zeroSensorTripped", isAtZero());
         SmartDashboard.putNumber("hood_err", m_motor.getClosedLoopError().getValueAsDouble());
 
+        SmartDashboard.putNumber("SOTM Hood Target Theta", optimalAngleSupplier.getAsDouble());
         if (!isZeroed()) {
             // CommandScheduler.getInstance().schedule(zero().withName("HoodZeroInbuilt"));
         }

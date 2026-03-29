@@ -261,8 +261,6 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
                 Rotation2d targetAngle = new Rotation2d(Math.atan2(dY, dX) + Math.PI/2 - getShooterAngleCompensation());
 
-                SmartDashboard.putNumber("Drive intended hub lock theta", m_optimalRotationSupplier.getAsDouble());
-
                 vRot = m_driveController.calculate(
                         currentPose(),
                         new Pose2d(currentPose().getTranslation(), targetAngle),
@@ -429,6 +427,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             } else {
                 Alert.warning("Couldn't find rear limelight");
             }
+
+            SmartDashboard.putNumber("SOTM Drive Interpolated Theta", m_optimalRotationSupplier.getAsDouble());
+            SmartDashboard.putNumber("SOTM Drive Current Theta", currentPose().getRotation().getRadians());
         }
 
         // Update poses for bump detection
