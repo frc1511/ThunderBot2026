@@ -2,6 +2,7 @@ package frc.util;
 
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -11,6 +12,7 @@ import com.revrobotics.spark.SparkMax;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class Helpers {
@@ -161,5 +163,27 @@ public class Helpers {
 
     public static Trigger hubToBecomeActive() {
         return new Trigger(() -> isHubActive(true));
+    }
+
+    private static boolean pitModePlusEnabled = false;
+    public static void setPitModePlus(boolean enabled) {
+        pitModePlusEnabled = enabled;
+    }
+    /**
+     * Pitmode+ is a stepping stone up from pit mode that ~~removes a bunch of safety features.~~ allows you to bypass some requirements so that you can easily test things like the shooter without having to worry if the hood has reached its goal yet. The caveat is that the robot just assumes you set things up correctly as it skips checking so you can test faster, meaning you should probably read the functionality of whatever you're testing when in pitmode+ before testing it. 
+     */
+    public static boolean isPitModePlusEnabled() {
+        return pitModePlusEnabled;
+    }
+
+    private static boolean bypassModeEnabled = false;
+    public static void setBypassMode(boolean enabled) {
+        bypassModeEnabled = enabled;
+    }
+    /**
+     * Pitmode+ is a stepping stone up from pit mode that ~~removes a bunch of safety features.~~ allows you to bypass some requirements so that you can easily test things like the shooter without having to worry if the hood has reached its goal yet. The caveat is that the robot just assumes you set things up correctly as it skips checking so you can test faster, meaning you should probably read the functionality of whatever you're testing when in pitmode+ before testing it. 
+     */
+    public static boolean isBypassModeEnabled() {
+        return bypassModeEnabled;
     }
 }

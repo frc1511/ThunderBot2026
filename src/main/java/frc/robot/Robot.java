@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.orchestration.BlinkyBlinkyOrchestrator;
 import frc.robot.orchestration.CannonOrchestrator;
@@ -99,10 +100,13 @@ public class Robot extends TimedRobot {
     public ThunderSwitch ledDisable = switchBoard.button(5);
     public ThunderSwitch limelightDisable = switchBoard.button(6);
     public ThunderSwitch climberDisable = switchBoard.button(7);
-    public ThunderSwitch placeHolder8 = switchBoard.button(8); // Yes, the placeholder switches have different slots than their names. This is because drive team is 1-based rather than 0-based and this aligns with the controller map.
-    public ThunderSwitch placeHolder9 = switchBoard.button(9);
+    /** DO NOT USE THIS, instead use pitModePlus */
+    public ThunderSwitch _DNU_pitModePlusPhysical = switchBoard.button(8);
+    public ThunderSwitch bypassMode = switchBoard.button(9);
     public ThunderSwitch oneDriverMode = switchBoard.button(10);
     public ThunderSwitch pitMode = switchBoard.button(11);
+
+    public ThunderSwitch pitModePlus = switchBoard.new ThunderSwitch(new Trigger(() -> _DNU_pitModePlusPhysical.isOn() && pitMode.isOn()));
 
     public PowerDistribution PDH = new PowerDistribution(1, ModuleType.kRev);
 
@@ -195,7 +199,7 @@ public class Robot extends TimedRobot {
             RobotModeTriggers.disabled().onTrue(drivetrain.idle().withTimeout(.1));
         }
         
-        { // Switchboard
+        { // MARK: Switchboard
             ledDisable.get()
                 .whileTrue(
                     new InstantCommand(() -> {
@@ -212,13 +216,19 @@ public class Robot extends TimedRobot {
                 );
     
             pitMode.get()
-                .whileTrue(blinkyBlinkyOrchestrator.set(Constants.BlinkyBlinky.Mode.PIT).ignoringDisable(true));
+                .whileTrue(blinkyBlinkyOrchestrator.set(Constants.BlinkyBlinky.Mode.PIT));
     
             fieldCentric.get()
                 .onTrue(new InstantCommand(() -> drivetrain.setFieldCentric(true)))
                 .onFalse(new InstantCommand(() -> drivetrain.setFieldCentric(false)));
+
+            Helpers.setPitModePlus(pitModePlus.isOn());
+            pitModePlus.get().onChange(new InstantCommand(() -> Helpers.setPitModePlus(pitModePlus.isOn())));
+
+            Helpers.setBypassMode(bypassMode.isOn());
+            bypassMode.get().onChange(new InstantCommand(() -> Helpers.setBypassMode(bypassMode.isOn())));
         }
-        
+
         /**********************/
         // MARK: Drive
         /**********************/
@@ -245,19 +255,8 @@ public class Robot extends TimedRobot {
             driverController.leftTrigger() .and(condition).whileTrue(drivetrain.trenchLock().withName("DriveTrenchLockToggle"));
             driverController.leftBumper()  .and(condition).onTrue(drivetrain.decreaseSpeed().withName("DriveSpeedDesc")); // Drive go snail
             driverController.rightBumper() .and(condition).onTrue(drivetrain.increaseSpeed().withName("DriveSpeedInc")); // Drive go weeee
-            driverController.rightTrigger().and(condition) // Temporary robot centric
-                .onTrue(
-                    new CommandBuilder()
-                        .onExecute(() -> drivetrain.setFieldCentric(false))
-                        .isFinished(true)
-                        .withName("DriveRobotCentricSetOn")
-                )
-                .onFalse(
-                    new CommandBuilder()
-                        .onExecute(() -> drivetrain.setFieldCentric(fieldCentric.isOn()))
-                        .isFinished(true)
-                        .withName("DriveRobotCentricSetOff")
-                );
+            driverController.rightTrigger().and(condition).onTrue(new CommandBuilder().onExecute(() -> drivetrain.setFieldCentric(false)).isFinished(true).withName("DriveRobotCentricSetOn"))  // Temporary robot centric
+                                                          .onFalse(new CommandBuilder().onExecute(() -> drivetrain.setFieldCentric(fieldCentric.isOn())).isFinished(true).withName("DriveRobotCentricSetOff"));
 
             // Puts the hang and hood in down mode when going under trench
             driverController.start().and(condition).whileTrue(
@@ -349,7 +348,7 @@ public class Robot extends TimedRobot {
                                                          .onFalse(intake.stopEating()                                         .withName("IntakeHalt"));
             auxController.back().and(condition)        .whileTrue(pivot.up()                                                  .withName("PivotUp"));
         }
-        
+
         // ShooterSysID shooterSysID = new ShooterSysID(shooter);
         // auxController.povUp().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
         // auxController.povRight().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));

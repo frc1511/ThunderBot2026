@@ -43,6 +43,8 @@ public class HoodSubsystem extends ThunderSubsystem {
 
     private DoubleSupplier optimalAngleSupplier = () -> 0;
 
+    private BooleanSupplier isReadyToMove = () -> isZeroed() || Helpers.isBypassModeEnabled();
+
     public HoodSubsystem() {
         // new Modifiable("isConfirmedZeroed", this, () -> Boolean.FALSE);
         TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
@@ -78,13 +80,10 @@ public class HoodSubsystem extends ThunderSubsystem {
             m_motor.getClosedLoopReferenceSlope().setUpdateFrequency(200);
 
             m_beamBreakZero = new DigitalInput(Constants.IOMap.Hood.kDIObeamBreak);
-            if (!Broken.hoodBeamBreakDisabled && isAtZero()) {
-                forceZeroEncoders();
-            } else if (Broken.hoodBeamBreakDisabled) {
-                forceZeroEncoders();
-            }
-
-            if (!Helpers.onCANChain(m_encoder)) {
+            if (!Broken.hoodBeamBreakDisabled && isAtZero() ||
+                    Broken.hoodBeamBreakDisabled ||
+                    !Helpers.onCANChain(m_encoder) ||
+                    Helpers.isBypassModeEnabled()) {
                 forceZeroEncoders();
             }
 
@@ -175,14 +174,18 @@ public class HoodSubsystem extends ThunderSubsystem {
 
         return new CommandBuilder(this)
             .onExecute(() -> {
-                if (!isConfirmedZeroed) {
-                    m_motor.set(-Hood.kZeroingSpeed);
-                    if (isAtZero()) {
-                        forceZeroEncoders();
+                if (Helpers.isBypassModeEnabled()) { // Don't run zeroing procedures if in pit mode plus
+                    m_motor.stopMotor();
+                } else {
+                    if (!isConfirmedZeroed) {
+                        m_motor.set(-Hood.kZeroingSpeed);
+                        if (isAtZero()) {
+                            forceZeroEncoders();
+                            m_motor.stopMotor();
+                        }
+                    } else {
                         m_motor.stopMotor();
                     }
-                } else {
-                    m_motor.stopMotor();
                 }
             })
             .isFinished(() -> {
@@ -209,7 +212,7 @@ public class HoodSubsystem extends ThunderSubsystem {
                 m_motor.setControl(new MotionMagicVoltage(trueSetpoint));
             })
             .isFinished(this::atPosition)
-            .onlyIf(this::isZeroed);
+            .onlyIf(isReadyToMove);
     }
 
     public Command manual_hood(DoubleSupplier speed) {
@@ -241,7 +244,7 @@ public class HoodSubsystem extends ThunderSubsystem {
                 m_motor.setControl(new MotionMagicVoltage(trueSetpoint));
             })
             .onEnd(() -> m_motor.setControl(new MotionMagicVoltage(currentSetpoint)))
-            .onlyIf(this::isZeroed);
+            .onlyIf(isReadyToMove);
     }
 
     public void forceZeroEncoders() {
@@ -295,7 +298,7 @@ public class HoodSubsystem extends ThunderSubsystem {
                 m_motor.setControl(new MotionMagicVoltage(trueSetpoint));
             })
             .isFinished(this::atPosition)
-            .onlyIf(this::isZeroed);
+            .onlyIf(isReadyToMove);
     }
 
     public Constants.Hood.Position getTargetPosition() {
