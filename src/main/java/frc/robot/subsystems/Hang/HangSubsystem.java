@@ -67,7 +67,7 @@ public class HangSubsystem extends ThunderSubsystem {
             m_distanceSensor = new AnalogInput(IOMap.Hang.kAnalogDistance);
         }
 
-        if (Broken.hangLowerLimitDisabled) {
+        if (Broken.hangLowerLimitDisabled || Helpers.isBypassModeEnabled()) {
             m_isZeroed = true;
         }
     }
@@ -98,7 +98,7 @@ public class HangSubsystem extends ThunderSubsystem {
     private boolean isAtUpperLimit() {
         if (Broken.hangUpperLimitDisabled) return false;
         if (Broken.hangFullyDisabled) return true;
-        
+
         return !m_upperLimitSensor.get();
     }
 
@@ -107,14 +107,17 @@ public class HangSubsystem extends ThunderSubsystem {
     }
 
     public Command zeroHang() {
-        
-        if (Broken.hangFullyDisabled || Broken.hangLowerLimitDisabled) {
+        if (Broken.hangFullyDisabled || Broken.hangLowerLimitDisabled || Helpers.isBypassModeEnabled()) {
             m_isZeroed = true;
             return new InstantCommand(() -> {}, this);
         }
 
         return new CommandBuilder(this)
             .onExecute(() -> {
+                if (Helpers.isBypassModeEnabled()) {
+                    stop();
+                    return;
+                }
                 if (isAtLowerLimit()) {
                     stop();
                     return;
@@ -123,7 +126,7 @@ public class HangSubsystem extends ThunderSubsystem {
 
                 m_motor.set(HangConstants.kZeroingSpeed);
             })
-            .isFinished(this::isAtLowerLimit)
+            .isFinished(() -> isAtLowerLimit() || Helpers.isBypassModeEnabled())
             .onEnd((boolean interupped) -> {
                 stop();
                 if (!interupped) {
@@ -143,7 +146,7 @@ public class HangSubsystem extends ThunderSubsystem {
     private boolean atExtensionLimit() {
         if (Broken.hangFullyDisabled) return true;
 
-        return (atSetpoint() && m_pidController.getSetpoint() == HangConstants.kMaxDeployDistanceRotations) || isAtUpperLimit();
+        return (atSetpoint() && m_pidController.getSetpoint() == HangConstants.kMaxDeployDistanceRotations) || (isAtUpperLimit() && !Helpers.isBypassModeEnabled());
     }
 
     public Command extend() { //hang will die if it goes past the upper limit
@@ -166,7 +169,7 @@ public class HangSubsystem extends ThunderSubsystem {
     private boolean atRetractionLimit() {
         if (Broken.hangFullyDisabled) return true;
 
-        return (atSetpoint() && m_pidController.getSetpoint() == HangConstants.kMaxPullDistanceRotations) || isAtLowerLimit();
+        return (atSetpoint() && m_pidController.getSetpoint() == HangConstants.kMaxPullDistanceRotations) || (isAtLowerLimit() && !Helpers.isBypassModeEnabled());
     }
 
     public Command retract() {
@@ -234,7 +237,7 @@ public class HangSubsystem extends ThunderSubsystem {
         return new CommandBuilder(this)
             .onExecute(() -> {
                 double speed = -speedSupplier.getAsDouble() * .5;
-                if ((isAtLowerLimit() && speed < 0) || (isAtUpperLimit() && speed > 0))
+                if ((isAtLowerLimit() && speed < 0) || (isAtUpperLimit() && speed > 0) || Helpers.isBypassModeEnabled())
                     stop();
                 else {
                     m_isClimbing = true;

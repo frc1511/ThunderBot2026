@@ -157,7 +157,7 @@ public class HoodSubsystem extends ThunderSubsystem {
     }
 
     public boolean atPosition() {
-        if (Broken.hoodDisabled) return true;
+        if (Broken.hoodDisabled || Helpers.isBypassModeEnabled()) return true;
 
         return Math.abs(trueSetpoint - m_motor.getPosition().getValueAsDouble()) < Constants.Hood.kHoodTolerance && Math.abs(m_encoder.getVelocity().getValueAsDouble()) < Constants.Hood.kHoodSetpointMaxVelocity;
     }

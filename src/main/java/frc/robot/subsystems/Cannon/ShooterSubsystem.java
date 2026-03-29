@@ -17,7 +17,9 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
@@ -80,7 +82,7 @@ public class ShooterSubsystem extends ThunderSubsystem {
     }
 
     public boolean shooterAtSpeed() {
-        if (Broken.shooterFullyDisabled) return true;
+        if (Broken.shooterFullyDisabled || Helpers.isBypassModeEnabled()) return true;
 
         return Math.abs(Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()) - m_targetSpeed) < Constants.Shooter.kShooterAtSpeedTolerance;
     }
@@ -130,7 +132,8 @@ public class ShooterSubsystem extends ThunderSubsystem {
         return new CommandBuilder(this)
             .onExecute(() -> runAtSpeed(optimalSpeedSupplier.getAsDouble()))
             .isFinished(this::shooterAtSpeed)
-            .onEnd(this::halt);
+            .onEnd(this::halt)
+            .raceWith(new ConditionalCommand(new WaitCommand(1), Commands.none(), Helpers::isBypassModeEnabled));
     }
 
     // This is used in tele for preheat and fire
