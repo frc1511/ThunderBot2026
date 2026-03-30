@@ -2,7 +2,6 @@ package frc.util;
 
 import java.util.HashSet;
 import java.util.Optional;
-import java.util.function.BooleanSupplier;
 
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -10,9 +9,9 @@ import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class Helpers {
@@ -185,5 +184,27 @@ public class Helpers {
      */
     public static boolean isBypassModeEnabled() {
         return bypassModeEnabled;
+    }
+
+    public static Pose2d getTargetHangPose(Pose2d currentPose) {
+        double xOffset = Constants.HangConstants.kHangCenterDisplacementX;
+        double yOffset = Constants.HangConstants.kHangCenterDisplacementY;
+        Pose2d target = Pose2d.kZero;
+        double y = currentPose.getY();
+        if (isBlueAlliance()) {
+            if (y <= 4d) {
+                target = new Pose2d(1.0375 + xOffset, 3.2523 - yOffset, Rotation2d.kZero);
+            } else {
+                target = new Pose2d(1.0375 - xOffset, 4.2391 + yOffset, Rotation2d.kPi);
+            }
+        } else {
+            if (y <= 4d) {
+                target = new Pose2d(15.4325 + -.05 + xOffset, 3.7301 - yOffset, Rotation2d.kZero);
+            } else {
+                target = new Pose2d(15.4325 + -.05 - xOffset, 4.9169 + yOffset, Rotation2d.kPi);
+            }
+        }
+
+        return target;
     }
 }

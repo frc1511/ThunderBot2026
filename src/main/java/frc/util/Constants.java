@@ -323,7 +323,8 @@ public class Constants {
         double kTrenchSafeDistanceRotations = 1;
 
         double kTowerDistanceFromWallX = 1.2065;
-        double kHangCenterDisplacement = 0.12954;
+        double kHangCenterDisplacementX = 0.12954;
+        double kHangCenterDisplacementY = 0.3048;
     }
 
     public class Swerve {

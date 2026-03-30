@@ -56,80 +56,35 @@ public class Conductor {
     public void periodic() {
         if (m_robot.ledDisable.isOff()) m_robot.blinkyBlinkyOrchestrator.sparkle();
 
-        // STEP 2
-        // testingpose = new Pose2d(
-        //     Helpers.isBlueAlliance() ? Constants.HangConstants.kTowerDistanceFromWallX : ZoneConstants.kFieldLength.magnitude() - Constants.HangConstants.kTowerDistanceFromWallX,
-        //     m_robot.drivetrain.currentPose().getY(),
-        //     // If left - 0, If right - 180
-        //     ZoneConstants.isOnLeftSide(m_robot.drivetrain.currentPose().getTranslation()) ? Rotation2d.kZero : Rotation2d.k180deg
-        // );
-
-        // STEP 4
-        // HangSubsystem hang = m_robot.hang;
-        // SwerveSubsystem swerve = m_robot.drivetrain;
-        // Pose2d currentPose = swerve.currentPose();
-        // Pair<Double, Boolean> measurement = hang.getDistanceSensor();
-        // m_distanceToTower = measurement.getFirst();
-        // if (!measurement.getSecond()) {
-        //     // Fudge the data rather than get random distance
-        //     m_distanceToTower = .15;
-        // } else {
-        //     double distance = m_distanceToTower;
-        //     if (distance <= .05) distance = 0;
-        //     if (Helpers.isBlueAlliance()) distance *= -1;
-        //     Pose2d target = new Pose2d(
-        //         currentPose.getX(),
-        //         currentPose.getY() + distance,
-        //         currentPose.getRotation()
-        //     );
-        //     testingpose = target;
-        // }
-
+        testingpose = Helpers.getTargetHangPose(m_robot.drivetrain.currentPose());
         testingfield.setRobotPose(testingpose);
-        SmartDashboard.putData(testingfield);
+        SmartDashboard.putData("testingpose", testingfield);
     }
 
-    private double m_distanceToTower = 0.0;
     public Command autoHang() {
         HangSubsystem hang = m_robot.hang;
         SwerveSubsystem swerve = m_robot.drivetrain;
         return
-            // // Step 1: Extend Hang
-            hang.extend()
-            // // Step 2/3: Lineup to the Y Position of the tower, Ensure that swerve is pointing in the correct direction
-            .andThen(
+            // Step 1: Extend Hang
+            // hang.extend()
+            // Step 2/3: Lineup to the Y Position of the tower, Ensure that swerve is pointing in the correct direction
+            // .andThen(
                 swerve.alignToTowerY()
-            )
-            // // Step 4: Lineup to the correct X position using the hang sensor
+            // )
+            // Step 4: Lineup to the correct X position
             .andThen(
                 swerve
                     .driveToPose(
                         () -> {
                             Pose2d currentPose = swerve.currentPose();
-                            Pair<Double, Boolean> measurement = hang.getDistanceSensor();
-                            m_distanceToTower = measurement.getFirst();
-                            if (!measurement.getSecond()) {
-                                // Alignment Fail
-                                return swerve.currentPose();
-                            }
-                            if (m_distanceToTower <= .10) m_distanceToTower = 0;
-                            if (Helpers.isBlueAlliance()) m_distanceToTower *= -1;
-                            Pose2d target = new Pose2d(
-                                currentPose.getX(),
-                                currentPose.getY() + m_distanceToTower,
-                                currentPose.getRotation()
-                            );
-                            return target;
-                        })
-                    .onInitialize(
-                        () -> {
-                            m_distanceToTower = hang.getDistanceSensor().getFirst();
-                        }
-                    )
-            )
-            // // Step 5: Retract Hang
-            .andThen(
-                hang.retract()
+
+                            return Helpers.getTargetHangPose(currentPose);
+                        },
+                        .15)
             );
+            // Step 5: Retract Hang
+            // .andThen(
+                // hang.retract()
+            // );
     }
 }

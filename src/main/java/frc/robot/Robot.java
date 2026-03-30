@@ -198,7 +198,7 @@ public class Robot extends TimedRobot {
 
             RobotModeTriggers.disabled().onTrue(drivetrain.idle().withTimeout(.1));
         }
-        
+
         { // MARK: Switchboard
             ledDisable.get()
                 .whileTrue(
@@ -236,7 +236,8 @@ public class Robot extends TimedRobot {
         { // Omnipresent Drive Controls (OneDrive Off/On)
             BooleanSupplier condition = () -> driveDisable.isOff(); // Always present on drive controller
 
-            driverController.x().and(condition).whileTrue(drivetrain.brick().withName("DriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
+            // driverController.x().and(condition).whileTrue(drivetrain.brick().withName("DriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
+            driverController.x().whileTrue(conductor.autoHang());
             driverController.y().and(condition).whileTrue(drivetrain.hubLock().withName("DriveHubLockToggle")); // lock and shoot
             driverController.a().and(condition).onTrue(drivetrain.resetRotation().withName("DriveSeedFieldCentric")); // reset IMU
         }

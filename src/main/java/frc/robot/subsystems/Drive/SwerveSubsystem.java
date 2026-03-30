@@ -87,4 +87,6 @@ public interface SwerveSubsystem extends ThunderInterface {
     public Command alignToTowerY();
 
     public CommandBuilder driveToPose(Supplier<Pose2d> target);
+
+    public CommandBuilder driveToPose(Supplier<Pose2d> target, double speedPercent);
 }

@@ -14,6 +14,7 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.subsystems.Drive.RealSwerveSubsystem.DriveToPose;
 import frc.util.CommandBuilder;
 import frc.util.Constants.Status;
 
@@ -157,6 +158,10 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
     }
 
     public CommandBuilder driveToPose(Supplier<Pose2d> target) {
+        return new CommandBuilder(this);
+    }
+
+    public CommandBuilder driveToPose(Supplier<Pose2d> target, double speedPercent) {
         return new CommandBuilder(this);
     }
 }

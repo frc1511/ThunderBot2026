@@ -530,6 +530,10 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         return new DriveToPose();
     }
 
+    public CommandBuilder driveToPose(Supplier<Pose2d> target, double speedPercent) {
+        return new DriveToPose().withTarget(target).withVelocityPercent(speedPercent);
+    }
+
     /**
      * <h3>DriveToPose</h3>
      * <p>This structure uses <code>with*</code> methods.</p>
@@ -538,6 +542,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     public class DriveToPose extends CommandBuilder {
         private DoubleSupplier m_targetVelocity = () -> 0.0d;
         private BooleanSupplier m_allowedToFinish = () -> true;
+        private double m_slowdown = 1.0;
 
         public DriveToPose() {
             super(RealSwerveSubsystem.this);
@@ -571,6 +576,11 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             return withTarget(() -> target);
         }
 
+        public DriveToPose withVelocityPercent(double percent) {
+            m_slowdown = percent;
+            return this;
+        }
+
         public DriveToPose withTarget(Supplier<Pose2d> target) {
             onExecute(() -> {
                     Pose2d targetPose = target.get();
@@ -583,9 +593,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                     m_targetField.setRobotPose(targetPose);
                     setControl(
                         new SwerveRequest.RobotCentric()
-                            .withVelocityX(speeds.vxMetersPerSecond * Swerve.kMaxSpeed)
-                            .withVelocityY(speeds.vyMetersPerSecond * Swerve.kMaxSpeed)
-                            .withRotationalRate(speeds.omegaRadiansPerSecond * Swerve.kMaxAngularRate)
+                            .withVelocityX(speeds.vxMetersPerSecond * Swerve.kMaxSpeed * m_slowdown)
+                            .withVelocityY(speeds.vyMetersPerSecond * Swerve.kMaxSpeed * m_slowdown)
+                            .withRotationalRate(speeds.omegaRadiansPerSecond * Swerve.kMaxAngularRate * m_slowdown)
                             .withDeadband(Swerve.kVelocityDeadband * 0.5)
                             .withRotationalDeadband(Swerve.kAngularVelocityDeadband)
                     );
@@ -746,13 +756,20 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         return driveToPose()
             .withTarget(
                 () -> {
+                    Rotation2d rotation = Rotation2d.kZero;
+                    if (Helpers.isBlueAlliance()) {
+                        rotation = ZoneConstants.isOnLeftSide(currentPose().getTranslation()) ? Rotation2d.kZero : Rotation2d.kPi;
+                    } else {
+                        rotation = ZoneConstants.isOnLeftSide(currentPose().getTranslation()) ? Rotation2d.kZero : Rotation2d.kZero;
+                    }
+
                     return new Pose2d(
-                        Constants.HangConstants.kHangCenterDisplacement + (Helpers.isBlueAlliance() ? Constants.HangConstants.kTowerDistanceFromWallX : ZoneConstants.kFieldLength.magnitude() - Constants.HangConstants.kTowerDistanceFromWallX),
+                        Constants.HangConstants.kHangCenterDisplacementX + (Helpers.isBlueAlliance() ? Constants.HangConstants.kTowerDistanceFromWallX : ZoneConstants.kFieldLength.magnitude() - Constants.HangConstants.kTowerDistanceFromWallX),
                         currentPose().getY(),
-                        // If left - 0, If right - 180
-                        ZoneConstants.isOnLeftSide(currentPose().getTranslation()) ? Rotation2d.k180deg : Rotation2d.kZero
+                        rotation
                     );
                 }
-            );
+            )
+            .withVelocityPercent(.25);
     }
 }

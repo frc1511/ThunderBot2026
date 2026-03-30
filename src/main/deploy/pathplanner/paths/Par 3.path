@@ -38,12 +38,6 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "Preheat",
-      "waypointRelativePos": 0.32486631016042844,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
       "name": "StopIntake",
       "waypointRelativePos": 0.37032085561497374,
       "endWaypointRelativePos": null,
