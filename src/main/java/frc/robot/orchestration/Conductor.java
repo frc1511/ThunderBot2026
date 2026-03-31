@@ -1,5 +1,7 @@
 package frc.robot.orchestration;
 
+import java.util.List;
+
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -65,12 +67,9 @@ public class Conductor {
         HangSubsystem hang = m_robot.hang;
         SwerveSubsystem swerve = m_robot.drivetrain;
         return
-            // Step 1: Extend Hang
-            // hang.extend()
             // Step 2/3: Lineup to the Y Position of the tower, Ensure that swerve is pointing in the correct direction
-            // .andThen(
-                swerve.alignToTowerY()
-            // )
+            swerve.alignToTowerY()
+                  .alongWith(hang.extend())
             // Step 4: Lineup to the correct X position
             .andThen(
                 swerve
@@ -80,11 +79,12 @@ public class Conductor {
 
                             return Helpers.getTargetHangPose(currentPose);
                         },
-                        .15)
-            );
+                        List.of(.3d, .1d, .30d)) // List.of(.5d, .15d, .6d
+                .withTimeout(4)
+            )
             // Step 5: Retract Hang
-            // .andThen(
-                // hang.retract()
-            // );
+            .andThen(
+                hang.retract()
+            );
     }
 }

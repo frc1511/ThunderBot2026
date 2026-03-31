@@ -70,6 +70,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Two Swipes",
+  "folder": null,
   "choreoAuto": false
 }

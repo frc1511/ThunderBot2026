@@ -161,6 +161,7 @@ public class Robot extends TimedRobot {
             if (!Broken.shooterFullyDisabled) shooter.setDefaultCommand(shooter.halt().withName("ShooterHalt"));
             if (!Broken.kickerDisabled) kicker.setDefaultCommand(kicker.halt().withName("KickerHalt"));
             if (!Broken.hangFullyDisabled) hang.setDefaultCommand(hang.zeroHang().withName("HangZero"));
+            if (!Broken.pivotDisabled) pivot.setDefaultCommand(pivot.halt().withName("PivotHalt"));
             if (!Broken.drivetrainFullyDisabled) { // driving with joysticks
                 BooleanSupplier onedriveAuxFallback = () -> driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn();
 
@@ -237,7 +238,7 @@ public class Robot extends TimedRobot {
             BooleanSupplier condition = () -> driveDisable.isOff(); // Always present on drive controller
 
             // driverController.x().and(condition).whileTrue(drivetrain.brick().withName("DriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
-            driverController.x().whileTrue(conductor.autoHang());
+            driverController.x().and(condition).whileTrue(conductor.autoHang());
             driverController.y().and(condition).whileTrue(drivetrain.hubLock().withName("DriveHubLockToggle")); // lock and shoot
             driverController.a().and(condition).onTrue(drivetrain.resetRotation().withName("DriveSeedFieldCentric")); // reset IMU
         }
@@ -371,6 +372,7 @@ public class Robot extends TimedRobot {
         NamedCommands.registerCommand("PivotUpSoft", pivot.upSoft());
         NamedCommands.registerCommand("HoodDown", hood.toPosition(Constants.Hood.Position.BOTTOM::get));
         NamedCommands.registerCommand("ShootForever", firingOrchestrator.fireThenStop().alongWith(hungerOrchestrator.jostleRepeatedly()).withTimeout(20).until(RobotModeTriggers.disabled()::getAsBoolean));
+        NamedCommands.registerCommand("Hang", conductor.autoHang());
 
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);

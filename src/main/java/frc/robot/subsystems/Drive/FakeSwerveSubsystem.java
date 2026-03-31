@@ -1,5 +1,6 @@
 package frc.robot.subsystems.Drive;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -161,7 +162,7 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
         return new CommandBuilder(this);
     }
 
-    public CommandBuilder driveToPose(Supplier<Pose2d> target, double speedPercent) {
+    public CommandBuilder driveToPose(Supplier<Pose2d> target, List<Double> speedPercents) {
         return new CommandBuilder(this);
     }
 }

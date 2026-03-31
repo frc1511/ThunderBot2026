@@ -1,5 +1,6 @@
 package frc.robot.subsystems.Drive;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -370,8 +371,8 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             teleStdDevs.set(2, 0, 99999999);
 
             Matrix<N3, N1> teleGoodStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
-            teleGoodStdDevs.set(0, 0, 0.001);
-            teleGoodStdDevs.set(1, 0, 0.001);
+            teleGoodStdDevs.set(0, 0, 0.01);
+            teleGoodStdDevs.set(1, 0, 0.01);
             teleGoodStdDevs.set(2, 0, 99999999);
 
             Matrix<N3, N1> wheelMeasurementStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
@@ -384,44 +385,44 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             LimelightHelpers.SetRobotOrientation("limelight", currentPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
             LimelightHelpers.SetRobotOrientation("limelight-rear", currentPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
 
-            LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+            LimelightHelpers.PoseEstimate mt2_shooter = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
             // LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
-            LimelightHelpers.PoseEstimate limelightRearMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-rear");
-            if (limelightMeasurement != null) {
-                if (limelightMeasurement.tagCount >= 2 ||
-                    (limelightMeasurement.tagCount == 1 && limelightMeasurement.rawFiducials[0].ambiguity < 0.2)) {
-                    double minimumDistance = limelightMeasurement.rawFiducials[0].distToRobot;
-                    for (RawFiducial fiducial : limelightMeasurement.rawFiducials) {
+            LimelightHelpers.PoseEstimate mt2_rear = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-rear");
+            if (mt2_shooter != null) {
+                if (mt2_shooter.tagCount >= 2 ||
+                    (mt2_shooter.tagCount == 1 && mt2_shooter.rawFiducials[0].ambiguity < 0.2)) {
+                    double minimumDistance = mt2_shooter.rawFiducials[0].distToRobot;
+                    for (RawFiducial fiducial : mt2_shooter.rawFiducials) {
                         if (fiducial.distToRobot < minimumDistance) minimumDistance = fiducial.distToRobot;
                     }
-                    if (minimumDistance <= Constants.Swerve.kMaximumLimelightDistance) {
-                        if (limelightMeasurement.tagCount >= 2) {
+                    if (minimumDistance <= Constants.Swerve.kMaximumLimelightDistance || mt2_shooter.tagCount >= 2) {
+                        if (mt2_shooter.tagCount >= 2) {
                             setVisionMeasurementStdDevs(teleGoodStdDevs);
                         } else {
                             setVisionMeasurementStdDevs(teleStdDevs);
                         }
-                        addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
+                        addVisionMeasurement(mt2_shooter.pose, mt2_shooter.timestampSeconds);
                     }
                 }
             } else {
                 Alert.warning("Couldn't find main limelight");
             }
 
-            if (limelightRearMeasurement != null) {
-                if (limelightRearMeasurement.tagCount >= 2 ||
-                    (limelightRearMeasurement.tagCount == 1 && limelightRearMeasurement.rawFiducials[0].ambiguity < 0.2)) {
-                    double minimumDistance = limelightRearMeasurement.rawFiducials[0].distToRobot;
-                    for (RawFiducial fiducial : limelightRearMeasurement.rawFiducials) {
+            if (mt2_rear != null) {
+                if (mt2_rear.tagCount >= 2 ||
+                    (mt2_rear.tagCount == 1 && mt2_rear.rawFiducials[0].ambiguity < 0.2)) {
+                    double minimumDistance = mt2_rear.rawFiducials[0].distToRobot;
+                    for (RawFiducial fiducial : mt2_rear.rawFiducials) {
                         if (fiducial.distToRobot < minimumDistance) minimumDistance = fiducial.distToRobot;
                     }
-                    if (minimumDistance <= Constants.Swerve.kMaximumLimelightDistance) {
-                        if (limelightMeasurement.tagCount >= 2) {
+                    if (minimumDistance <= Constants.Swerve.kMaximumLimelightDistance || mt2_rear.tagCount >= 2) {
+                        if (mt2_rear.tagCount >= 2) {
                             setVisionMeasurementStdDevs(teleGoodStdDevs);
                         } else {
                             setVisionMeasurementStdDevs(teleStdDevs);
                         }
-                        addVisionMeasurement(limelightRearMeasurement.pose, limelightRearMeasurement.timestampSeconds);
-                    }
+                        addVisionMeasurement(mt2_rear.pose, mt2_rear.timestampSeconds);
+                    } else {Alert.info("ThrowR w/ " + mt2_rear.tagCount);}
                 }
             } else {
                 Alert.warning("Couldn't find rear limelight");
@@ -530,8 +531,8 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         return new DriveToPose();
     }
 
-    public CommandBuilder driveToPose(Supplier<Pose2d> target, double speedPercent) {
-        return new DriveToPose().withTarget(target).withVelocityPercent(speedPercent);
+    public CommandBuilder driveToPose(Supplier<Pose2d> target, List<Double> speedPercents) {
+        return new DriveToPose().withTarget(target).withVelocityPercentLimits(speedPercents);
     }
 
     /**
@@ -542,7 +543,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     public class DriveToPose extends CommandBuilder {
         private DoubleSupplier m_targetVelocity = () -> 0.0d;
         private BooleanSupplier m_allowedToFinish = () -> true;
-        private double m_slowdown = 1.0;
+        private double m_slowdownX = 1.0;
+        private double m_slowdownY = 1.0;
+        private double m_slowdownT = 1.0;
 
         public DriveToPose() {
             super(RealSwerveSubsystem.this);
@@ -576,8 +579,14 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             return withTarget(() -> target);
         }
 
-        public DriveToPose withVelocityPercent(double percent) {
-            m_slowdown = percent;
+        public DriveToPose withVelocityPercentLimits(List<Double> percents) {
+            if (percents.size() != 3) {
+                Alert.critical("Percents array is of invalid length");
+                return this;
+            }
+            m_slowdownX = percents.get(0);
+            m_slowdownY = percents.get(1);
+            m_slowdownT = percents.get(2);
             return this;
         }
 
@@ -593,9 +602,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                     m_targetField.setRobotPose(targetPose);
                     setControl(
                         new SwerveRequest.RobotCentric()
-                            .withVelocityX(speeds.vxMetersPerSecond * Swerve.kMaxSpeed * m_slowdown)
-                            .withVelocityY(speeds.vyMetersPerSecond * Swerve.kMaxSpeed * m_slowdown)
-                            .withRotationalRate(speeds.omegaRadiansPerSecond * Swerve.kMaxAngularRate * m_slowdown)
+                            .withVelocityX(speeds.vxMetersPerSecond * Swerve.kMaxSpeed * m_slowdownX)
+                            .withVelocityY(speeds.vyMetersPerSecond * Swerve.kMaxSpeed * m_slowdownY)
+                            .withRotationalRate(speeds.omegaRadiansPerSecond * Swerve.kMaxAngularRate * m_slowdownT)
                             .withDeadband(Swerve.kVelocityDeadband * 0.5)
                             .withRotationalDeadband(Swerve.kAngularVelocityDeadband)
                     );
@@ -756,20 +765,15 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         return driveToPose()
             .withTarget(
                 () -> {
-                    Rotation2d rotation = Rotation2d.kZero;
-                    if (Helpers.isBlueAlliance()) {
-                        rotation = ZoneConstants.isOnLeftSide(currentPose().getTranslation()) ? Rotation2d.kZero : Rotation2d.kPi;
-                    } else {
-                        rotation = ZoneConstants.isOnLeftSide(currentPose().getTranslation()) ? Rotation2d.kZero : Rotation2d.kZero;
-                    }
+                    Pose2d targetPose = Helpers.getTargetHangPose(m_currentPose);
 
                     return new Pose2d(
-                        Constants.HangConstants.kHangCenterDisplacementX + (Helpers.isBlueAlliance() ? Constants.HangConstants.kTowerDistanceFromWallX : ZoneConstants.kFieldLength.magnitude() - Constants.HangConstants.kTowerDistanceFromWallX),
+                        targetPose.getX(),
                         currentPose().getY(),
-                        rotation
+                        targetPose.getRotation()
                     );
                 }
             )
-            .withVelocityPercent(.25);
+            .withVelocityPercentLimits(List.of(.25d, .2d, .25d)); // List.of(.5d, .4d, .5d)
     }
 }

@@ -180,7 +180,7 @@ public class Helpers {
         bypassModeEnabled = enabled;
     }
     /**
-     * Pitmode+ is a stepping stone up from pit mode that ~~removes a bunch of safety features.~~ allows you to bypass some requirements so that you can easily test things like the shooter without having to worry if the hood has reached its goal yet. The caveat is that the robot just assumes you set things up correctly as it skips checking so you can test faster, meaning you should probably read the functionality of whatever you're testing when in pitmode+ before testing it. 
+     * Bypass mode is a stepping stone up from pit mode that ~~removes a bunch of safety features.~~ allows you to bypass some requirements so that you can easily test things like the shooter without having to worry if the hood has reached its goal yet. The caveat is that the robot just assumes you set things up correctly as it skips checking so you can test faster, meaning you should probably read the functionality of whatever you're testing when in pitmode+ before testing it. 
      */
     public static boolean isBypassModeEnabled() {
         return bypassModeEnabled;

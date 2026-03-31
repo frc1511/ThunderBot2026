@@ -142,7 +142,7 @@ public class ShooterSubsystem extends ThunderSubsystem {
             .onExecute(() -> runAtSpeed(optimalSpeedSupplier.getAsDouble()))
             .isFinished(this::shooterAtSpeed)
             .onEnd(this::halt)
-            .raceWith(new ConditionalCommand(new WaitCommand(1), Commands.none(), Helpers::isBypassModeEnabled));
+            .raceWith(new ConditionalCommand(new WaitCommand(1), new WaitCommand(3), Helpers::isBypassModeEnabled));
     }
 
     // This is used in tele for preheat and fire

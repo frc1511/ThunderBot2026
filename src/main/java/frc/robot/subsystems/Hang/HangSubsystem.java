@@ -166,6 +166,10 @@ public class HangSubsystem extends ThunderSubsystem {
             .onlyIf(this::isZeroed);
     }
 
+    public boolean hasFinishedExtending() {
+        return atExtensionLimit();
+    }
+
     private boolean atRetractionLimit() {
         if (Broken.hangFullyDisabled) return true;
 

@@ -44,7 +44,7 @@ import edu.wpi.first.units.measure.Voltage;
 public class Constants {
     public static boolean kUseSignalLogger = false;
     public static boolean kUseDataLog = true;
-    public static boolean kUseHDDL = true; // High density data logging
+    public static boolean kUseHDDL = false; // High density data logging
     public static double kHDDLRate = 200d; // Hz
 
     public static final double kCANChainDisconnectTimeout = 0.5; // in seconds
