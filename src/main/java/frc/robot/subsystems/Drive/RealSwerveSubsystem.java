@@ -422,7 +422,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                             setVisionMeasurementStdDevs(teleStdDevs);
                         }
                         addVisionMeasurement(mt2_rear.pose, mt2_rear.timestampSeconds);
-                    } else {Alert.info("ThrowR w/ " + mt2_rear.tagCount);}
+                    }
                 }
             } else {
                 Alert.warning("Couldn't find rear limelight");
