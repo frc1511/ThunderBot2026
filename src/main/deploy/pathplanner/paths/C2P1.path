@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.613309481216458,
-        "y": 5.195116279069768
+        "x": 3.5494772727272723,
+        "y": 4.0040795454545455
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.542432915921287,
-        "y": 5.243792486583185
+        "x": 3.2527897967761388,
+        "y": 3.9768603351091647
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.1957245080500891,
-        "y": 5.195116279069768
+        "x": 2.1271363636363634,
+        "y": 4.0040795454545455
       },
       "prevControl": {
-        "x": 1.8454524001643133,
-        "y": 5.206457321612295
+        "x": 2.375855606151013,
+        "y": 4.029352819934496
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "C2P1e"
     }
   ],
   "rotationTargets": [],
@@ -33,8 +33,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 2.0,
-    "maxAcceleration": 1.5,
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
@@ -42,13 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 175.03025927188966
   },
   "reversed": false,
-  "folder": "New Folder",
+  "folder": "C2",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 180.0
   },
-  "useDefaultConstraints": false
+  "useDefaultConstraints": true
 }

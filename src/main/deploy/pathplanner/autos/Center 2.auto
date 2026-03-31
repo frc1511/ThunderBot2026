@@ -11,9 +11,27 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Preheat"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "Center2Hang"
+            "pathName": "C2P1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C2P2"
           }
         },
         {
