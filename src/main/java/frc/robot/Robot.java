@@ -372,7 +372,7 @@ public class Robot extends TimedRobot {
         NamedCommands.registerCommand("PivotUpSoft", pivot.upSoft());
         NamedCommands.registerCommand("HoodDown", hood.toPosition(Constants.Hood.Position.BOTTOM::get));
         NamedCommands.registerCommand("ShootForever", firingOrchestrator.fireThenStop().alongWith(hungerOrchestrator.jostleRepeatedly()).withTimeout(20).until(RobotModeTriggers.disabled()::getAsBoolean));
-        NamedCommands.registerCommand("Hang", conductor.autoHang());
+        NamedCommands.registerCommand("Hang", conductor.autoHang().asProxy()); // Because path planner will reserve the requirement for hang at the start of the auto, the zero (defualt) command will never run. Because the zero command is never run, hang can't operate. To remove the requirement for hang from the auto, asProxy is applied to remove the subsystem requirement.
 
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData("Auto Chooser", autoChooser);

@@ -396,7 +396,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                         if (fiducial.distToRobot < minimumDistance) minimumDistance = fiducial.distToRobot;
                     }
                     if (minimumDistance <= Constants.Swerve.kMaximumLimelightDistance || mt2_shooter.tagCount >= 2) {
-                        if (mt2_shooter.tagCount >= 2) {
+                        if (mt2_shooter.tagCount > 2) {
                             setVisionMeasurementStdDevs(teleGoodStdDevs);
                         } else {
                             setVisionMeasurementStdDevs(teleStdDevs);
@@ -416,7 +416,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                         if (fiducial.distToRobot < minimumDistance) minimumDistance = fiducial.distToRobot;
                     }
                     if (minimumDistance <= Constants.Swerve.kMaximumLimelightDistance || mt2_rear.tagCount >= 2) {
-                        if (mt2_rear.tagCount >= 2) {
+                        if (mt2_rear.tagCount > 2) {
                             setVisionMeasurementStdDevs(teleGoodStdDevs);
                         } else {
                             setVisionMeasurementStdDevs(teleStdDevs);

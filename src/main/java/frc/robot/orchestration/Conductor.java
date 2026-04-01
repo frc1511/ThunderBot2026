@@ -2,10 +2,7 @@ package frc.robot.orchestration;
 
 import java.util.List;
 
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -15,7 +12,6 @@ import frc.robot.subsystems.Drive.SwerveSubsystem;
 import frc.robot.subsystems.Hang.HangSubsystem;
 import frc.util.Constants;
 import frc.util.Helpers;
-import frc.util.ZoneConstants;
 
 public class Conductor {
     public HubOrchestrator hub;
@@ -80,7 +76,7 @@ public class Conductor {
                             return Helpers.getTargetHangPose(currentPose);
                         },
                         List.of(.3d, .1d, .30d)) // List.of(.5d, .15d, .6d
-                .withTimeout(4)
+                .withTimeout(3)
             )
             // Step 5: Retract Hang
             .andThen(
