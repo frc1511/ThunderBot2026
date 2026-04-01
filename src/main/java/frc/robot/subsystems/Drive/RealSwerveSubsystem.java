@@ -85,7 +85,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     
     private boolean m_trenchLock = false;
     
-    private double m_trenchXPos = 0;
+    private double m_trenchYPos = 0;
 
     private boolean m_isMoving = false;
 
@@ -234,11 +234,14 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             .onExecute(() -> {
                 Translation2d closestTrench = ZoneConstants.closestTrench(currentPose().getTranslation());
 
-                System.out.println(Math.abs(closestTrench.getX() - currentPose().getX()));
+                System.out.println(closestTrench.getDistance(currentPose().getTranslation()));
 
-                if (Math.abs(closestTrench.getX() - currentPose().getX()) > Constants.Swerve.kTrenchLockMaxDist) return;
+                if (closestTrench.getDistance(currentPose().getTranslation()) > Constants.Swerve.kTrenchLockMaxDist) {
+                    m_trenchLock = false;
+                    return;
+                }
 
-                m_trenchXPos = closestTrench.getX();
+                m_trenchYPos = closestTrench.getY();
                 m_trenchLock = true;
             })
             .onEnd(() -> {
@@ -275,13 +278,23 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
             if (m_trenchLock) {
                 Translation2d currentTranslation = currentPose().getTranslation();
-                
-                vx = m_driveController.calculate(
+
+                Rotation2d rotation = currentPose().getRotation();
+
+                Pose2d target = new Pose2d(new Translation2d(currentTranslation.getX(), m_trenchYPos), rotation);
+
+                vy = m_driveController.calculate(
                         currentPose(),
-                        new Pose2d(new Translation2d(m_trenchXPos, currentTranslation.getY()), currentPose().getRotation()),
+                        target,
                         0,
-                        currentPose().getRotation()
-                    ).vxMetersPerSecond * Swerve.kMaxSpeed;
+                        rotation
+                    ).vyMetersPerSecond * Swerve.kMaxSpeed;
+
+                if (m_fieldCentric && Math.abs(rotation.getDegrees()) < 90) {
+                    vy *= -1;
+                }
+                    
+                m_targetField.setRobotPose(target);
             }
 
             if (m_ensureTheta) {
@@ -468,7 +481,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         SmartDashboard.putString("Drive_currentZone", currentZone.fullName());
 
         SmartDashboard.putString("Drive_Robot drive mode", m_fieldCentric ? "Field Centric" : "Robot Centric");
-        SmartDashboard.putNumber("Drive_trenchX", m_trenchXPos);
+        SmartDashboard.putNumber("Drive_trenchY", m_trenchYPos);
         SmartDashboard.putBoolean("Drive_trenchLock", m_trenchLock);
         SmartDashboard.putBoolean("Drive_hubLock", m_hubLock);
 
@@ -599,7 +612,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                         m_targetVelocity.getAsDouble(),
                         targetPose.getRotation()
                     );
-                    m_targetField.setRobotPose(targetPose);
+                    // m_targetField.setRobotPose(targetPose);
                     setControl(
                         new SwerveRequest.RobotCentric()
                             .withVelocityX(speeds.vxMetersPerSecond * Swerve.kMaxSpeed * m_slowdownX)
