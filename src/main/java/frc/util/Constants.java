@@ -1,6 +1,8 @@
 package frc.util;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.DegreesPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -328,8 +330,8 @@ public class Constants {
     }
 
     public class Swerve {
-        public static final double kTimeOfFlightConvergenceTolerance = 0.1;
-        public static final int kTimeOfFlightConvergenceMaxRecursions = 10;
+        public static final double kTimeOfFlightConvergenceTolerance = 0.01;
+        public static final int kTimeOfFlightConvergenceMaxRecursions = 20;
         public static final double kMaximumLimelightDistance = 3d;
 
         // Max Speed
@@ -360,8 +362,8 @@ public class Constants {
         private static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
 
         public static final double kMaxSpeed = 0.8 * kSpeedAt12Volts.in(MetersPerSecond); // % Multiplier | kSpeedAt12Volts desired top speed
-        public static final double kMaxAngularRate = .8 * RotationsPerSecond.of(1.5).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-        public static final double kMaxAngularAcceleration = .25 * RotationsPerSecondPerSecond.of(.75).in(RadiansPerSecondPerSecond);
+        public static final double kMaxAngularRate = 1d * DegreesPerSecond.of(600).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+        public static final double kMaxAngularAcceleration = 1d * DegreesPerSecondPerSecond.of(240).in(RadiansPerSecondPerSecond);
 
         public static final double kVelocityDeadband = 0.05 * kMaxSpeed; // % Multiplier 
         public static final double kAngularVelocityDeadband = 0.05 * kMaxAngularRate; // % Multiplier
@@ -371,8 +373,8 @@ public class Constants {
             double kI = .1;
         }
         public interface ThetaPID extends BasePID {
-            double kP = 1.5;
-            double kD = 0.5;
+            double kP = 1.1;
+            double kD = .07;
         }
 
         public interface ThetaAutoPID extends BasePID {

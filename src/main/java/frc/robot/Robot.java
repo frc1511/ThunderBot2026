@@ -43,6 +43,7 @@ import frc.robot.subsystems.Cannon.TurretSubsystem;
 import frc.robot.subsystems.Drive.FakeSwerveSubsystem;
 import frc.robot.subsystems.Drive.RealSwerveSubsystem;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
+import frc.robot.subsystems.Drive.SysID;
 import frc.robot.subsystems.Hang.HangSubsystem;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
 import frc.robot.subsystems.Intake.PivotSubsystem;
@@ -237,8 +238,8 @@ public class Robot extends TimedRobot {
         { // Omnipresent Drive Controls (OneDrive Off/On)
             BooleanSupplier condition = () -> driveDisable.isOff(); // Always present on drive controller
 
-            // driverController.x().and(condition).whileTrue(drivetrain.brick().withName("DriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
-            driverController.x().and(condition).whileTrue(conductor.autoHang());
+            driverController.x().and(condition).whileTrue(drivetrain.brick().withName("DriveBrick")); // polymorphs the robot into a brick (hold) upon release polymorphs the brick back into a robot
+            // driverController.x().and(condition).whileTrue(conductor.autoHang()); //* ONLY FOR TESTING AUTO HANG
             driverController.y().and(condition).whileTrue(drivetrain.hubLock().withName("DriveHubLockToggle")); // lock and shoot
             driverController.a().and(condition).onTrue(drivetrain.resetRotation().withName("DriveSeedFieldCentric")); // reset IMU
         }
@@ -356,6 +357,12 @@ public class Robot extends TimedRobot {
         // auxController.povRight().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
         // auxController.povDown().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
         // auxController.povLeft().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+
+        // SysID sysID = new SysID((RealSwerveSubsystem) drivetrain);
+        // auxController.povUp().and(pitModePlus::isOn).whileTrue(sysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+        // auxController.povRight().and(pitModePlus::isOn).whileTrue(sysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+        // auxController.povDown().and(pitModePlus::isOn).whileTrue(sysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
+        // auxController.povLeft().and(pitModePlus::isOn).whileTrue(sysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         // MARK: Auto
         NamedCommands.registerCommand("DB_Hub_AL_Start", drivetrain.setHubLock(true));

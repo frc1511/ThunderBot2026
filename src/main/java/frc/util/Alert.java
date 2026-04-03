@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.util.Elastic.Notification;
 import frc.util.Elastic.NotificationLevel;
 
@@ -72,11 +73,23 @@ public class Alert {
             System.out.println(String.format("[INFO] %s: %s", title, desc));
             // DriverStation.reportWarning(String.format("[INFO] %s: %s", title, desc), false);
         } else if (notificationLevel == NotificationLevel.WARNING) {
-            DriverStation.reportWarning(String.format("[WARN] %s: %s", title, desc), false);
+            if (Helpers.alertsShouldUseConsole) {
+                System.out.println(String.format("[WARN] %s: %s", title, desc));
+            } else {
+                DriverStation.reportWarning(String.format("[WARN] %s: %s", title, desc), false);
+            }
         } else if (notificationLevel == NotificationLevel.ERROR) {
-            DriverStation.reportError(String.format("[ERROR] %s: %s", title, desc), false);
+            if (Helpers.alertsShouldUseConsole) {
+                System.out.println(String.format("[ERROR] %s: %s", title, desc));
+            } else {
+                DriverStation.reportError(String.format("[ERROR] %s: %s", title, desc), false);
+            }
         } else {
-            DriverStation.reportError(String.format("[CRITICAL] %s: %s", title, desc), false);
+            if (Helpers.alertsShouldUseConsole) {
+                System.out.println(String.format("[CRITICAL] %s: %s", title, desc));
+            } else {
+                DriverStation.reportError(String.format("[CRITICAL] %s: %s", title, desc), false);
+            }
         }
 
         Elastic.sendNotification(new Notification(notificationLevel, title, desc, displayTimeMillis));

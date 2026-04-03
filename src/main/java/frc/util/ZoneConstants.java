@@ -137,9 +137,6 @@ public class ZoneConstants {
             if (isDSside && !isBump) {
                 Translation2d trenchPoint = trenchPoint(isBlueSide, isRightSide);
                 trenchCache.add(trenchPoint);
-                System.out.println(trenchPoint.getX());
-                System.out.println(trenchPoint.getY());
-                System.out.println(trenchCache.size());
             }
         }
     }
@@ -170,7 +167,6 @@ public class ZoneConstants {
                 closestDistance = dist;
             }
         }
-        System.out.println(closestPoint);
 
         return closestPoint;
     }

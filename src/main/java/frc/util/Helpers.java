@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class Helpers {
+    public static boolean alertsShouldUseConsole = false;
+
     public static boolean onCANChain(TalonFX motor) {
         if (motor == null) return false;
         return motor.isConnected(Constants.kCANChainDisconnectTimeout);

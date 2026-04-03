@@ -6,8 +6,10 @@ import java.util.ArrayList;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.orchestration.CannonOrchestrator.Orientation;
@@ -24,10 +26,14 @@ public class HubOrchestrator {
 
     Pair<FiringDataPoint, Double> latestConvergance;
 
+    private Field2d m_stupidDebugField;
+
     public HubOrchestrator(Robot robot) {
         cannonOrchestrator = robot.cannonOrchestrator;
         swerveSubsystem = robot.drivetrain;
         firingTable = new FiringTable();
+
+        m_stupidDebugField = new Field2d();
 
         runConvergance();
     }
@@ -53,6 +59,8 @@ public class HubOrchestrator {
 
     private Pair<FiringDataPoint, Double> converge(ChassisSpeeds currentSpeed, Translation2d robotPosition, Translation2d targetPosition) {
         ArrayList<Translation2d> iterations = new ArrayList<Translation2d>();
+
+        Translation2d actualVirtualHubTarget = Translation2d.kZero;
 
         Translation2d initialDeltaTranslation = targetPosition.minus(robotPosition);
 
@@ -85,26 +93,34 @@ public class HubOrchestrator {
             );
 
             iterations.add(realTrajectoryEnd);
+            actualVirtualHubTarget = virtualTargetPosition;
 
             if (previousTimeOfFlight != null && Math.abs(newTau - previousTau) < Constants.Swerve.kTimeOfFlightConvergenceTolerance) {
                 break;
             }
-            
+
             currentDeltaPosition = virtualTargetPosition.minus(robotPosition);
 
             previousTimeOfFlight = newTau;
         }
 
-        Translation2d finalTargetPosition = iterations.get(iterations.size() - 1);
+        virtualHub = actualVirtualHubTarget;
 
-        Translation2d deltaTarget = finalTargetPosition.minus(robotPosition);
+        m_stupidDebugField.setRobotPose(new Pose2d(virtualHub, new Rotation2d(0)));
+        SmartDashboard.putData("stupid_debug_field", m_stupidDebugField);
+
+        Translation2d deltaTarget = virtualHub.minus(robotPosition);
         double finalDistance = deltaTarget.getNorm();
         double finalTheta = deltaTarget.getAngle().getRadians();
 
         FiringDataPoint finalPoint = firingTable.lerp(finalDistance);
-        
+
+        // finalPoint.speedRPM = Helpers.clamp(finalPoint.speedRPM, 0, 2800);
+
         return new Pair<FiringTable.FiringDataPoint,Double>(finalPoint, finalTheta);
     }
+
+    public static Translation2d virtualHub = new Translation2d();
 
     public void runConvergance() {
         ChassisSpeeds currentSpeed = swerveSubsystem.getSpeed();

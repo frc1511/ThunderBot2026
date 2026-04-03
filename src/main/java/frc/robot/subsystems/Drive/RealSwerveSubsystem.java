@@ -6,6 +6,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
@@ -36,6 +37,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.orchestration.HubOrchestrator;
 import frc.util.Alert;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
@@ -263,15 +265,17 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             if (m_hubLock) {
                 m_arcLockCenter = Helpers.allianceHub();
 
-                double dX = currentPose().getX() - m_arcLockCenter.getX();
-                double dY = currentPose().getY() - m_arcLockCenter.getY();
+                // double dX = currentPose().getX() - m_arcLockCenter.getX();
+                // double dY = currentPose().getY() - m_arcLockCenter.getY();
 
-                Rotation2d targetAngle = new Rotation2d(Math.atan2(dY, dX) + Math.PI/2 - getShooterAngleCompensation());
+                // Rotation2d targetAngle = new Rotation2d(Math.atan2(dY, dX) + Math.PI/2 - getShooterAngleCompensation());
+
+                Rotation2d targetAngle = new Rotation2d(m_optimalRotationSupplier.getAsDouble() - Math.PI/2 - getShooterAngleCompensation());
 
                 vRot = m_driveController.calculate(
                         currentPose(),
                         new Pose2d(currentPose().getTranslation(), targetAngle),
-                        Math.hypot(dX, dY),
+                        0,
                         targetAngle
                     ).omegaRadiansPerSecond * Swerve.kMaxAngularRate;
             }
@@ -293,7 +297,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                 if (m_fieldCentric && Math.abs(rotation.getDegrees()) < 90) {
                     vy *= -1;
                 }
-                    
+
                 m_targetField.setRobotPose(target);
             }
 
@@ -308,7 +312,8 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                     .withVelocityY(vy)
                     .withRotationalRate(vRot)
                     .withDeadband(Constants.Swerve.kVelocityDeadband)
-                    .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband);
+                    .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband)
+                    .withDesaturateWheelSpeeds(true);
             } else {
                 return m_robotCentricRequest
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
@@ -316,7 +321,8 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                     .withVelocityY(vy)
                     .withRotationalRate(vRot)
                     .withDeadband(Constants.Swerve.kVelocityDeadband)
-                    .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband);
+                    .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband)
+                    .withDesaturateWheelSpeeds(true);
             }
         });
     }
@@ -488,7 +494,10 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         SmartDashboard.putData(m_driveController.getXController());
         SmartDashboard.putData(m_driveController.getYController());
         SmartDashboard.putData(m_driveController.getThetaController());
-        SmartDashboard.putNumber("Drive_theta_target_deg", m_driveController.getThetaController().getGoal().position / Math.PI * 180);
+        SmartDashboard.putNumber("Drive_theta_goal_deg", m_driveController.getThetaController().getGoal().position / Math.PI * 180);
+        SmartDashboard.putNumber("Drive_theta_setpoint_deg", m_driveController.getThetaController().getSetpoint().position / Math.PI * 180);
+        
+        SmartDashboard.putNumber("Drive_Pigeon_Rate", getPigeon2().getAngularVelocityZDevice().getValueAsDouble());
     }
 
     private void startSimThread() {
@@ -673,11 +682,11 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             );
     }
 
-    private double getShooterAngleCompensation() {
+    public double getShooterAngleCompensation() {
         Pose2d currentPose = currentPose();
 
-        double dX = currentPose.getX() - m_arcLockCenter.getX();
-        double dY = currentPose.getY() - m_arcLockCenter.getY();
+        double dX = currentPose.getX() - HubOrchestrator.virtualHub.getX();
+        double dY = currentPose.getY() - HubOrchestrator.virtualHub.getY();
 
         return Math.PI/2 - Math.acos(Constants.Swerve.kShooterOffset / Math.hypot(dX, dY));
     }
@@ -751,7 +760,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     }
 
     public ChassisSpeeds getSpeed() {
-        return getState().Speeds;
+        return ChassisSpeeds.fromRobotRelativeSpeeds(getState().Speeds, currentPose().getRotation());
     }
 
     public Rectangle2d getNearestTrench() {
