@@ -65,9 +65,7 @@ public class Robot extends TimedRobot {
     private final ThunderSwitchboard switchBoard = new ThunderSwitchboard(2);
 
     // private final Telemetry logger = new Telemetry(Constants.SwerveConstants.kMaxSpeed);
-    private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
-        .withTimestampReplay()
-        .withJoystickReplay();
+    private final HootAutoReplay m_timeAndJoystickReplay;
 
     public final SwerveSubsystem drivetrain = Broken.drivetrainFullyDisabled ? new FakeSwerveSubsystem() : new RealSwerveSubsystem();
 
@@ -157,6 +155,14 @@ public class Robot extends TimedRobot {
         Alert.info("The robot has restarted");
         DriverStation.silenceJoystickConnectionWarning(true); // This hopefully helps with radio issues
         SignalLogger.enableAutoLogging(Constants.kUseSignalLogger);
+
+        if (Constants.kLogTimeAndJoystick) {
+            m_timeAndJoystickReplay = new HootAutoReplay()
+                .withTimestampReplay()
+                .withJoystickReplay();
+        } else {
+            m_timeAndJoystickReplay = null;
+        }
 
         { // Default Commands
             if (!Broken.hoodDisabled) hood.setDefaultCommand(hood.zero().withName("HoodHalt"));
@@ -353,17 +359,19 @@ public class Robot extends TimedRobot {
             auxController.back().and(condition)        .whileTrue(pivot.up()                                                  .withName("PivotUp"));
         }
 
-        // ShooterSysID shooterSysID = new ShooterSysID(shooter);
-        // auxController.povUp().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        // auxController.povRight().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-        // auxController.povDown().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
-        // auxController.povLeft().and(placeHolder9::isOn).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-
-        // SysID sysID = new SysID((RealSwerveSubsystem) drivetrain);
-        // auxController.povUp().and(pitModePlus::isOn).whileTrue(sysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-        // auxController.povRight().and(pitModePlus::isOn).whileTrue(sysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-        // auxController.povDown().and(pitModePlus::isOn).whileTrue(sysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
-        // auxController.povLeft().and(pitModePlus::isOn).whileTrue(sysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        if (Constants.kSysIDMode == Constants.SysIDMode.SHOOTER) {
+            ShooterSysID shooterSysID = new ShooterSysID(shooter);
+            auxController.povUp().and(pitModePlus::isOn).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+            auxController.povRight().and(pitModePlus::isOn).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+            auxController.povDown().and(pitModePlus::isOn).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
+            auxController.povLeft().and(pitModePlus::isOn).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        } else if (Constants.kSysIDMode == Constants.SysIDMode.DRIVE) {
+            SysID sysID = new SysID((RealSwerveSubsystem) drivetrain);
+            auxController.povUp().and(pitModePlus::isOn).whileTrue(sysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+            auxController.povRight().and(pitModePlus::isOn).whileTrue(sysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+            auxController.povDown().and(pitModePlus::isOn).whileTrue(sysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
+            auxController.povLeft().and(pitModePlus::isOn).whileTrue(sysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+        }
 
         // MARK: Auto
         NamedCommands.registerCommand("DB_Hub_AL_Start", drivetrain.setHubLock(true));
@@ -419,9 +427,13 @@ public class Robot extends TimedRobot {
         if (!auxController.isConnected()) {
             Alert.error("Aux Controller Disconnected");
         }
+
         SmartDashboard.putBoolean("drive disabled", driveDisable.isOn());
         SmartDashboard.putBoolean("aux disabled", auxDisable.isOn());
-        // m_timeAndJoystickReplay.update();
+
+        if (Constants.kLogTimeAndJoystick && m_timeAndJoystickReplay != null) {
+            m_timeAndJoystickReplay.update();
+        }
 
         SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);
 

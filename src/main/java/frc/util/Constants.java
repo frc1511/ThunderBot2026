@@ -9,8 +9,6 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import java.util.Set;
@@ -47,6 +45,7 @@ public class Constants {
     public static boolean kUseSignalLogger = false;
     public static boolean kUseDataLog = true;
     public static boolean kUseHDDL = false; // High density data logging
+    public static boolean kLogTimeAndJoystick = false;
     public static double kHDDLRate = 200d; // Hz
 
     public static final double kCANChainDisconnectTimeout = 0.5; // In seconds
@@ -65,6 +64,13 @@ public class Constants {
         DISABLED,
         DISCONNECTED
     }
+
+    public static enum SysIDMode {
+        NONE,
+        DRIVE,
+        SHOOTER
+    }
+    public static final SysIDMode kSysIDMode = SysIDMode.NONE;
 
     public class IOMap {
         /*

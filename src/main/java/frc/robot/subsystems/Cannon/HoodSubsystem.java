@@ -129,15 +129,6 @@ public class HoodSubsystem extends ThunderSubsystem {
         SmartDashboard.putNumber("hood_profiled_setpoint_d-dx", m_motor.getClosedLoopReferenceSlope().getValueAsDouble());
     }
 
-    private void zeroEncodersLightly() {
-        isConfirmedZeroed = true;
-
-        double currentPosition = m_encoder.getPosition().getValueAsDouble();
-        double newPos = currentPosition - Math.floor(currentPosition);
-        if (newPos >= 0.9) newPos -= 1;
-        m_encoder.setPosition(newPos); // Remove the full digit; i.e 1.2489 -> 0.2489
-    }
-
     public boolean isAtZero() {
         if (Broken.hoodBeamBreakDisabled) return false;
         return m_beamBreakZero.get();

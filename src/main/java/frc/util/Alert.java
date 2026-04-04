@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import frc.util.Elastic.Notification;
 import frc.util.Elastic.NotificationLevel;
 
