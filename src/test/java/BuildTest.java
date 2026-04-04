@@ -17,8 +17,8 @@ class BuildTest {
         robot = new Robot();
       } catch (Exception e) {
         e.printStackTrace();
+      }
       assertNotNull(robot);
-    }
     }
   }
 
