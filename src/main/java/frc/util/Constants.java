@@ -46,6 +46,7 @@ public class Constants {
     public static boolean kUseDataLog = true;
     public static boolean kUseHDDL = false; // High density data logging
     public static boolean kLogTimeAndJoystick = false;
+    public static boolean kLogSafetyWatchdogStatuses = false;
     public static double kHDDLRate = 200d; // Hz
 
     public static final double kCANChainDisconnectTimeout = 0.5; // In seconds

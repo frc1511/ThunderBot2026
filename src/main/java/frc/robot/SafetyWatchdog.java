@@ -4,6 +4,7 @@ import java.util.Set;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.util.Constants;
 import frc.util.Thunder.ThunderInterface;
 
 public class SafetyWatchdog extends SubsystemBase {
@@ -14,11 +15,13 @@ public class SafetyWatchdog extends SubsystemBase {
 
     @Override
     public void periodic() {
-        for (ThunderInterface subsystem : subsystems) {
-            // String subsystemName = subsystem.getName().toLowerCase().replace("subsystem", "");
-            // SmartDashboard.putString(
-            //     "status_" + subsystemName, 
-            //     subsystem.status().toString());
+        if (Constants.kLogSafetyWatchdogStatuses) {
+            for (ThunderInterface subsystem : subsystems) {
+                String subsystemName = subsystem.getName().toLowerCase().replace("subsystem", "");
+                SmartDashboard.putString(
+                    "status_" + subsystemName, 
+                    subsystem.status().toString());
+            }
         }
     }
 }
