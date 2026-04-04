@@ -182,4 +182,14 @@ public class PivotSubsystem extends ThunderSubsystem {
         if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
         return Status.IDLE;
     }
+
+    public Command rememberPosition() {
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
+
+        double initialPosition = m_builtinEncoder.getPosition();
+        return new CommandBuilder(this)
+            .onExecute(() -> m_pidController.setSetpoint(initialPosition, ControlType.kPosition))
+            .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(initialPosition, m_pidController.getSetpoint(), Constants.Hunger.Pivot.kTolerance))
+            .ignoringDisable(true);
+    }
 }

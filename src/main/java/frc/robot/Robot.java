@@ -201,6 +201,8 @@ public class Robot extends TimedRobot {
             };
 
             RobotModeTriggers.disabled().onTrue(drivetrain.idle().withTimeout(.1));
+
+            RobotModeTriggers.disabled().and(pitMode::isOn).onTrue(pivot.rememberPosition());
         }
 
         { // MARK: Switchboard
