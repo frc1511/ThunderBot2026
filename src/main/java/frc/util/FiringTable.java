@@ -42,9 +42,7 @@ public class FiringTable {
 
         double lerpPercentage = (distance - lastPoint.distance) / (currentPoint.distance - lastPoint.distance); // How far the distance is past the last point divided by how far it is between the 2 points
 
-        if (/*lerpPercentage > 1d || */lerpPercentage < 0d) {
-            // System.out.println("Lerp percentage was greater than 1 or less than 0 at distance of " + distance + " and last distance of " + lastPoint.distance);
-            // System.out.println(Helpers.lerp(lastPoint.speedRPM, currentPoint.speedRPM, lerpPercentage));
+        if (lerpPercentage < 0d) {
             return new FiringDataPoint(currentPoint.distance, currentPoint.speedRPM, currentPoint.hoodAngle, currentPoint.timeOfFlight);
         }
 

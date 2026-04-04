@@ -8,7 +8,7 @@ public class Broken {
     public static boolean auxFullyDisabled = false;
 
     /** Disable everything shooter related */
-    public static boolean shooterFullyDisabled = false; // NOTE: YOU MUST BE CAREFUL NOT TO HAVE THIS FALSE WHEN A & B ARE TRUE
+    public static boolean shooterFullyDisabled = false; //! NOTE: YOU MUST BE CAREFUL NOT TO HAVE THIS FALSE WHEN A & B ARE TRUE
     /** Disable shooter motor A */
     public static boolean shooterADisabled = false;
     /** Disable shooter motor B */

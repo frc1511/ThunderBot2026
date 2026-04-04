@@ -93,13 +93,11 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
     private boolean m_limelightDisable;
 
-    public double m_speedMultipler = 1.0; // 0% - 100% of max speed
+    /** 0% - 100% of max speed */
+    public double m_speedMultipler = 1.0; 
 
     private boolean m_ensureTheta = false;
     private DoubleSupplier m_ensuredThetaSupplier = () -> 0;
-
-    private Pose2d m_lastPose;
-    private Pose2d m_currentPose;
 
     File file = new File("/home/lvuser/logs/driverPreferences.csv");
     FileWriter outputfile;
@@ -125,9 +123,6 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         m_targetCenterPoseField = new Field2d();
 
         m_fieldCentric = true;
-
-        m_lastPose = Pose2d.kZero;
-        m_currentPose = Pose2d.kZero;
 
         SmartDashboard.putData("Swerve Data", new Sendable() {
             @Override
@@ -163,23 +158,6 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         }
 
         configurePathPlanner();
-
-        // try {
-            // boolean needsInit = !file.exists();
-            // FileWriter outputfile = new FileWriter(file);
-            
-            // if (needsInit) {
-            //     CSVWriter writer = new CSVWriter(outputfile);
-    
-            //     String[] header = {"Area", "Orientation"};
-            //     writer.writeNext(header);
-    
-            //     writer.close();
-            // }
-        // }
-        // catch (IOException e) {
-        //     e.printStackTrace();
-        // }
     }
 
     @Override
@@ -264,11 +242,6 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
             if (m_hubLock) {
                 m_arcLockCenter = Helpers.allianceHub();
-
-                // double dX = currentPose().getX() - m_arcLockCenter.getX();
-                // double dY = currentPose().getY() - m_arcLockCenter.getY();
-
-                // Rotation2d targetAngle = new Rotation2d(Math.atan2(dY, dX) + Math.PI/2 - getShooterAngleCompensation());
 
                 Rotation2d targetAngle = new Rotation2d(m_optimalRotationSupplier.getAsDouble() - Math.PI/2 - getShooterAngleCompensation());
 
@@ -405,7 +378,6 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             LimelightHelpers.SetRobotOrientation("limelight-rear", currentPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
 
             LimelightHelpers.PoseEstimate mt2_shooter = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
-            // LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
             LimelightHelpers.PoseEstimate mt2_rear = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-rear");
             if (mt2_shooter != null) {
                 if (mt2_shooter.tagCount >= 2 ||
@@ -451,40 +423,12 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             SmartDashboard.putNumber("SOTM Drive Current Theta", currentPose().getRotation().getRadians());
         }
 
-        // Update poses for bump detection
-        if (m_currentPose != null) {
-            m_lastPose = m_currentPose;
-        }
-        
-        m_currentPose = currentPose();
-        
-        // Write to log
-
-        // String[] line = {null, String.valueOf(m_currentPose.getRotation().getDegrees())};
-
-        ZoneInfo currentZone = ZoneConstants.checkZone(m_currentPose.getTranslation());
-
-        // SmartDashboard.putData("currentPose", m_currentField);
-
-        // if (currentZone != lastZone && currentZone.isWithinOne) {
-        //     line[0] = currentZone.shortName();
-        //     try {
-        //         CSVWriter writer = new CSVWriter(outputfile);
-                
-        //         writer.writeNext(line);
-        //         writer.close();
-        //     }
-        //     catch (IOException e) {
-        //         e.printStackTrace();
-        //     }
-        // }
-
         m_currentField.setRobotPose(currentPose());
         SmartDashboard.putData("currentPose", m_currentField);
         SmartDashboard.putData("targetPose", m_targetField);
         SmartDashboard.putNumber("Drive_speedMultiplier", m_speedMultipler);
 
-        SmartDashboard.putString("Drive_currentZone", currentZone.fullName());
+        SmartDashboard.putString("Drive_currentZone", ZoneConstants.checkZone(currentPose().getTranslation()).fullName());
 
         SmartDashboard.putString("Drive_Robot drive mode", m_fieldCentric ? "Field Centric" : "Robot Centric");
         SmartDashboard.putNumber("Drive_trenchY", m_trenchYPos);
@@ -496,20 +440,20 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         SmartDashboard.putData(m_driveController.getThetaController());
         SmartDashboard.putNumber("Drive_theta_goal_deg", m_driveController.getThetaController().getGoal().position / Math.PI * 180);
         SmartDashboard.putNumber("Drive_theta_setpoint_deg", m_driveController.getThetaController().getSetpoint().position / Math.PI * 180);
-        
+
         SmartDashboard.putNumber("Drive_Pigeon_Rate", getPigeon2().getAngularVelocityZDevice().getValueAsDouble());
     }
 
     private void startSimThread() {
         m_lastSimTime = Utils.getCurrentTimeSeconds();
 
-        /* Run simulation at a faster rate so PID gains behave more reasonably */
+        // Run simulation at a faster rate so PID gains behave more reasonably
         m_simNotifier = new Notifier(() -> {
             final double currentTime = Utils.getCurrentTimeSeconds();
             double deltaTime = currentTime - m_lastSimTime;
             m_lastSimTime = currentTime;
 
-            /* use the measured time delta, get battery voltage from WPILib */
+            // Use the measured time delta, get battery voltage from WPILib
             updateSimState(deltaTime, RobotController.getBatteryVoltage());
         });
         m_simNotifier.startPeriodic(kSimLoopPeriod);
@@ -621,7 +565,6 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                         m_targetVelocity.getAsDouble(),
                         targetPose.getRotation()
                     );
-                    // m_targetField.setRobotPose(targetPose);
                     setControl(
                         new SwerveRequest.RobotCentric()
                             .withVelocityX(speeds.vxMetersPerSecond * Swerve.kMaxSpeed * m_slowdownX)
@@ -787,7 +730,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         return driveToPose()
             .withTarget(
                 () -> {
-                    Pose2d targetPose = Helpers.getTargetHangPose(m_currentPose);
+                    Pose2d targetPose = Helpers.getTargetHangPose(currentPose());
 
                     return new Pose2d(
                         targetPose.getX(),
@@ -796,6 +739,6 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                     );
                 }
             )
-            .withVelocityPercentLimits(List.of(.25d, .2d, .25d)); // List.of(.5d, .4d, .5d)
+            .withVelocityPercentLimits(List.of(.25d, .2d, .25d));
     }
 }

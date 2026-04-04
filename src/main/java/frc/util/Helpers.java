@@ -84,7 +84,7 @@ public class Helpers {
         return Math.min(Math.max(x, lo), hi);
     }
 
-    // Will return true if the average distance to the average value is less than the tolerance
+    /** Returns true if the average distance to the average value is less than the tolerance */
     public static boolean standardDeviation(HashSet<Double> values, double tolerance) {
         double total = values.stream().mapToDouble(Double::doubleValue).sum();
         double average = total / values.size();
@@ -105,14 +105,17 @@ public class Helpers {
 
     public static boolean isHubActive(boolean withOffset) {
         Optional<Alliance> alliance = DriverStation.getAlliance();
+
         // If we have no alliance, we cannot be enabled, therefore no hub.
         if (alliance.isEmpty()) {
             return false;
         }
+
         // Hub is always enabled in autonomous.
         if (DriverStation.isAutonomousEnabled()) {
             return true;
         }
+
         // At this point, if we're not teleop enabled, there is no hub.
         if (!DriverStation.isTeleopEnabled()) {
             return false;
@@ -121,7 +124,8 @@ public class Helpers {
         // We're teleop enabled, compute.
         double matchTime = DriverStation.getMatchTime() - (withOffset ? Constants.kTimerAheadTime_sec : 0);
         String gameData = DriverStation.getGameSpecificMessage();
-        // If we have no game data, we cannot compute, assume hub is active, as its likely early in teleop.
+
+        // If we have no game data, we cannot compute, assume hub is active, as it's likely early in teleop.
         if (gameData.isEmpty()) {
             return true;
         }
@@ -130,8 +134,7 @@ public class Helpers {
             case 'R' -> redInactiveFirst = true;
             case 'B' -> redInactiveFirst = false;
             default -> {
-            // If we have invalid game data, assume hub is active.
-            return true;
+                return true; // If we have invalid game data, assume hub is active.
             }
         }
 
@@ -142,23 +145,17 @@ public class Helpers {
         };
 
         if (matchTime > 130) {
-            // Transition shift, hub is active.
-            return true;
+            return true; // Transition shift, hub is active.
         } else if (matchTime > 105) {
-            // Shift 1
-            return shift1Active;
+            return shift1Active; // Shift 1
         } else if (matchTime > 80) {
-            // Shift 2
-            return !shift1Active;
+            return !shift1Active; // Shift 2
         } else if (matchTime > 55) {
-            // Shift 3
-            return shift1Active;
+            return shift1Active; // Shift 3
         } else if (matchTime > 30) {
-            // Shift 4
-            return !shift1Active;
+            return !shift1Active; // Shift 4
         } else {
-            // End game, hub always active.
-            return true;
+            return true; // End game, hub always active.
         }
     }
 
@@ -170,8 +167,9 @@ public class Helpers {
     public static void setPitModePlus(boolean enabled) {
         pitModePlusEnabled = enabled;
     }
+
     /**
-     * Pitmode+ is a stepping stone up from pit mode that ~~removes a bunch of safety features.~~ allows you to bypass some requirements so that you can easily test things like the shooter without having to worry if the hood has reached its goal yet. The caveat is that the robot just assumes you set things up correctly as it skips checking so you can test faster, meaning you should probably read the functionality of whatever you're testing when in pitmode+ before testing it. 
+     * Pitmode+ is for extra freaky programmng things like sysid
      */
     public static boolean isPitModePlusEnabled() {
         return pitModePlusEnabled;
@@ -181,8 +179,9 @@ public class Helpers {
     public static void setBypassMode(boolean enabled) {
         bypassModeEnabled = enabled;
     }
+
     /**
-     * Bypass mode is a stepping stone up from pit mode that ~~removes a bunch of safety features.~~ allows you to bypass some requirements so that you can easily test things like the shooter without having to worry if the hood has reached its goal yet. The caveat is that the robot just assumes you set things up correctly as it skips checking so you can test faster, meaning you should probably read the functionality of whatever you're testing when in pitmode+ before testing it. 
+     * Bypass mode is a stepping stone up from pit mode that ~~removes a bunch of safety features.~~ allows you to bypass some requirements so that you can easily run things like the shooter without having to worry if the hood has reached its goal yet. The caveat is that the robot just assumes you set things up correctly as it skips checking so you can just go, meaning you should probably read the functionality of whatever you're testing when in bypass mode before testing it. 
      */
     public static boolean isBypassModeEnabled() {
         return bypassModeEnabled;

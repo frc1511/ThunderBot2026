@@ -71,7 +71,6 @@ public class Alert {
 
         if (notificationLevel == NotificationLevel.INFO) {
             System.out.println(String.format("[INFO] %s: %s", title, desc));
-            // DriverStation.reportWarning(String.format("[INFO] %s: %s", title, desc), false);
         } else if (notificationLevel == NotificationLevel.WARNING) {
             if (Helpers.alertsShouldUseConsole) {
                 System.out.println(String.format("[WARN] %s: %s", title, desc));

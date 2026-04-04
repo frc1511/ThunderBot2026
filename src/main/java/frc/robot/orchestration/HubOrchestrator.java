@@ -115,8 +115,6 @@ public class HubOrchestrator {
 
         FiringDataPoint finalPoint = firingTable.lerp(finalDistance);
 
-        // finalPoint.speedRPM = Helpers.clamp(finalPoint.speedRPM, 0, 2800);
-
         return new Pair<FiringTable.FiringDataPoint,Double>(finalPoint, finalTheta);
     }
 

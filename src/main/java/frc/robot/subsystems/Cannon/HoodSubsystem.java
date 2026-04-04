@@ -29,7 +29,6 @@ import frc.util.Constants;
 import frc.util.Helpers;
 import frc.util.Constants.Hood;
 import frc.util.Constants.Status;
-import frc.util.Thunder.Modifiable;
 import frc.util.Thunder.ThunderSubsystem;
 
 public class HoodSubsystem extends ThunderSubsystem {
@@ -46,7 +45,6 @@ public class HoodSubsystem extends ThunderSubsystem {
     private BooleanSupplier isReadyToMove = () -> isZeroed() || Helpers.isBypassModeEnabled();
 
     public HoodSubsystem() {
-        // new Modifiable("isConfirmedZeroed", this, () -> Boolean.FALSE);
         TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
         hoodConfig.Slot0 = new Slot0Configs()
             .withKP(Constants.Hood.HoodPID.kP).withKI(Constants.Hood.HoodPID.kI).withKD(Constants.Hood.HoodPID.kD)
@@ -123,9 +121,6 @@ public class HoodSubsystem extends ThunderSubsystem {
         SmartDashboard.putNumber("hood_err", m_motor.getClosedLoopError().getValueAsDouble());
 
         SmartDashboard.putNumber("SOTM Hood Target Theta", optimalAngleSupplier.getAsDouble());
-        if (!isZeroed()) {
-            // CommandScheduler.getInstance().schedule(zero().withName("HoodZeroInbuilt"));
-        }
     }
 
     @Override
@@ -135,8 +130,6 @@ public class HoodSubsystem extends ThunderSubsystem {
     }
 
     private void zeroEncodersLightly() {
-        // Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
-        // if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) isConfirmedZeroed.withValue(() -> Boolean.TRUE);
         isConfirmedZeroed = true;
 
         double currentPosition = m_encoder.getPosition().getValueAsDouble();
@@ -152,8 +145,6 @@ public class HoodSubsystem extends ThunderSubsystem {
 
     private boolean isConfirmedZeroed = false;
     public boolean isZeroed() {
-        // Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
-        // if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) return (Boolean) isConfirmedZeroed.getValue();
         return isConfirmedZeroed;
     }
 
@@ -167,8 +158,6 @@ public class HoodSubsystem extends ThunderSubsystem {
         if (Broken.hoodDisabled) return new InstantCommand(() -> {}, this);
         if (Broken.hoodBeamBreakDisabled) {
             forceZeroEncoders();
-            // Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
-            // if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) isConfirmedZeroed.withValue(() -> true);
             isConfirmedZeroed = true;
             return new InstantCommand(() -> {}, this);
         }
@@ -188,17 +177,7 @@ public class HoodSubsystem extends ThunderSubsystem {
                         m_motor.stopMotor();
                     }
                 }
-            })
-            .isFinished(() -> {
-                return false;
-                // if (isAtZero()) {
-                // }
-                // return isAtZero();
             });
-            // .onEnd(() -> {
-            //     forceZeroEncoders();
-            //     m_motor.stopMotor();
-            // });
     }
 
     public Command toPosition(Supplier<Double> targetPosition) {
@@ -251,8 +230,6 @@ public class HoodSubsystem extends ThunderSubsystem {
     public void forceZeroEncoders() {
         if (Broken.hoodDisabled) return;
 
-        // Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
-        // if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) isConfirmedZeroed.withValue(() -> Boolean.TRUE);
         isConfirmedZeroed = true;
         m_encoder.setPosition(0);
         m_motor.setPosition(0);

@@ -59,10 +59,6 @@ public class ZoneConstants {
         Translation2d rightPoint = kRightBlueTrenchCenterSidePoint;
         Translation2d leftPoint = kRightBlueTrenchCenterSidePoint;
 
-        // if (!isBlueSide) {
-        //     isRightSide = !isRightSide;
-        // }
-
         System.out.println("Blue: " + isBlueSide + " Right: " + isRightSide);
 
         Translation2d trenchOffset = new Translation2d(

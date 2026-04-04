@@ -38,8 +38,7 @@ public class ShooterSysID {
                     System.out.println(output.magnitude());
                     shooter.manual_voltage(output::magnitude).execute();
                 },
-                // Tell SysId how to record a frame of data for each motor on the mechanism being
-                // characterized.
+                // Tell SysId how to record a frame of data for each motor on the mechanism being characterized.
                 log -> {
                     // Record a frame for the shooter motor.
                     log.motor("shooter-wheel")

@@ -149,7 +149,7 @@ public class HangSubsystem extends ThunderSubsystem {
         return (atSetpoint() && m_pidController.getSetpoint() == HangConstants.kMaxDeployDistanceRotations) || (isAtUpperLimit() && !Helpers.isBypassModeEnabled());
     }
 
-    public Command extend() { //hang will die if it goes past the upper limit
+    public Command extend() { // Hang will die if it goes past the upper limit
         if (Broken.hangFullyDisabled) return Commands.none();
         
         return new CommandBuilder(this)

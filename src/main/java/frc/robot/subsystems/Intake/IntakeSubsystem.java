@@ -64,7 +64,6 @@ public class IntakeSubsystem extends ThunderSubsystem {
 
         return new CommandBuilder(this)
             .onExecute(() -> {
-                // m_motor.setControl(new VelocityVoltage(Helpers.RPMtoRPS(Constants.Hunger.Intake.kEatRPM)));
                 m_motor.set(Constants.Hunger.Intake.kEatPercent);
             })
             .onEnd(m_motor::stopMotor)
@@ -79,20 +78,20 @@ public class IntakeSubsystem extends ThunderSubsystem {
 
         return new CommandBuilder(this)
             .onExecute(() -> {
-                // m_motor.setControl(new VelocityVoltage(Helpers.RPMtoRPS(Constants.Hunger.Intake.kEatRPM)));
                 m_motor.set(Constants.Hunger.Intake.kEatPercent);
             })
             .isFinished(true)
             .withName(Constants.Hunger.Intake.intakeCommandName);
     }
 
-    // Outtake
+    /** 
+     * Outtake
+     */
     public Command outtake() {
         if (Broken.intakeDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(() -> {
-                // m_motor.setControl(new VelocityVoltage(-Helpers.RPMtoRPS(Constants.Hunger.Intake.kEatRPM)));
                 m_motor.set(-Constants.Hunger.Intake.kEatPercent);
             })
             .onEnd(m_motor::stopMotor)
@@ -116,7 +115,7 @@ public class IntakeSubsystem extends ThunderSubsystem {
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.set(speed.getAsDouble()));
     }
-    
+
     public Status status() {
         if (Broken.intakeDisabled) return Status.DISABLED;
         if (!Helpers.onCANChain(m_motor)) return Status.DISCONNECTED;

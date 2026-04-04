@@ -49,9 +49,9 @@ public class Constants {
     public static boolean kUseHDDL = false; // High density data logging
     public static double kHDDLRate = 200d; // Hz
 
-    public static final double kCANChainDisconnectTimeout = 0.5; // in seconds
+    public static final double kCANChainDisconnectTimeout = 0.5; // In seconds
 
-    public static final double kAntiSpamAlertTimeout = 5; // in seconds
+    public static final double kAntiSpamAlertTimeout = 5; // In seconds
 
     public static final double kControllerDeadzone = 0.3;
 
@@ -115,8 +115,8 @@ public class Constants {
         }
       
         public class Shooter {
-            public static final int kShooterMotorA = 21; // RIGHT
-            public static final int kShooterMotorB = 20; // LEFT
+            public static final int kShooterMotorA = 21; // Right
+            public static final int kShooterMotorB = 20; // Left
             public static final int kTurretMotor = 40;
         }
         
@@ -244,8 +244,8 @@ public class Constants {
             }
         }
         public interface HoodPID extends BasePID {
-            double kP = 22; // TOO Zippy at 23
-            double kI = 8; // TOO Zippy at 40
+            double kP = 22;
+            double kI = 8;
             double kD = 0;
             double kS = 0;
             double kV = 0.12;
@@ -288,7 +288,7 @@ public class Constants {
             double kCosRatio = 1;
 
             enum Position {
-                TOP(-0.336914), MIDDLE(-0.175), HALFWAY_DOWN(-0.13), BOTTOM(0.003708984375); //they change alot but should be approx right
+                TOP(-0.336914), MIDDLE(-0.175), HALFWAY_DOWN(-0.13), BOTTOM(0.003708984375); // They change alot but should be approx right
 
                 private double m_value;
 
@@ -317,10 +317,10 @@ public class Constants {
         double kSetpointMaxVelocity = 0.02; // Prevents flybys
         double kSetpointPositionTolerance = 0.25;
         double kZeroingSpeed = -0.1;
-        double kMaxDeploySpeed = 0.9; // Extending Hanger FINAL DONT CHNAGE
-        double kMaxPullSpeed = -0.9;  // Retracting Hanger (pulling the robot up on the bar) FINAL DONT CHANGE
-        double kMaxDeployDistanceRotations = 34; // (changed from 33 -> 34 for FLR)
-        double kMaxPullDistanceRotations = 6; // This is NOT a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down (changed from 8 -> 6 at FLR)
+        double kMaxDeploySpeed = 0.9; // Extending Hanger
+        double kMaxPullSpeed = -0.9;  // Retracting Hanger (pulling the robot up on the bar)
+        double kMaxDeployDistanceRotations = 34;
+        double kMaxPullDistanceRotations = 6; // This is NOT a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down
         double kJostleAmplitude = 0.5;
         double kTrenchSafeDistanceRotations = 1;
 
@@ -337,7 +337,7 @@ public class Constants {
         // Max Speed
         public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.9); // DON"T TOUCH, USE MULTIPLIER FOR MAX SPEED INSTEAD
 
-        public static final double kSpeedStep = 0.1; // Amount to step speed for the inc/dec btns
+        public static final double kSpeedStep = 0.1; // Amount to step speed for the increase/decrease buttons
 
         public static final double kShooterOffset = .351; // meters
         public static final double kTrenchLockMaxDist = 3; // meters
@@ -361,8 +361,8 @@ public class Constants {
         private static final Voltage kSteerFrictionVoltage = Volts.of(0.2);
         private static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
 
-        public static final double kMaxSpeed = 0.8 * kSpeedAt12Volts.in(MetersPerSecond); // % Multiplier | kSpeedAt12Volts desired top speed
-        public static final double kMaxAngularRate = 1d * DegreesPerSecond.of(600).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+        public static final double kMaxSpeed = 0.8 * kSpeedAt12Volts.in(MetersPerSecond); // % Multiplier * kSpeedAt12Volts desired top speed
+        public static final double kMaxAngularRate = 1d * DegreesPerSecond.of(600).in(RadiansPerSecond);
         public static final double kMaxAngularAcceleration = 1d * DegreesPerSecondPerSecond.of(240).in(RadiansPerSecondPerSecond);
 
         public static final double kVelocityDeadband = 0.05 * kMaxSpeed; // % Multiplier 
@@ -406,12 +406,12 @@ public class Constants {
         // Steer PID
         public static final Slot0Configs steerGains = new Slot0Configs()
             .withKP(38.568).withKI(0).withKD(1.7601)
-            .withKS(0.080138).withKV(2.1689).withKA(0.060677) // 2.66
+            .withKS(0.080138).withKV(2.1689).withKA(0.060677)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
         // Drive PID
         public static final Slot0Configs driveGains = new Slot0Configs()
             .withKP(0.16461).withKI(0).withKD(0)
-            .withKS(0.077536).withKV(0.11232); // 0.11232 ; 0.0071659
+            .withKS(0.077536).withKV(0.11232);
 
         private static final ClosedLoopOutputType kSteerClosedLoopOutput = ClosedLoopOutputType.Voltage;
         private static final ClosedLoopOutputType kDriveClosedLoopOutput = ClosedLoopOutputType.Voltage;
@@ -433,10 +433,6 @@ public class Constants {
                     .withSupplyCurrentLimit(Amps.of(30))
                     .withSupplyCurrentLimitEnable(true)
             );
-            // .withClosedLoopRamps(
-            //     new ClosedLoopRampsConfigs()
-            //         .withVoltageClosedLoopRampPeriod(0.1)
-            // );
         private static final TalonFXConfiguration steerInitialConfigs = new TalonFXConfiguration()
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
