@@ -53,7 +53,7 @@ public class SpindexerSubsystem extends ThunderSubsystem {
     }
 
     public Command halt() {
-        if (Broken.hoodDisabled) return new InstantCommand(()->{}, this);
+        if (Broken.spindexerDisabled) return Commands.none();
 
         return new CommandBuilder(this)
             .onExecute(m_motor::stopMotor);
