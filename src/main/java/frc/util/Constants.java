@@ -98,7 +98,8 @@ public class Constants {
         public class Intake {
             public static final int kCANcoder = 15;
             public static final int kPivotMotor = 16;
-            public static final int kChompMotor = 17;
+            public static final int kChompMotorRight = 17;
+            public static final int kChompMotorLeft = 41;
         }
       
         public class Swerve {
@@ -311,6 +312,8 @@ public class Constants {
 
             double kTolerance = 0.015d;
             double kBigTolerance = 0.02d;
+
+            double kEncoderConversionFactor = 1d/90d;
         }
     }
 

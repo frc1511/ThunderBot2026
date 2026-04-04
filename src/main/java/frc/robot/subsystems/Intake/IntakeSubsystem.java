@@ -5,10 +5,11 @@ import static edu.wpi.first.units.Units.Amps;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -21,14 +22,15 @@ import frc.util.Thunder.ThunderSubsystem;
 import frc.util.Helpers;
 
 public class IntakeSubsystem extends ThunderSubsystem {
-    private TalonFX m_motor;
+    private TalonFX m_motorLeft;
+    private TalonFX m_motorRight;
+
+    private TalonFX m_primaryMotor;
 
     public IntakeSubsystem() {
         TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
         intakeConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         intakeConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-        intakeConfig.Slot0 = new Slot0Configs()
-            .withKP(Constants.Hunger.Intake.IntakePID.kP).withKI(Constants.Hunger.Intake.IntakePID.kI).withKD(Constants.Hunger.Intake.IntakePID.kD);
         intakeConfig.withCurrentLimits(
                 new CurrentLimitsConfigs()
                     .withSupplyCurrentLimit(Amps.of(30))
@@ -36,36 +38,50 @@ public class IntakeSubsystem extends ThunderSubsystem {
                     .withStatorCurrentLimit(Amps.of(80))
                     .withStatorCurrentLimitEnable(true)
             );
-        
-        if (!Broken.intakeDisabled) {
-            m_motor = new TalonFX(Constants.IOMap.Intake.kChompMotor);
-            m_motor.getConfigurator().apply(intakeConfig);
+
+        if (!Broken.intakeFullyDisabled) {
+            if (!Broken.intakeRightDisabled) {
+                m_motorRight = new TalonFX(Constants.IOMap.Intake.kChompMotorRight);
+                m_motorRight.getConfigurator().apply(intakeConfig);
+            }
+
+            if (!Broken.intakeLeftDisabled) {
+                m_motorLeft = new TalonFX(Constants.IOMap.Intake.kChompMotorLeft);
+                m_motorLeft.getConfigurator().apply(intakeConfig);
+                if (Broken.intakeRightDisabled) {
+                    m_primaryMotor = m_motorLeft;
+                } else {
+                    m_motorLeft.setControl(new Follower(Constants.IOMap.Intake.kChompMotorRight, MotorAlignmentValue.Opposed));
+                    m_primaryMotor = m_motorRight;
+                }
+            }
         } else {
-            m_motor = null;
+            Broken.intakeFullyDisabled = true;
+            m_primaryMotor = null;
         }
     }
 
     @Override
     public void periodic() {
-        if (Broken.intakeDisabled) return;
+        if (Broken.intakeFullyDisabled) return;
 
-        SmartDashboard.putNumber("intake_rpm", Helpers.RPStoRPM(m_motor.getVelocity().getValueAsDouble()));
-        SmartDashboard.putNumber("intake_target_rpm", Helpers.RPStoRPM(m_motor.getClosedLoopReference().getValueAsDouble()));
-        SmartDashboard.putNumber("intake_output_V", m_motor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("intake_err", Math.abs(Helpers.RPStoRPM(m_motor.getVelocity().getValueAsDouble()) - Constants.Hunger.Intake.kEatRPM));
+        SmartDashboard.putNumber("intake_rpm", Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()));
+        SmartDashboard.putNumber("intake_target_rpm", Helpers.RPStoRPM(m_primaryMotor.getClosedLoopReference().getValueAsDouble()));
+        SmartDashboard.putNumber("intake_output_V", m_primaryMotor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("intake_err", Math.abs(Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()) - Constants.Hunger.Intake.kEatRPM));
     }
 
     /**
      * Intake
      */
     public Command eat() {
-        if (Broken.intakeDisabled) return CommandBuilder.none(this);
+        if (Broken.intakeFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_motor.set(Constants.Hunger.Intake.kEatPercent);
+                m_primaryMotor.set(Constants.Hunger.Intake.kEatPercent);
             })
-            .onEnd(m_motor::stopMotor)
+            .onEnd(m_primaryMotor::stopMotor)
             .withName(Constants.Hunger.Intake.intakeCommandName);
     }
 
@@ -73,11 +89,11 @@ public class IntakeSubsystem extends ThunderSubsystem {
      * Intake
      */
     public Command eatStart() {
-        if (Broken.intakeDisabled) return CommandBuilder.none(this);
+        if (Broken.intakeFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_motor.set(Constants.Hunger.Intake.kEatPercent);
+                m_primaryMotor.set(Constants.Hunger.Intake.kEatPercent);
             })
             .isFinished(true)
             .withName(Constants.Hunger.Intake.intakeCommandName);
@@ -87,13 +103,13 @@ public class IntakeSubsystem extends ThunderSubsystem {
      * Outtake
      */
     public Command outtake() {
-        if (Broken.intakeDisabled) return CommandBuilder.none(this);
+        if (Broken.intakeFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_motor.set(-Constants.Hunger.Intake.kEatPercent);
+                m_primaryMotor.set(-Constants.Hunger.Intake.kEatPercent);
             })
-            .onEnd(m_motor::stopMotor)
+            .onEnd(m_primaryMotor::stopMotor)
             .withName(Constants.Hunger.Intake.intakeCommandName);
     }
 
@@ -101,24 +117,31 @@ public class IntakeSubsystem extends ThunderSubsystem {
      * Stop Intake
      */
     public Command stopEating() {
-        if (Broken.intakeDisabled) return CommandBuilder.none(this);
+        if (Broken.intakeFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
-            .onExecute(m_motor::stopMotor)
+            .onExecute(m_primaryMotor::stopMotor)
             .isFinished(true);
     }
 
-    public Command manual_intake(DoubleSupplier speed) {
-        if (Broken.intakeDisabled) return CommandBuilder.none(this);
+    public Command manual_intakeLeft(DoubleSupplier speed) {
+        if (Broken.intakeFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motor.set(speed.getAsDouble()));
+            .onExecute(() -> m_motorLeft.set(speed.getAsDouble()));
+    }
+
+    public Command manual_intakeRight(DoubleSupplier speed) {
+        if (Broken.intakeFullyDisabled) return CommandBuilder.none(this);
+
+        return new CommandBuilder(this)
+            .onExecute(() -> m_motorRight.set(speed.getAsDouble()));
     }
 
     public Status status() {
-        if (Broken.intakeDisabled) return Status.DISABLED;
-        if (!Helpers.onCANChain(m_motor)) return Status.DISCONNECTED;
-        if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
+        if (Broken.intakeFullyDisabled) return Status.DISABLED;
+        if (!Helpers.onCANChain(m_primaryMotor)) return Status.DISCONNECTED;
+        if (Helpers.isRunning(m_primaryMotor)) return Status.ACTIVE;
         return Status.IDLE;
     }
 }

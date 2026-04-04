@@ -327,6 +327,10 @@ public class Robot extends TimedRobot {
             auxController.x().and(condition)      .whileTrue(drivetrain.brick()        .withName("OneDriveBackupDriveBrick")); // Points wheels inwards while held
             auxController.y().and(condition)      .whileTrue(drivetrain.hubLock()      .withName("OneDriveBackupDriveHubLock")); // Lock onto hub and shoot
             auxController.a().and(condition)         .onTrue(drivetrain.resetRotation().withName("OneDriveBackupDriveSeedFieldCentric")); // Reset IMU
+
+            // These ones get overridden during pit mode plus
+            condition = () -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff() && pitModePlus.isOff();
+
             auxController.povLeft().and(condition)   .onTrue(drivetrain.decreaseSpeed().withName("OneDriveBackupDriveDescSpeed")); // Drive go weeee
             auxController.povRight().and(condition)  .onTrue(drivetrain.increaseSpeed().withName("OneDriveBackupDriveIncSpeed")); // Drive go snail
             auxController.povUp().and(condition)  .whileTrue(hang.extend()             .withName("OneDriveBackupHangExtend")) // Hang goes uppies (hold)
@@ -340,8 +344,6 @@ public class Robot extends TimedRobot {
 
             (auxController.leftStick().or(auxController.rightStick())).and(condition)
                                                        .whileTrue(shooter.reverse()                                           .withName("ShooterReverse"));
-            auxController.povUp().and(condition)       .whileTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER).withName("SpindexerSpin"))
-                                                         .onFalse(spindexer.halt()                                            .withName("SpindexerHalt"));
             auxController.start().and(condition)       .whileTrue(hungerOrchestrator.jostleRepeatedly()                       .withName("HungerJostle"));
             auxController.y().and(condition)           .whileTrue(hood.toPosition(() -> Constants.Hood.Position.FEED.get())   .withName("PresetFeed"))
                                                          .onFalse(hood.toPosition(() -> Constants.Hood.Position.TRENCH.get()) .withName("PresetPostFeed"));
@@ -350,13 +352,27 @@ public class Robot extends TimedRobot {
             auxController.a().and(condition)              .onTrue(hood.toPosition(() -> Constants.Hood.Position.HUB.get())    .withName("PresetHub"));
             auxController.leftBumper().and(condition)  .whileTrue(shooter.holdSpeedForShoot()                                 .withName("ShooterPreheat"))
                                                          .onFalse(shooter.halt()                                              .withName("ShooterHalt"));
-            auxController.leftTrigger().and(condition) .whileTrue(firingOrchestrator.fire()                                   .withName("FiringFire"))
-                                                         .onFalse(firingOrchestrator.halt()                                   .withName("FiringHalt"));
             auxController.rightBumper().and(condition) .whileTrue(intake.outtake()                                            .withName("IntakeOuttake"))
                                                          .onFalse(intake.stopEating()                                         .withName("IntakeHalt"));
-            auxController.rightTrigger().and(condition).whileTrue(hungerOrchestrator.consume()                                .withName("HungerConsume"))
-                                                         .onFalse(intake.stopEating()                                         .withName("IntakeHalt"));
             auxController.back().and(condition)        .whileTrue(pivot.up()                                                  .withName("PivotUp"));
+
+            // This one gets overridden during pit mode plus
+            condition = () -> auxDisable.isOff() && oneDriverMode.isOff() && pitModePlus.isOff();
+
+            auxController.leftTrigger().and(condition) .whileTrue(firingOrchestrator.fire()                                   .withName("FiringFire"))
+                                                         .onFalse(firingOrchestrator.halt()                                   .withName("FiringHalt"));
+            auxController.rightTrigger().and(condition).whileTrue(hungerOrchestrator.consume()                                .withName("HungerConsume"))
+                                                        .onFalse(intake.stopEating()                                          .withName("IntakeHalt"));
+
+            auxController.povUp().and(condition)       .whileTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER).withName("SpindexerSpin"))
+                                                         .onFalse(spindexer.halt()                                            .withName("SpindexerHalt"));
+        }
+
+        { // Manual Aux Controls
+            BooleanSupplier condition = () -> auxDisable.isOff() && oneDriverMode.isOff() && pitModePlus.isOn();
+
+            auxController.leftTrigger().and(condition) .whileTrue(intake.manual_intakeLeft(() -> .6)                          .withName("FiringFire"));
+            auxController.rightTrigger().and(condition).whileTrue(intake.manual_intakeRight(() -> .6)                         .withName("HungerConsume"));
         }
 
         if (Constants.kSysIDMode == Constants.SysIDMode.SHOOTER) {

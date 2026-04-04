@@ -43,8 +43,8 @@ public class PivotSubsystem extends ThunderSubsystem {
                 .kCos(Constants.Hunger.Pivot.PivotPID.kCos);
 
         pivotConfig.encoder
-            .positionConversionFactor(1d/96d);
-        
+            .positionConversionFactor(Constants.Hunger.Pivot.kEncoderConversionFactor);
+
         if (!Broken.pivotDisabled) {
             m_CANcoder = new CANcoder(Constants.IOMap.Intake.kCANcoder);
             m_CANcoder.getConfigurator().apply(new MagnetSensorConfigs().withMagnetOffset(Constants.Hunger.Pivot.kCANcoderOffset));

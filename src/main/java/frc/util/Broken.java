@@ -21,7 +21,11 @@ public class Broken {
     public static final boolean turretDisable = true;
 
     /** Disable everything intake related */
-    public static boolean intakeDisabled = false;
+    public static boolean intakeFullyDisabled = false; //! NOTE: YOU MUST BE CAREFUL NOT TO HAVE THIS FALSE WHEN LEFT & RIGHT ARE TRUE
+    /** Disable left intake motor */
+    public static boolean intakeLeftDisabled = false;
+    /** Disable left intake motor */
+    public static boolean intakeRightDisabled = false;
     /** Disable just the pivot for intake */
     public static boolean pivotDisabled = false;
 
