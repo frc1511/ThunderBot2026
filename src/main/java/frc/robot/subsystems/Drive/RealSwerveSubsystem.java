@@ -375,8 +375,8 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             LimelightHelpers.SetRobotOrientation("limelight", currentPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
             LimelightHelpers.SetRobotOrientation("limelight-rear", currentPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
 
-            LimelightHelpers.PoseEstimate mt2_shooter = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
-            LimelightHelpers.PoseEstimate mt2_rear = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-rear");
+            LimelightHelpers.PoseEstimate mt2_shooter = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+            LimelightHelpers.PoseEstimate mt2_rear = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-rear");
             if (mt2_shooter != null) {
                 if (mt2_shooter.tagCount >= 2 ||
                     (mt2_shooter.tagCount == 1 && mt2_shooter.rawFiducials[0].ambiguity < 0.2)) {
