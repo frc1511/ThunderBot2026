@@ -214,19 +214,14 @@ public class Robot extends TimedRobot {
                     new InstantCommand(() -> {
                         Broken.blinkyBlinkyButtonBopped = true;
                     })
-                    .beforeStarting(
-                        blinkyBlinkyOrchestrator.set(Constants.BlinkyBlinky.Mode.OFF)
-                    ).ignoringDisable(true).repeatedly()
+                    .ignoringDisable(true).repeatedly()
                 )
                 .onFalse(
                     new InstantCommand(() -> {
                         Broken.blinkyBlinkyButtonBopped = false;
                     }).ignoringDisable(true)
                 );
-    
-            pitMode.get()
-                .whileTrue(blinkyBlinkyOrchestrator.set(Constants.BlinkyBlinky.Mode.PIT));
-    
+
             fieldCentric.get()
                 .onTrue(new InstantCommand(() -> drivetrain.setFieldCentric(true)))
                 .onFalse(new InstantCommand(() -> drivetrain.setFieldCentric(false)));
