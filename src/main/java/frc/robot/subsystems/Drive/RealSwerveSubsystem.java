@@ -739,4 +739,17 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             )
             .withVelocityPercentLimits(List.of(.25d, .2d, .25d));
     }
+
+    private boolean m_hasBeenRegistered = false;
+
+    public void registerSubsystem() {
+        if (!m_hasBeenRegistered) {
+            CommandScheduler.getInstance().registerSubsystem(this);
+            m_hasBeenRegistered = true;
+        }
+    }
+
+    public boolean isRegistered() {
+        return m_hasBeenRegistered;
+    }
 }

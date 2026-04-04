@@ -123,12 +123,7 @@ public class Robot extends TimedRobot {
         allSubsystems.add(hang);
         allSubsystems.add(drivetrain);
 
-        CommandScheduler.getInstance().registerSubsystem(drivetrain);
-        allSubsystems.forEach(
-            subsystem -> {
-                CommandScheduler.getInstance().registerSubsystem(subsystem);
-            }
-        );
+        allSubsystems.forEach(ThunderInterface::registerSubsystem);
 
         if (Constants.kUseDataLog) {
             DataLogManager.start();
