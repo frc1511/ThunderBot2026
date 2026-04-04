@@ -35,7 +35,6 @@ import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.orchestration.HubOrchestrator;
 import frc.util.Alert;
 import frc.util.Broken;
@@ -181,11 +180,11 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     }
 
     public Command increaseSpeed() {
-        return new InstantCommand(() -> m_speedMultipler = Math.min(m_speedMultipler + Swerve.kSpeedStep, 1d));
+        return new CommandBuilder(this).onExecute(() -> m_speedMultipler = Math.min(m_speedMultipler + Swerve.kSpeedStep, 1d)).isFinished(true);
     }
-    
+
     public Command decreaseSpeed() {
-        return new InstantCommand(() -> m_speedMultipler = Math.max(m_speedMultipler - Swerve.kSpeedStep, 0d));
+        return new CommandBuilder(this).onExecute(() -> m_speedMultipler = Math.max(m_speedMultipler - Swerve.kSpeedStep, 0d)).isFinished(true);
     }
 
     public void setSpeedMultiplier(double speedMultipler) {

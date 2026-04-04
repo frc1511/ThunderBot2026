@@ -65,6 +65,10 @@ public class CommandBuilder extends Command {
         return this;
     }
 
+    public static CommandBuilder none(Subsystem... requirements) {
+        return new CommandBuilder(requirements);
+    }
+
     @Override
     public void initialize() {
         onInitialize.run();

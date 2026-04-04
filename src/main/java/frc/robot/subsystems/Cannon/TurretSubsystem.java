@@ -8,7 +8,6 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
@@ -34,7 +33,7 @@ public class TurretSubsystem extends ThunderSubsystem {
     }
         
     public Command toPosition(Supplier<Double> targetPosition) {
-        if (Broken.turretDisable) return Commands.none();
+        if (Broken.turretDisable) return CommandBuilder.none(this);
 
         return new CommandBuilder(this) 
             .onExecute(() -> m_motor.setControl(new PositionVoltage(targetPosition.get())))

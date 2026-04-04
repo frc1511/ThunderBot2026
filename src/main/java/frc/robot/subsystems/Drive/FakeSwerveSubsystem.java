@@ -13,95 +13,81 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.util.CommandBuilder;
 import frc.util.Constants.Status;
 
 public class FakeSwerveSubsystem implements SwerveSubsystem {
-    public FakeSwerveSubsystem() {
-        
-    }
+    public FakeSwerveSubsystem() {}
 
     @Override
     public void hddlPeriodic() {};
 
-    public void setSpeedMultiplier(double speedMultipler) {
-        
-    }
+    public void setSpeedMultiplier(double speedMultipler) {}
 
-    public void setFieldCentric(boolean isOn) {
-    }
+    public void setFieldCentric(boolean isOn) {}
 
-    public void setLimelightDisable(boolean isDisabled) {
-    }
+    public void setLimelightDisable(boolean isDisabled) {}
 
     public Command increaseSpeed() {
-        return Commands.none();
+        return CommandBuilder.none(this);
     }
     
     public Command decreaseSpeed() {
-        return Commands.none();
+        return CommandBuilder.none(this);
     }
 
     public Command setHubLock(Boolean isOn) {
-        return Commands.none();
+        return CommandBuilder.none(this);
     }
 
     public Command hubLock() {
-        return Commands.none();
+        return CommandBuilder.none(this);
     }
 
     public Command trenchLock() {
-        return Commands.none();
+        return CommandBuilder.none(this);
     }
 
     public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX) {
-        return new InstantCommand(() -> {}, this);
+        return CommandBuilder.none(this);
     }
 
     public Command brick() {
-        return Commands.none();
+        return CommandBuilder.none(this);
     }
 
     public Command pointWithController(DoubleSupplier leftX, DoubleSupplier leftY) {
-        return Commands.none();
+        return CommandBuilder.none(this);
     }
 
     public Command idle() {
-        return Commands.none();
+        return CommandBuilder.none(this);
     }
 
     public Command applyRequest(Supplier<SwerveRequest> request) {
-        return Commands.none();
+        return CommandBuilder.none(this);
     }
 
     public Command toggleFieldCentric() {
-        return Commands.none();
+        return CommandBuilder.none(this);
     }
     
     public Command resetRotation() {
-        return Commands.none();
+        return CommandBuilder.none(this);
     }
 
     @Override
-    public void periodic() {
-        
-    }
+    public void periodic() {}
     
     @Override
-    public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
-        
-    }
+    public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {}
 
     @Override
     public void addVisionMeasurement(
         Pose2d visionRobotPoseMeters,
         double timestampSeconds,
         Matrix<N3, N1> visionMeasurementStdDevs
-    ) {
-        
-    }
+    ) {}
 
     @Override
     public Optional<Pose2d> samplePoseAt(double timestampSeconds) {
@@ -112,18 +98,15 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
         return new Pose2d();
     }
 
-
     public boolean isCANSafe() {
         return false;
     }
 
     public Command driveLockedToArcWithJoysticks(DoubleSupplier leftX) {
-        return Commands.none();
+        return CommandBuilder.none(this);
     }
 
-    public void resetControl(Pose2d pose) {
-        
-    }
+    public void resetControl(Pose2d pose) {}
 
     @Override
     public Status status() {
@@ -131,37 +114,29 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
     }
 
     @Override
-    public void seedFieldCentric() {
-        
-    }
+    public void seedFieldCentric() {}
 
-    public void ensureTheta(DoubleSupplier thetaSupplier) {
-        
-    }
+    public void ensureTheta(DoubleSupplier thetaSupplier) {}
 
-    public void clearEnsuredTheta() {
-        
-    }
+    public void clearEnsuredTheta() {}
 
     public ChassisSpeeds getSpeed() {
         return new ChassisSpeeds(0, 0, 0);
     }
 
-    public void setOptimalRotationGetter(DoubleSupplier supplier) {
-
-    }
+    public void setOptimalRotationGetter(DoubleSupplier supplier) {}
 
     public void setupTheta(boolean isAuto) {};
 
     public Command alignToTowerY() {
-        return Commands.none();
+        return CommandBuilder.none(this);
     }
 
     public CommandBuilder driveToPose(Supplier<Pose2d> target) {
-        return new CommandBuilder(this);
+        return CommandBuilder.none(this);
     }
 
     public CommandBuilder driveToPose(Supplier<Pose2d> target, List<Double> speedPercents) {
-        return new CommandBuilder(this);
+        return CommandBuilder.none(this);
     }
 }

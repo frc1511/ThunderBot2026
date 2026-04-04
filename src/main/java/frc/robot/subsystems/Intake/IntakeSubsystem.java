@@ -13,7 +13,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
@@ -60,7 +59,7 @@ public class IntakeSubsystem extends ThunderSubsystem {
      * Intake
      */
     public Command eat() {
-        if (Broken.intakeDisabled) return Commands.none();
+        if (Broken.intakeDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -74,7 +73,7 @@ public class IntakeSubsystem extends ThunderSubsystem {
      * Intake
      */
     public Command eatStart() {
-        if (Broken.intakeDisabled) return Commands.none();
+        if (Broken.intakeDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -88,7 +87,7 @@ public class IntakeSubsystem extends ThunderSubsystem {
      * Outtake
      */
     public Command outtake() {
-        if (Broken.intakeDisabled) return Commands.none();
+        if (Broken.intakeDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -102,7 +101,7 @@ public class IntakeSubsystem extends ThunderSubsystem {
      * Stop Intake
      */
     public Command stopEating() {
-        if (Broken.intakeDisabled) return Commands.none();
+        if (Broken.intakeDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(m_motor::stopMotor)
@@ -110,7 +109,7 @@ public class IntakeSubsystem extends ThunderSubsystem {
     }
 
     public Command manual_intake(DoubleSupplier speed) {
-        if (Broken.intakeDisabled) return Commands.none();
+        if (Broken.intakeDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.set(speed.getAsDouble()));

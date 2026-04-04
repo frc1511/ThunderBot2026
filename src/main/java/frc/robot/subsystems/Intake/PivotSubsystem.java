@@ -17,7 +17,6 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
@@ -88,14 +87,14 @@ public class PivotSubsystem extends ThunderSubsystem {
     }
 
     public Command halt() {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(m_motor::stopMotor);
     }
 
     public Command down() {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.BOTTOM.get(), ControlType.kPosition))
@@ -103,7 +102,7 @@ public class PivotSubsystem extends ThunderSubsystem {
     }
 
     public Command up() {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.TOP.get(), ControlType.kPosition))
@@ -111,7 +110,7 @@ public class PivotSubsystem extends ThunderSubsystem {
     }
 
     public Command upSoft() {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.TOP.get(), ControlType.kPosition))
@@ -119,7 +118,7 @@ public class PivotSubsystem extends ThunderSubsystem {
     }
 
     public Command downSoft() {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.BOTTOM.get(), ControlType.kPosition))
@@ -127,7 +126,7 @@ public class PivotSubsystem extends ThunderSubsystem {
     }
 
     public Command middle() {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.MIDDLE.get(), ControlType.kPosition))
@@ -135,7 +134,7 @@ public class PivotSubsystem extends ThunderSubsystem {
     }
 
     public Command halfwayDown() {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.HALFWAY_DOWN.get(), ControlType.kPosition))
@@ -144,28 +143,28 @@ public class PivotSubsystem extends ThunderSubsystem {
     }
 
     public Command jostle() {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return middle()
             .andThen(down());
     }
 
     public Command jostleRepeatedly() {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return halfwayDown()
             .andThen(down()).repeatedly();
     }
 
     public Command manual_pivot(DoubleSupplier speed) {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.set(speed.getAsDouble()));
     }
 
     public Command manual_voltage(DoubleSupplier voltage) {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.setVoltage(voltage.getAsDouble()));

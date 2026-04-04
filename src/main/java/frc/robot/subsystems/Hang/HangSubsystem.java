@@ -20,8 +20,6 @@ import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
@@ -109,7 +107,7 @@ public class HangSubsystem extends ThunderSubsystem {
     public Command zeroHang() {
         if (Broken.hangFullyDisabled || Broken.hangLowerLimitDisabled || Helpers.isBypassModeEnabled()) {
             m_isZeroed = true;
-            return new InstantCommand(() -> {}, this);
+            return CommandBuilder.none(this);
         }
 
         return new CommandBuilder(this)
@@ -150,7 +148,7 @@ public class HangSubsystem extends ThunderSubsystem {
     }
 
     public Command extend() { // Hang will die if it goes past the upper limit
-        if (Broken.hangFullyDisabled) return Commands.none();
+        if (Broken.hangFullyDisabled) return CommandBuilder.none(this);
         
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -177,7 +175,7 @@ public class HangSubsystem extends ThunderSubsystem {
     }
 
     public Command retract() {
-        if (Broken.hangFullyDisabled) return Commands.none();
+        if (Broken.hangFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -197,7 +195,7 @@ public class HangSubsystem extends ThunderSubsystem {
     private double m_beforePosition = 0;
 
     public Command stowForTrench() {
-        if (Broken.hangFullyDisabled) return Commands.none();
+        if (Broken.hangFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onInitialize(() -> {
@@ -219,7 +217,7 @@ public class HangSubsystem extends ThunderSubsystem {
     }
 
     public Command halt() {
-        if (Broken.hangFullyDisabled) return new InstantCommand(()->{}, this);
+        if (Broken.hangFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(this::stop)
@@ -236,7 +234,7 @@ public class HangSubsystem extends ThunderSubsystem {
     }
 
     public Command manual(DoubleSupplier speedSupplier) {
-        if (Broken.hangFullyDisabled) return Commands.none();
+        if (Broken.hangFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -266,7 +264,7 @@ public class HangSubsystem extends ThunderSubsystem {
     private double m_preJostlePosition;
     private double m_i = 0;
     public Command jostle() {
-        if (Broken.hangFullyDisabled) return Commands.none();
+        if (Broken.hangFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onInitialize(() -> {

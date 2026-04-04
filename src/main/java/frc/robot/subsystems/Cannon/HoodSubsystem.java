@@ -20,7 +20,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.util.Broken;
@@ -146,11 +145,11 @@ public class HoodSubsystem extends ThunderSubsystem {
     }
 
     public Command zero() {
-        if (Broken.hoodDisabled) return new InstantCommand(() -> {}, this);
+        if (Broken.hoodDisabled) return CommandBuilder.none(this);
         if (Broken.hoodBeamBreakDisabled) {
             forceZeroEncoders();
             isConfirmedZeroed = true;
-            return new InstantCommand(() -> {}, this);
+            return CommandBuilder.none(this);
         }
 
         return new CommandBuilder(this)
@@ -172,7 +171,7 @@ public class HoodSubsystem extends ThunderSubsystem {
     }
 
     public Command toPosition(Supplier<Double> targetPosition) {
-        if (Broken.hoodDisabled) return Commands.none();
+        if (Broken.hoodDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this) 
             .onInitialize(() -> {
@@ -187,7 +186,7 @@ public class HoodSubsystem extends ThunderSubsystem {
     }
 
     public Command manual_hood(DoubleSupplier speed) {
-        if (Broken.hoodDisabled) return Commands.none();
+        if (Broken.hoodDisabled) return CommandBuilder.none(this);
         
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -202,7 +201,7 @@ public class HoodSubsystem extends ThunderSubsystem {
     }
 
     public Command stowForTrench() {
-        if (Broken.hoodDisabled) return Commands.none();
+        if (Broken.hoodDisabled) return CommandBuilder.none(this);
         
         double currentSetpoint = m_motor.getClosedLoopReference().getValueAsDouble();
 
@@ -227,7 +226,7 @@ public class HoodSubsystem extends ThunderSubsystem {
     }
 
     public Command halt() {
-        if (Broken.hoodDisabled) return new InstantCommand(()->{}, this);
+        if (Broken.hoodDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -236,7 +235,7 @@ public class HoodSubsystem extends ThunderSubsystem {
     }
 
     public Command setBrakeMode(BooleanSupplier brakeOn) {
-        if (Broken.hoodDisabled) return Commands.none();
+        if (Broken.hoodDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -256,7 +255,7 @@ public class HoodSubsystem extends ThunderSubsystem {
     }
 
     public Command toOptimalPosition() {
-        if (Broken.hoodDisabled) return Commands.none();
+        if (Broken.hoodDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onInitialize(() -> {

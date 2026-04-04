@@ -16,9 +16,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
@@ -109,7 +107,7 @@ public class ShooterSubsystem extends ThunderSubsystem {
     }
 
     public Command halt() {
-        if (Broken.shooterFullyDisabled) return new InstantCommand(()->{}, this);
+        if (Broken.shooterFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(m_primaryMotor::stopMotor);
@@ -121,7 +119,7 @@ public class ShooterSubsystem extends ThunderSubsystem {
     }
 
     public Command runAtCustomSpeed(DoubleSupplier speedRPM) {
-        if (Broken.shooterFullyDisabled) return Commands.none();
+        if (Broken.shooterFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> runAtSpeed(speedRPM.getAsDouble()))
@@ -136,7 +134,7 @@ public class ShooterSubsystem extends ThunderSubsystem {
 
     // Used only for autos
     public Command preheat() {
-        if (Broken.shooterFullyDisabled) return Commands.none();
+        if (Broken.shooterFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> runAtSpeed(optimalSpeedSupplier.getAsDouble()))
@@ -147,7 +145,7 @@ public class ShooterSubsystem extends ThunderSubsystem {
 
     // This is used in tele for preheat and fire
     public Command holdSpeedForShoot() {
-        if (Broken.shooterFullyDisabled) return Commands.none();
+        if (Broken.shooterFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> runAtSpeed(optimalSpeedSupplier.getAsDouble()))
@@ -155,7 +153,7 @@ public class ShooterSubsystem extends ThunderSubsystem {
     }
 
     public Command manual_shooter(DoubleSupplier speed) {
-        if (Broken.shooterFullyDisabled) return Commands.none();
+        if (Broken.shooterFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() ->
@@ -165,7 +163,7 @@ public class ShooterSubsystem extends ThunderSubsystem {
     }
 
     public Command manual_voltage(DoubleSupplier voltage) {
-        if (Broken.shooterFullyDisabled) return Commands.none();
+        if (Broken.shooterFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() ->
