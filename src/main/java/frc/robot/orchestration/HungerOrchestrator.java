@@ -43,11 +43,6 @@ public class HungerOrchestrator {
             .alongWith(intake.stopEating());
     }
 
-    public Command jostle() {
-        return pivot.jostle()
-            .raceWith(intake.eat());
-    }
-
     public Command jostleRepeatedly() {
         return pivot.jostleRepeatedly()
             .raceWith(intake.eat());

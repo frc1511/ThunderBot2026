@@ -296,7 +296,7 @@ public class Constants {
             double kCosRatio = 1;
 
             enum Position {
-                TOP(-0.336914), MIDDLE(-0.175), HALFWAY_DOWN(-0.13), BOTTOM(0.003708984375); // They change alot but should be approx right
+                TOP(-0.41), HALFWAY_DOWN(-0.208), BOTTOM(-0.09); // They change alot but should be approx right
 
                 private double m_value;
 

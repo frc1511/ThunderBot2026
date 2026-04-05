@@ -125,14 +125,6 @@ public class PivotSubsystem extends ThunderSubsystem {
             .isFinished(true);
     }
 
-    public Command middle() {
-        if (Broken.pivotDisabled) return CommandBuilder.none(this);
-
-        return new CommandBuilder(this)
-            .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.MIDDLE.get(), ControlType.kPosition))
-            .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(Constants.Hunger.Pivot.Position.MIDDLE.get(), m_pidController.getSetpoint(), Constants.Hunger.Pivot.kTolerance));
-    }
-
     public Command halfwayDown() {
         if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
@@ -140,13 +132,6 @@ public class PivotSubsystem extends ThunderSubsystem {
             .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.HALFWAY_DOWN.get(), ControlType.kPosition))
             .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(Constants.Hunger.Pivot.Position.HALFWAY_DOWN.get(), m_pidController.getSetpoint(), Constants.Hunger.Pivot.kBigTolerance));
 
-    }
-
-    public Command jostle() {
-        if (Broken.pivotDisabled) return CommandBuilder.none(this);
-
-        return middle()
-            .andThen(down());
     }
 
     public Command jostleRepeatedly() {

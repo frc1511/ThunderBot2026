@@ -30,7 +30,7 @@ public class IntakeSubsystem extends ThunderSubsystem {
     public IntakeSubsystem() {
         TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
         intakeConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-        intakeConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        intakeConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         intakeConfig.withCurrentLimits(
                 new CurrentLimitsConfigs()
                     .withSupplyCurrentLimit(Amps.of(30))
@@ -128,14 +128,16 @@ public class IntakeSubsystem extends ThunderSubsystem {
         if (Broken.intakeFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motorLeft.set(speed.getAsDouble()));
+            .onExecute(() -> m_motorLeft.set(speed.getAsDouble()))
+            .onEnd(() -> m_motorLeft.stopMotor());
     }
 
     public Command manual_intakeRight(DoubleSupplier speed) {
         if (Broken.intakeFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motorRight.set(speed.getAsDouble()));
+            .onExecute(() -> m_motorRight.set(speed.getAsDouble()))
+            .onEnd(() -> m_motorRight.stopMotor());
     }
 
     public Status status() {

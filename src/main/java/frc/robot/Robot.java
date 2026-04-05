@@ -239,7 +239,7 @@ public class Robot extends TimedRobot {
 
             driverController.x().and(condition).whileTrue(drivetrain.brick().withName("DriveBrick")); // Points wheels inwards while held
             // driverController.x().and(condition).whileTrue(conductor.autoHang()); //* ONLY FOR TESTING AUTO HANG
-            driverController.y().and(condition).whileTrue(drivetrain.hubLock().withName("DriveHubLockToggle")); // Lock onto the hub and shoot
+            driverController.y().and(condition).whileTrue(drivetrain.hubLock().alongWith(shooter.holdSpeedForShoot().asProxy()).withName("DriveHubLockToggle")); // Lock onto the hub and shoot
             driverController.a().and(condition).onTrue(drivetrain.resetRotation().withName("DriveSeedFieldCentric")); // Reset IMU
         }
 
@@ -317,7 +317,7 @@ public class Robot extends TimedRobot {
 
             auxController.b().and(condition)      .whileTrue(hang.jostle()             .withName("OneDriveBackupJostle"));
             auxController.x().and(condition)      .whileTrue(drivetrain.brick()        .withName("OneDriveBackupDriveBrick")); // Points wheels inwards while held
-            auxController.y().and(condition)      .whileTrue(drivetrain.hubLock()      .withName("OneDriveBackupDriveHubLock")); // Lock onto hub and shoot
+            auxController.y().and(condition)      .whileTrue(drivetrain.hubLock().alongWith(shooter.holdSpeedForShoot().asProxy()).withName("OneDriveBackupDriveHubLock")); // Lock onto hub and shoot
             auxController.a().and(condition)         .onTrue(drivetrain.resetRotation().withName("OneDriveBackupDriveSeedFieldCentric")); // Reset IMU
 
             // These ones get overridden during pit mode plus
@@ -344,17 +344,17 @@ public class Robot extends TimedRobot {
             auxController.a().and(condition)              .onTrue(hood.toPosition(() -> Constants.Hood.Position.HUB.get())    .withName("PresetHub"));
             auxController.leftBumper().and(condition)  .whileTrue(shooter.holdSpeedForShoot()                                 .withName("ShooterPreheat"))
                                                          .onFalse(shooter.halt()                                              .withName("ShooterHalt"));
-            auxController.rightBumper().and(condition) .whileTrue(intake.outtake()                                            .withName("IntakeOuttake"))
+            auxController.leftTrigger().and(condition) .whileTrue(intake.outtake()                                            .withName("IntakeOuttake"))
                                                          .onFalse(intake.stopEating()                                         .withName("IntakeHalt"));
             auxController.back().and(condition)        .whileTrue(pivot.up()                                                  .withName("PivotUp"));
 
             // This one gets overridden during pit mode plus
             condition = () -> auxDisable.isOff() && oneDriverMode.isOff() && pitModePlus.isOff();
 
-            auxController.leftTrigger().and(condition) .whileTrue(firingOrchestrator.fire()                                   .withName("FiringFire"))
+            auxController.rightBumper().and(condition) .whileTrue(firingOrchestrator.fire()                                   .withName("FiringFire"))
                                                          .onFalse(firingOrchestrator.halt()                                   .withName("FiringHalt"));
             auxController.rightTrigger().and(condition).whileTrue(hungerOrchestrator.consume()                                .withName("HungerConsume"))
-                                                        .onFalse(intake.stopEating()                                          .withName("IntakeHalt"));
+                                                         .onFalse(intake.stopEating()                                         .withName("IntakeHalt"));
 
             auxController.povUp().and(condition)       .whileTrue(spindexer.spin(Constants.Storage.Spindexer.Duration.FOREVER).withName("SpindexerSpin"))
                                                          .onFalse(spindexer.halt()                                            .withName("SpindexerHalt"));
