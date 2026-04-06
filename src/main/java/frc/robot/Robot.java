@@ -405,6 +405,8 @@ public class Robot extends TimedRobot {
 
         SmartDashboard.putData("SwitchBoard", switchBoard);
 
+        SmartDashboard.putData("Code Broken Disables", Broken.getBrokenStatuses());
+
         Helpers.hubToBecomeActive().onTrue(new InstantCommand(() -> {
             hubActiveTimer.restart();
         }));
