@@ -26,14 +26,14 @@ public class HubOrchestrator {
 
     Pair<FiringDataPoint, Double> latestConvergance;
 
-    private Field2d m_stupidDebugField;
+    private Field2d m_virtualHub;
 
     public HubOrchestrator(Robot robot) {
         cannonOrchestrator = robot.cannonOrchestrator;
         swerveSubsystem = robot.drivetrain;
         firingTable = new FiringTable();
 
-        m_stupidDebugField = new Field2d();
+        m_virtualHub = new Field2d();
 
         runConvergance();
     }
@@ -106,8 +106,8 @@ public class HubOrchestrator {
 
         virtualHub = actualVirtualHubTarget;
 
-        m_stupidDebugField.setRobotPose(new Pose2d(virtualHub, new Rotation2d(0)));
-        SmartDashboard.putData("stupid_debug_field", m_stupidDebugField);
+        m_virtualHub.setRobotPose(new Pose2d(virtualHub, new Rotation2d(0)));
+        SmartDashboard.putData("SOTM / Vitrual Hub Pose", m_virtualHub);
 
         Translation2d deltaTarget = virtualHub.minus(robotPosition);
         double finalDistance = deltaTarget.getNorm();
@@ -125,10 +125,10 @@ public class HubOrchestrator {
         Pose2d currentPose = swerveSubsystem.currentPose();
         Pose2d nearestHub = Helpers.allianceHub();
 
-        SmartDashboard.putNumber("converge_dist", Math.sqrt(Math.pow(currentPose.getX() - nearestHub.getX(), 2) + Math.pow(currentPose.getY() - nearestHub.getY(), 2)));
+        SmartDashboard.putNumber("SOTM / Converge Dist", Math.sqrt(Math.pow(currentPose.getX() - nearestHub.getX(), 2) + Math.pow(currentPose.getY() - nearestHub.getY(), 2)));
         
         latestConvergance = converge(currentSpeed, currentPose.getTranslation(), nearestHub.getTranslation());
-        SmartDashboard.putNumber("firingPoint_speed", latestConvergance.getFirst().speedRPM);
+        SmartDashboard.putNumber("SOTM / Firing Speed", latestConvergance.getFirst().speedRPM);
     }
 
     public double getOptimalShootSpeed() {

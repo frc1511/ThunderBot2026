@@ -74,16 +74,16 @@ public class HangSubsystem extends ThunderSubsystem {
     public void periodic() {
         if (Broken.hangFullyDisabled) return;
 
-        SmartDashboard.putBoolean("Hang_atLower", isAtLowerLimit());
-        SmartDashboard.putBoolean("Hang_atUpper", isAtUpperLimit());
-        SmartDashboard.putBoolean("Hang_isZeroed", isZeroed());
-        SmartDashboard.putNumber("Hang_position", m_encoder.getPosition());
-        SmartDashboard.putNumber("Hang_output_%", m_motor.getAppliedOutput());
-        SmartDashboard.putNumber("Hang_pidSetpoint", m_pidController.getSetpoint());
-        SmartDashboard.putBoolean("Hang_atSetpoint", atSetpoint());
-        SmartDashboard.putNumber("Hang_output_A", m_motor.getOutputCurrent());
-        SmartDashboard.putNumber("hang_distance_sensorDistance", getDistanceSensor().getFirst());
-        SmartDashboard.putBoolean("hang_distance_sensorValid", getDistanceSensor().getSecond());
+        SmartDashboard.putBoolean("Hang / At Lower Sensor", isAtLowerLimit());
+        SmartDashboard.putBoolean("Hang / At Upper Sensor", isAtUpperLimit());
+        SmartDashboard.putBoolean("Hang / Is Zeroed", isZeroed());
+        SmartDashboard.putNumber("Hang / Position", m_encoder.getPosition());
+        SmartDashboard.putNumber("Hang / Output %", m_motor.getAppliedOutput());
+        SmartDashboard.putNumber("Hang / Pid Setpoint", m_pidController.getSetpoint());
+        SmartDashboard.putBoolean("Hang / At Setpoint", atSetpoint());
+        SmartDashboard.putNumber("Hang / Putput A", m_motor.getOutputCurrent());
+        SmartDashboard.putNumber("Hang / Distance Sensor Distance", getDistanceSensor().getFirst());
+        SmartDashboard.putBoolean("Hang / Distance Sensor Valid", getDistanceSensor().getSecond());
     }
 
     private boolean isAtLowerLimit() {

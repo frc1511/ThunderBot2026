@@ -417,29 +417,29 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                 Alert.warning("Couldn't find rear limelight");
             }
 
-            SmartDashboard.putNumber("SOTM Drive Interpolated Theta", m_optimalRotationSupplier.getAsDouble());
-            SmartDashboard.putNumber("SOTM Drive Current Theta", currentPose().getRotation().getRadians());
+            SmartDashboard.putNumber("SOTM / Drive Interpolated Theta", m_optimalRotationSupplier.getAsDouble());
+            SmartDashboard.putNumber("SOTM / Drive Current Theta", currentPose().getRotation().getRadians());
         }
 
         m_currentField.setRobotPose(currentPose());
-        SmartDashboard.putData("currentPose", m_currentField);
-        SmartDashboard.putData("targetPose", m_targetField);
-        SmartDashboard.putNumber("Drive_speedMultiplier", m_speedMultipler);
+        SmartDashboard.putData("Drive / Current Pose", m_currentField);
+        SmartDashboard.putData("Drive / Target Pose", m_targetField);
+        SmartDashboard.putNumber("Drive / Speed Multiplier", m_speedMultipler);
 
-        SmartDashboard.putString("Drive_currentZone", ZoneConstants.checkZone(currentPose().getTranslation()).fullName());
+        SmartDashboard.putString("Drive / Current Zone", ZoneConstants.checkZone(currentPose().getTranslation()).fullName());
 
-        SmartDashboard.putString("Drive_Robot drive mode", m_fieldCentric ? "Field Centric" : "Robot Centric");
-        SmartDashboard.putNumber("Drive_trenchY", m_trenchYPos);
-        SmartDashboard.putBoolean("Drive_trenchLock", m_trenchLock);
-        SmartDashboard.putBoolean("Drive_hubLock", m_hubLock);
+        SmartDashboard.putString("Drive / Robot Drive Mode", m_fieldCentric ? "Field Centric" : "Robot Centric");
+        SmartDashboard.putNumber("Drive / Trench Y M", m_trenchYPos);
+        SmartDashboard.putBoolean("Drive / Trench Lock", m_trenchLock);
+        SmartDashboard.putBoolean("Drive / Hub Lock", m_hubLock);
 
         SmartDashboard.putData(m_driveController.getXController());
         SmartDashboard.putData(m_driveController.getYController());
         SmartDashboard.putData(m_driveController.getThetaController());
-        SmartDashboard.putNumber("Drive_theta_goal_deg", m_driveController.getThetaController().getGoal().position / Math.PI * 180);
-        SmartDashboard.putNumber("Drive_theta_setpoint_deg", m_driveController.getThetaController().getSetpoint().position / Math.PI * 180);
+        SmartDashboard.putNumber("Drive / Theta Goal DEG", m_driveController.getThetaController().getGoal().position / Math.PI * 180);
+        SmartDashboard.putNumber("Drive / Theta Setpoint DEG", m_driveController.getThetaController().getSetpoint().position / Math.PI * 180);
 
-        SmartDashboard.putNumber("Drive_Pigeon_Rate", getPigeon2().getAngularVelocityZDevice().getValueAsDouble());
+        SmartDashboard.putNumber("Drive / Pigeon Rate RPS", getPigeon2().getAngularVelocityZDevice().getValueAsDouble());
     }
 
     private void startSimThread() {
@@ -655,9 +655,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             this::resetControl,
             this::getSpeed,
             (speeds, feeds) -> {
-                SmartDashboard.putNumber("SetSpeeds_x", speeds.vxMetersPerSecond);
-                SmartDashboard.putNumber("SetSpeeds_y", speeds.vyMetersPerSecond);
-                SmartDashboard.putNumber("SetSpeeds_theta", speeds.omegaRadiansPerSecond);
+                SmartDashboard.putNumber("Drive / Auto Speeds / X M", speeds.vxMetersPerSecond);
+                SmartDashboard.putNumber("Drive / Auto Speeds / Y M", speeds.vyMetersPerSecond);
+                SmartDashboard.putNumber("Drive / Auto Speeds / Theta RPS", speeds.omegaRadiansPerSecond);
 
                 this.setControl(m_autoRequest.withSpeeds(speeds));
             },

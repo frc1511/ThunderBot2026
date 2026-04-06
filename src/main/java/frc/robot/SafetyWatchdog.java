@@ -19,7 +19,7 @@ public class SafetyWatchdog extends SubsystemBase {
             for (ThunderInterface subsystem : subsystems) {
                 String subsystemName = subsystem.getName().toLowerCase().replace("subsystem", "");
                 SmartDashboard.putString(
-                    "status_" + subsystemName, 
+                    "Watchdog Status / " + subsystemName, 
                     subsystem.status().toString());
             }
         }

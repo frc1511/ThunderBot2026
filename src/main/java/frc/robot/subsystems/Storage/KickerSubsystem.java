@@ -54,12 +54,12 @@ public class KickerSubsystem extends ThunderSubsystem {
     public void periodic() {
         if (Broken.kickerDisabled) return;
 
-        SmartDashboard.putNumber("kicker_vel_rpm", Helpers.RPStoRPM(m_motor.getVelocity().getValueAsDouble()));
-        SmartDashboard.putNumber("kicker_target_rpm", Helpers.RPStoRPM(m_motor.getClosedLoopReference().getValueAsDouble()));
-        SmartDashboard.putNumber("kicker_pid_setpoint", m_motor.getClosedLoopReference().getValueAsDouble());
-        SmartDashboard.putNumber("kicker_pid_out", m_motor.getClosedLoopOutput().getValueAsDouble());
-        SmartDashboard.putBoolean("kicker_at_target_rpm", atRPM());
-        SmartDashboard.putNumber("kicker_%_out", m_motor.get());
+        SmartDashboard.putNumber("Kicker / Speed RPM", Helpers.RPStoRPM(m_motor.getVelocity().getValueAsDouble()));
+        SmartDashboard.putNumber("Kicker / Target RPM", Helpers.RPStoRPM(m_motor.getClosedLoopReference().getValueAsDouble()));
+        SmartDashboard.putNumber("Kicker / PID Setpoint", m_motor.getClosedLoopReference().getValueAsDouble());
+        SmartDashboard.putNumber("Kicker / PID Output", m_motor.getClosedLoopOutput().getValueAsDouble());
+        SmartDashboard.putBoolean("Kicker / At Target RPM", atRPM());
+        SmartDashboard.putNumber("Kicker / Output %", m_motor.get());
     }
 
     public Command run() {

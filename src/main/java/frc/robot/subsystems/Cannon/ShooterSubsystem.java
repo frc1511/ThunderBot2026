@@ -92,18 +92,17 @@ public class ShooterSubsystem extends ThunderSubsystem {
     public void periodic() {
         if (Broken.shooterFullyDisabled) return;
 
-        SmartDashboard.putNumber("shooter_output_V", m_primaryMotor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("shooter_err", Math.abs(Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()) - m_targetSpeed));
-        SmartDashboard.putNumber("shooter_optimalSpeed", optimalSpeedSupplier.getAsDouble());
+        SmartDashboard.putNumber("Shooter / Motor Output V", m_primaryMotor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Shooter / Setpoint Error", Math.abs(Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()) - m_targetSpeed));
 
-        SmartDashboard.putNumber("SOTM Shooter RPM", optimalSpeedSupplier.getAsDouble());
+        SmartDashboard.putNumber("SOTM / Shooter RPM", optimalSpeedSupplier.getAsDouble());
     }
 
     @Override
     public void hddlPeriodic() {
-        SmartDashboard.putNumber("shooter_rpm", Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()));
-        SmartDashboard.putNumber("shooter_target_rpm", Helpers.RPStoRPM(m_primaryMotor.getClosedLoopReference().getValueAsDouble()));
-        SmartDashboard.putBoolean("shooter_atSpeed", shooterAtSpeed());
+        SmartDashboard.putNumber("Shooter / Speed RPM", Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()));
+        SmartDashboard.putNumber("Shooter / Target Speed RPM", Helpers.RPStoRPM(m_primaryMotor.getClosedLoopReference().getValueAsDouble()));
+        SmartDashboard.putBoolean("Shooter / At Target Speed", shooterAtSpeed());
     }
 
     public Command halt() {

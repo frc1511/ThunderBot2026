@@ -70,13 +70,13 @@ public class PivotSubsystem extends ThunderSubsystem {
 
         m_builtinEncoder.setPosition(m_CANcoder.getPosition().getValueAsDouble());
 
-        SmartDashboard.putNumber("Pivot_builtin_position", m_builtinEncoder.getPosition());
-        SmartDashboard.putNumber("Pivot_CANcoder_position", m_CANcoder.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber("Pivot_pidSetpoint", m_pidController.getSetpoint());
-        SmartDashboard.putBoolean("Pivot_atSetpoint", m_pidController.isAtSetpoint());
-        SmartDashboard.putNumber("Pivot_output_%", m_motor.getAppliedOutput());
-        SmartDashboard.putNumber("Pivot_output_A", m_motor.getOutputCurrent());
-        SmartDashboard.putNumber("Pivot_pidError", m_pidController.getSetpoint() - m_CANcoder.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Pivot / Builtin Position", m_builtinEncoder.getPosition());
+        SmartDashboard.putNumber("Pivot / CANcoder Position", m_CANcoder.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Pivot / PID Setpoint", m_pidController.getSetpoint());
+        SmartDashboard.putBoolean("Pivot / At Setpoint", m_pidController.isAtSetpoint());
+        SmartDashboard.putNumber("Pivot / Output %", m_motor.getAppliedOutput());
+        SmartDashboard.putNumber("Pivot / Output A", m_motor.getOutputCurrent());
+        SmartDashboard.putNumber("Pivot / PID Error", m_pidController.getSetpoint() - m_CANcoder.getPosition().getValueAsDouble());
     }
 
     public void setMotorMode(IdleMode mode) {

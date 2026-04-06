@@ -31,11 +31,11 @@ public class BlinkyBlinkyOrchestrator {
         this.robot = robot;
 
         m_brightnessPercent = 1d;
-        SmartDashboard.putNumber("LED_Brightness", 1d);
+        SmartDashboard.putNumber("LEDs / Brightness", 1d);
     }
 
     public void sparkle() {
-        m_brightnessPercent = SmartDashboard.getNumber("LED_Brightness", 1d);
+        m_brightnessPercent = SmartDashboard.getNumber("LEDs / Brightness", 1d);
 
         if (!Broken.blinkyBlinkyDisableStatus()) {
             if (robot.hungerOrchestrator.isIntaking()) {

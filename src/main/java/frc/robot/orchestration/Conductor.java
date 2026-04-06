@@ -44,7 +44,7 @@ public class Conductor {
 
         testingpose = Helpers.getTargetHangPose(m_robot.drivetrain.currentPose());
         testingfield.setRobotPose(testingpose);
-        SmartDashboard.putData("testingpose", testingfield);
+        SmartDashboard.putData("Conductor / Hang Align Pose", testingfield);
     }
 
     public Command autoHang() {

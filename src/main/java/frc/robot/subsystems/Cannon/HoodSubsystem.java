@@ -107,25 +107,25 @@ public class HoodSubsystem extends ThunderSubsystem {
     public void periodic() {
         if (Broken.hoodDisabled) return;
         
-        SmartDashboard.putNumber("hood_cancoder_rots", m_encoder.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber("hood_motor_rots", m_motor.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber("hood_vel", m_encoder.getVelocity().getValueAsDouble());
-        SmartDashboard.putBoolean("hood_atPos", atPosition());
-        SmartDashboard.putNumber("hood_output_V", m_motor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("hood_setpoint", trueSetpoint);
-        // SmartDashboard.putNumber("hood_profiled_setpoint", m_motor.getClosedLoopReference().getValueAsDouble());
-        // SmartDashboard.putNumber("hood_profiled_setpoint_d-dx", m_motor.getClosedLoopReferenceSlope().getValueAsDouble());
-        SmartDashboard.putBoolean("hood_isZeroed", isZeroed());
-        SmartDashboard.putBoolean("hood_zeroSensorTripped", isAtZero());
-        SmartDashboard.putNumber("hood_err", m_motor.getClosedLoopError().getValueAsDouble());
+        SmartDashboard.putNumber("Hood / Cancoder ROT", m_encoder.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Hood / Motor ROT", m_motor.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Hood / Vel RPS", m_encoder.getVelocity().getValueAsDouble());
+        SmartDashboard.putBoolean("Hood / At Target Position", atPosition());
+        SmartDashboard.putNumber("Hood / Motor Output V", m_motor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Hood / Final Setpoint", trueSetpoint);
+        // SmartDashboard.putNumber("Hood / profiled_setpoint", m_motor.getClosedLoopReference().getValueAsDouble());
+        // SmartDashboard.putNumber("Hood / profiled_setpoint_d-dx", m_motor.getClosedLoopReferenceSlope().getValueAsDouble());
+        SmartDashboard.putBoolean("Hood / Is Zeroed", isZeroed());
+        SmartDashboard.putBoolean("Hood / Zero Sensor Tripped", isAtZero());
+        SmartDashboard.putNumber("Hood / Setpoint Error", m_motor.getClosedLoopError().getValueAsDouble());
 
-        SmartDashboard.putNumber("SOTM Hood Target Theta", optimalAngleSupplier.getAsDouble());
+        SmartDashboard.putNumber("SOTM / Hood Target Theta", optimalAngleSupplier.getAsDouble());
     }
 
     @Override
     public void hddlPeriodic() {
-        SmartDashboard.putNumber("hood_profiled_setpoint", m_motor.getClosedLoopReference().getValueAsDouble());
-        SmartDashboard.putNumber("hood_profiled_setpoint_d-dx", m_motor.getClosedLoopReferenceSlope().getValueAsDouble());
+        SmartDashboard.putNumber("Hood / Profiled Setpoint", m_motor.getClosedLoopReference().getValueAsDouble());
+        SmartDashboard.putNumber("Hood / Profiled Setpoint Slope", m_motor.getClosedLoopReferenceSlope().getValueAsDouble());
     }
 
     public boolean isAtZero() {

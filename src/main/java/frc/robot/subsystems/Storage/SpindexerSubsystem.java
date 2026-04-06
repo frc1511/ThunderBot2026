@@ -31,9 +31,9 @@ public class SpindexerSubsystem extends ThunderSubsystem {
     public void periodic() {
         if (Broken.spindexerDisabled) return;
         
-        SmartDashboard.putNumber("Spindexer_output_%", m_motor.get());
-        SmartDashboard.putNumber("Spindexer_output_A", m_motor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("Spindexer_velocity", m_motor.getVelocity().getValueAsDouble());
+        SmartDashboard.putNumber("Spindexer / Output %", m_motor.get());
+        SmartDashboard.putNumber("Spindexer / Output A", m_motor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Spindexer / Speed RPM", m_motor.getVelocity().getValueAsDouble());
     }
 
     /**

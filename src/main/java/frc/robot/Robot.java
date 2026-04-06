@@ -399,11 +399,11 @@ public class Robot extends TimedRobot {
         NamedCommands.registerCommand("Hang", conductor.autoHang().asProxy()); // Because path planner will reserve the requirement for hang at the start of the auto, the zero (default) command will never run. Because the zero command is never run, hang can't operate. To remove the requirement for hang from the auto, asProxy is applied to remove the subsystem requirement.
 
         autoChooser = AutoBuilder.buildAutoChooser();
-        SmartDashboard.putData("Auto Chooser", autoChooser);
+        SmartDashboard.putData("Extra / Auto Chooser", autoChooser);
 
         SmartDashboard.putData(CommandScheduler.getInstance());
 
-        SmartDashboard.putData("SwitchBoard", switchBoard);
+        SmartDashboard.putData("Extra / SwitchBoard", switchBoard);
 
         SmartDashboard.putData("Code Broken Disables", Broken.getBrokenStatuses());
 
@@ -438,20 +438,20 @@ public class Robot extends TimedRobot {
             Alert.error("Aux Controller Disconnected");
         }
 
-        SmartDashboard.putBoolean("drive disabled", driveDisable.isOn());
-        SmartDashboard.putBoolean("aux disabled", auxDisable.isOn());
+        SmartDashboard.putBoolean("Extra / Drive Disabled", driveDisable.isOn());
+        SmartDashboard.putBoolean("Extra / Aux Disabled", auxDisable.isOn());
 
         if (Constants.kLogTimeAndJoystick && m_timeAndJoystickReplay != null) {
             m_timeAndJoystickReplay.update();
         }
 
-        SmartDashboard.putNumber("Frozen_Dashboard_Detector_2000", i++);
+        SmartDashboard.putNumber("Extra / Frozen Dashboard Detector 2000", i++);
 
-        SmartDashboard.putString("aid_hubTimer", String.format("%.3f", Math.max(25 - hubActiveTimer.get(), -2.0)).replace(".", "s"));
-        SmartDashboard.putBoolean("aid_hubActive", Helpers.isHubActive(true));
-        SmartDashboard.putNumber("aid_matchTimer", Timer.getMatchTime());
+        SmartDashboard.putString("Extra / Driver Aid / Hub Timer", String.format("%.3f", Math.max(25 - hubActiveTimer.get(), -2.0)).replace(".", "s"));
+        SmartDashboard.putBoolean("Extra / Driver Aid / Hub Active", Helpers.isHubActive(true));
+        SmartDashboard.putNumber("Extra / Driver Aid / Match Timer", Timer.getMatchTime());
 
-        SmartDashboard.putBoolean("aid_tenchMode", conductor.trenchSafe());
+        SmartDashboard.putBoolean("Extra / Driver Aid / Tench Mode Active", conductor.trenchSafe());
 
         // If the HDDL is not running, run them at the normal rate
         if (!Constants.kUseHDDL) {

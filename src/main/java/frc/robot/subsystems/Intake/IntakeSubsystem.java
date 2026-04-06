@@ -65,10 +65,10 @@ public class IntakeSubsystem extends ThunderSubsystem {
     public void periodic() {
         if (Broken.intakeFullyDisabled) return;
 
-        SmartDashboard.putNumber("intake_rpm", Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()));
-        SmartDashboard.putNumber("intake_target_rpm", Helpers.RPStoRPM(m_primaryMotor.getClosedLoopReference().getValueAsDouble()));
-        SmartDashboard.putNumber("intake_output_V", m_primaryMotor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("intake_err", Math.abs(Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()) - Constants.Hunger.Intake.kEatRPM));
+        SmartDashboard.putNumber("Intake / Speed RPM", Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()));
+        SmartDashboard.putNumber("Intake / Target RPM", Helpers.RPStoRPM(m_primaryMotor.getClosedLoopReference().getValueAsDouble()));
+        SmartDashboard.putNumber("Intake / Output V", m_primaryMotor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Intake / Setpoint Error", Math.abs(Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()) - Constants.Hunger.Intake.kEatRPM));
     }
 
     /**
