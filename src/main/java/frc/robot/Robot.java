@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.function.BooleanSupplier;
 
@@ -56,6 +57,7 @@ import frc.util.CommandBuilder;
 import frc.util.Constants;
 import frc.util.Helpers;
 import frc.util.Thunder.ThunderInterface;
+import frc.util.Thunder.ThunderSubsystem;
 import frc.util.Thunder.ThunderSwitchboard;
 import frc.util.Thunder.ThunderSwitchboard.ThunderSwitch;
 
@@ -88,6 +90,7 @@ public class Robot extends TimedRobot {
     public final HungerOrchestrator hungerOrchestrator;
 
     public final Conductor conductor;
+    public final ManualModeHandler manualModeHandler;
 
     private final SendableChooser<Command> autoChooser;
 
@@ -95,7 +98,7 @@ public class Robot extends TimedRobot {
 
     public ThunderSwitch driveDisable = switchBoard.button(1);
     public ThunderSwitch auxDisable = switchBoard.button(2);
-    public ThunderSwitch placeholder3 = switchBoard.button(3);
+    public ThunderSwitch pitModePlatinumEditionTM = switchBoard.button(3);
     public ThunderSwitch fieldCentric = switchBoard.button(4);
     public ThunderSwitch ledDisable = switchBoard.button(5);
     public ThunderSwitch limelightDisable = switchBoard.button(6);
@@ -124,6 +127,16 @@ public class Robot extends TimedRobot {
         allSubsystems.add(drivetrain);
 
         allSubsystems.forEach(ThunderInterface::registerSubsystem);
+
+        ArrayList<ThunderSubsystem> thunderSubsystems = new ArrayList<ThunderSubsystem>();
+
+        allSubsystems.forEach((iface) -> {
+            if (iface.getClass().getSuperclass() == ThunderSubsystem.class) {
+                thunderSubsystems.add((ThunderSubsystem)iface);
+            }
+        });
+
+        manualModeHandler = new ManualModeHandler(thunderSubsystems);
 
         if (Constants.kUseDataLog) {
             DataLogManager.start();
@@ -332,7 +345,7 @@ public class Robot extends TimedRobot {
         }
 
         { // Main Aux Controls
-            BooleanSupplier condition = () -> auxDisable.isOff() && oneDriverMode.isOff();
+            BooleanSupplier condition = () -> auxDisable.isOff() && oneDriverMode.isOff() && pitModePlus.isOff();
 
             (auxController.leftStick().or(auxController.rightStick())).and(condition)
                                                        .whileTrue(shooter.reverse()                                           .withName("ShooterReverse"));
@@ -348,9 +361,6 @@ public class Robot extends TimedRobot {
                                                          .onFalse(intake.stopEating()                                         .withName("IntakeHalt"));
             auxController.back().and(condition)        .whileTrue(pivot.up()                                                  .withName("PivotUp"));
 
-            // This one gets overridden during pit mode plus
-            condition = () -> auxDisable.isOff() && oneDriverMode.isOff() && pitModePlus.isOff();
-
             auxController.rightBumper().and(condition) .whileTrue(firingOrchestrator.fire()                                   .withName("FiringFire"))
                                                          .onFalse(firingOrchestrator.halt()                                   .withName("FiringHalt"));
             auxController.rightTrigger().and(condition).whileTrue(hungerOrchestrator.consume()                                .withName("HungerConsume"))
@@ -361,24 +371,59 @@ public class Robot extends TimedRobot {
         }
 
         { // Manual Aux Controls
-            BooleanSupplier condition = () -> auxDisable.isOff() && oneDriverMode.isOff() && pitModePlus.isOn();
+            BooleanSupplier condition = () -> auxDisable.isOff() && oneDriverMode.isOff() && pitModePlus.isOn() && pitModePlatinumEditionTM.isOff();
 
-            auxController.leftTrigger().and(condition) .whileTrue(intake.manual_intakeLeft(() -> .6)                          .withName("FiringFire"));
-            auxController.rightTrigger().and(condition).whileTrue(intake.manual_intakeRight(() -> .6)                         .withName("HungerConsume"));
+            /**
+             *         1 Inc
+             *           ↑
+             *           |
+             * 2 Dec ←---▢---→ 2 Inc
+             *           |
+             *           ↓
+             *         1 Dec
+             */
+            auxController.povUp()   .and(condition).onTrue(manualModeHandler. increaseManual1Speed());
+            auxController.povDown() .and(condition).onTrue(manualModeHandler.decrementManual1Speed());
+            auxController.povRight().and(condition).onTrue(manualModeHandler. increaseManual2Speed());
+            auxController.povLeft() .and(condition).onTrue(manualModeHandler.decrementManual2Speed());
+            
+            /**
+             *         1 Fwr
+             *           ↑
+             *           Y
+             * 2 Rev ←X--▢--B→ 2 Fwr
+             *           A
+             *           ↓
+             *         1 Rev
+             */
+
+            auxController.b().and(condition).whileTrue(manualModeHandler.runSubsystem2Forward());
+            auxController.x().and(condition).whileTrue(manualModeHandler.runSubsystem2Reverse());
+            auxController.y().and(condition).whileTrue(manualModeHandler.runSubsystem1Forward());
+            auxController.a().and(condition).whileTrue(manualModeHandler.runSubsystem1Reverse());
+
+            auxController.rightBumper() .and(condition).whileTrue(manualModeHandler.manual1ModifierLow());
+            auxController.rightTrigger().and(condition).whileTrue(manualModeHandler.manual1ModifierSuperLow());
+            auxController.leftBumper()  .and(condition).whileTrue(manualModeHandler.manual2ModifierLow());
+            auxController.leftTrigger() .and(condition).whileTrue(manualModeHandler.manual2ModifierSuperLow());
         }
+        
+        { // Manual Aux SysID
+            BooleanSupplier condition = () -> auxDisable.isOff() && oneDriverMode.isOff() && pitModePlus.isOn() && pitModePlatinumEditionTM.isOn();
 
-        if (Constants.kSysIDMode == Constants.SysIDMode.SHOOTER) {
-            ShooterSysID shooterSysID = new ShooterSysID(shooter);
-            auxController.povUp().and(pitModePlus::isOn).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-            auxController.povRight().and(pitModePlus::isOn).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-            auxController.povDown().and(pitModePlus::isOn).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
-            auxController.povLeft().and(pitModePlus::isOn).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-        } else if (Constants.kSysIDMode == Constants.SysIDMode.DRIVE) {
-            SysID sysID = new SysID((RealSwerveSubsystem) drivetrain);
-            auxController.povUp().and(pitModePlus::isOn).whileTrue(sysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-            auxController.povRight().and(pitModePlus::isOn).whileTrue(sysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-            auxController.povDown().and(pitModePlus::isOn).whileTrue(sysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
-            auxController.povLeft().and(pitModePlus::isOn).whileTrue(sysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+            if (Constants.kSysIDMode == Constants.SysIDMode.SHOOTER) {
+                ShooterSysID shooterSysID = new ShooterSysID(shooter);
+                auxController.povUp()   .and(condition).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+                auxController.povRight().and(condition).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+                auxController.povDown() .and(condition).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
+                auxController.povLeft() .and(condition).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+            } else if (Constants.kSysIDMode == Constants.SysIDMode.DRIVE) {
+                SysID sysID = new SysID((RealSwerveSubsystem) drivetrain);
+                auxController.povUp()   .and(condition).whileTrue(sysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+                auxController.povRight().and(condition).whileTrue(sysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+                auxController.povDown() .and(condition).whileTrue(sysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
+                auxController.povLeft() .and(condition).whileTrue(sysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+            }
         }
 
         // MARK: Auto

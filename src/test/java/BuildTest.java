@@ -11,8 +11,8 @@ class BuildTest {
 
   @BeforeEach
   void robotBuilds() {
-    assert HAL.initialize(500, 0); // initialize the HAL, crash if failed
     if (robot == null) {
+      assert HAL.initialize(500, 0); // initialize the HAL, crash if failed
       try {
         robot = new Robot();
       } catch (Exception e) {

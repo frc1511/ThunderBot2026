@@ -77,11 +77,13 @@ public class KickerSubsystem extends ThunderSubsystem {
             .onExecute(m_motor::stopMotor);
     }
 
-    public Command manual_kicker(DoubleSupplier speed) {
+    @Override
+    public Command manual(DoubleSupplier speed) {
         if (Broken.kickerDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motor.set(speed.getAsDouble()));
+            .onExecute(() -> m_motor.set(speed.getAsDouble()))
+            .onEnd(() -> m_motor.stopMotor());
     }
 
     public Status status() {

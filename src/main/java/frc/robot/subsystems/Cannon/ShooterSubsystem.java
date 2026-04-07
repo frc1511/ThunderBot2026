@@ -151,14 +151,15 @@ public class ShooterSubsystem extends ThunderSubsystem {
             .onEnd(this::halt);
     }
 
-    public Command manual_shooter(DoubleSupplier speed) {
+    @Override
+    public Command manual(DoubleSupplier speed) {
         if (Broken.shooterFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() ->
                 runAtSpeed(speed.getAsDouble())
             )
-            .isFinished(() -> false);
+            .onEnd(() -> m_primaryMotor.stopMotor());
     }
 
     public Command manual_voltage(DoubleSupplier voltage) {

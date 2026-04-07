@@ -185,13 +185,13 @@ public class HoodSubsystem extends ThunderSubsystem {
             .onlyIf(isReadyToMove);
     }
 
-    public Command manual_hood(DoubleSupplier speed) {
+    @Override
+    public Command manual(DoubleSupplier speed) {
         if (Broken.hoodDisabled) return CommandBuilder.none(this);
         
         return new CommandBuilder(this)
-            .onExecute(() -> {
-                m_motor.set(speed.getAsDouble());
-            });
+            .onExecute(() -> m_motor.set(speed.getAsDouble()))
+            .onEnd(() -> m_motor.stopMotor());
     }
 
     public boolean safeForTrench() {

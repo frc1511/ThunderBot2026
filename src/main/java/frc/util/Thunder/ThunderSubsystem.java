@@ -1,7 +1,9 @@
 package frc.util.Thunder;
 
 import java.util.HashMap;
+import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.util.Constants.Status;
 
@@ -34,6 +36,10 @@ public class ThunderSubsystem implements ThunderInterface {
 
     public Status status() {
         throw new UnsupportedOperationException("ThunderSubsystems must define status()");
+    }
+
+    public Command manual(DoubleSupplier speed) {
+        throw new UnsupportedOperationException("ThunderSubsystems must define manual(DoubleSupplier speed)");
     }
 
     /** High density data logging periodic */

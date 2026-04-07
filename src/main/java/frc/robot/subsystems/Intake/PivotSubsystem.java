@@ -141,11 +141,13 @@ public class PivotSubsystem extends ThunderSubsystem {
             .andThen(down()).repeatedly();
     }
 
-    public Command manual_pivot(DoubleSupplier speed) {
+    @Override
+    public Command manual(DoubleSupplier speed) {
         if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motor.set(speed.getAsDouble()));
+            .onExecute(() -> m_motor.set(speed.getAsDouble()))
+            .onEnd(() -> m_motor.stopMotor());
     }
 
     public Command manual_voltage(DoubleSupplier voltage) {

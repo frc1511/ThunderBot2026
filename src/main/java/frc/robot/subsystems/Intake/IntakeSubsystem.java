@@ -124,20 +124,13 @@ public class IntakeSubsystem extends ThunderSubsystem {
             .isFinished(true);
     }
 
-    public Command manual_intakeLeft(DoubleSupplier speed) {
+    @Override
+    public Command manual(DoubleSupplier speed) {
         if (Broken.intakeFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motorLeft.set(speed.getAsDouble()))
-            .onEnd(() -> m_motorLeft.stopMotor());
-    }
-
-    public Command manual_intakeRight(DoubleSupplier speed) {
-        if (Broken.intakeFullyDisabled) return CommandBuilder.none(this);
-
-        return new CommandBuilder(this)
-            .onExecute(() -> m_motorRight.set(speed.getAsDouble()))
-            .onEnd(() -> m_motorRight.stopMotor());
+            .onExecute(() -> m_primaryMotor.set(speed.getAsDouble()))
+            .onEnd(() -> m_primaryMotor.stopMotor());
     }
 
     public Status status() {
