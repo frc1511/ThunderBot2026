@@ -1,5 +1,6 @@
 package frc.robot.subsystems.Cannon;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -51,6 +52,11 @@ public class TurretSubsystem extends ThunderSubsystem {
         if (!Helpers.onCANChain(m_motor)) return Status.DISCONNECTED;
         if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
         return Status.IDLE;
+    }
+
+    @Override
+    public Command manual(DoubleSupplier speed) {
+        return CommandBuilder.none(this);
     }
 }
 
