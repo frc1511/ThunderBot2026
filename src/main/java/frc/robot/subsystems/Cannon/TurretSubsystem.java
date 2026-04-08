@@ -59,5 +59,3 @@ public class TurretSubsystem extends ThunderSubsystem {
         return CommandBuilder.none(this);
     }
 }
-
-

@@ -377,7 +377,7 @@ public class Robot extends TimedRobot {
              *         1 Inc
              *           ↑
              *           |
-             * 2 Dec ←---▢---→ 2 Inc
+             * 2 Dec <---#---> 2 Inc
              *           |
              *           ↓
              *         1 Dec
@@ -391,7 +391,7 @@ public class Robot extends TimedRobot {
              *         1 Fwr
              *           ↑
              *           Y
-             * 2 Rev ←X--▢--B→ 2 Fwr
+             * 2 Rev <X--#--B> 2 Fwr
              *           A
              *           ↓
              *         1 Rev
