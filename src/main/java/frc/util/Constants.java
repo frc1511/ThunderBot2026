@@ -354,9 +354,9 @@ public class Constants {
 
         private static final double kCoupleRatio = 3.125;
 
-        private static final double kDriveGearRatio = 5.357142857142857;
-        private static final double kSteerGearRatio = 18.75;
-        private static final Distance kWheelRadius = Inches.of(2);
+        public static final double kDriveGearRatio = 5.357142857142857;
+        public static final double kSteerGearRatio = 18.75;
+        public static final Distance kWheelRadius = Inches.of(2);
 
         private static final boolean kInvertLeftSide = false;
         private static final boolean kInvertRightSide = true;
@@ -365,11 +365,13 @@ public class Constants {
         public static final double kGotoThetaTolerance = 3d / 180d * Math.PI;
 
         // These are only used for simulation
-        private static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.01);
-        private static final MomentOfInertia kDriveInertia = KilogramSquareMeters.of(0.01);
+        public static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.01);
+        public static final MomentOfInertia kDriveInertia = KilogramSquareMeters.of(0.01);
         // Simulated voltage necessary to overcome friction
-        private static final Voltage kSteerFrictionVoltage = Volts.of(0.2);
-        private static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
+        public static final Voltage kSteerFrictionVoltage = Volts.of(0.2);
+        public static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
+
+        public static final double kWheelCoefficientOfFriction = 1.2;
 
         public static final double kMaxSpeed = 0.8 * kSpeedAt12Volts.in(MetersPerSecond); // % Multiplier * kSpeedAt12Volts desired top speed
         public static final double kMaxAngularRate = 1d * DegreesPerSecond.of(600).in(RadiansPerSecond);

@@ -8,12 +8,19 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.function.BooleanSupplier;
 
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnField;
+
 import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -45,6 +52,7 @@ import frc.robot.subsystems.Cannon.ShooterSubsystem;
 import frc.robot.subsystems.Cannon.TurretSubsystem;
 import frc.robot.subsystems.Drive.FakeSwerveSubsystem;
 import frc.robot.subsystems.Drive.RealSwerveSubsystem;
+import frc.robot.subsystems.Drive.SimulatedSwerveSubsystem;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
 import frc.robot.subsystems.Hang.HangSubsystem;
 import frc.robot.subsystems.Intake.IntakeSubsystem;
@@ -69,7 +77,7 @@ public class Robot extends TimedRobot {
     // private final Telemetry logger = new Telemetry(Constants.SwerveConstants.kMaxSpeed);
     private final HootAutoReplay m_timeAndJoystickReplay;
 
-    public final SwerveSubsystem drivetrain = Broken.drivetrainFullyDisabled ? new FakeSwerveSubsystem() : new RealSwerveSubsystem();
+    public final SwerveSubsystem drivetrain;
 
     public final ShooterSubsystem shooter = new ShooterSubsystem();
     public final HoodSubsystem hood = new HoodSubsystem();
@@ -116,6 +124,8 @@ public class Robot extends TimedRobot {
     public HashSet<ThunderInterface> allSubsystems = new HashSet<>();
 
     public Robot() {
+        drivetrain = isSimulation() ? new SimulatedSwerveSubsystem() : (Broken.drivetrainFullyDisabled ? new FakeSwerveSubsystem() : new RealSwerveSubsystem());
+
         allSubsystems.add(shooter);
         allSubsystems.add(hood);
         allSubsystems.add(turret);
@@ -570,4 +580,23 @@ public class Robot extends TimedRobot {
 
     @Override
     public void testExit() {}
+
+    @Override
+    public void simulationInit() {
+        SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(3, 3)));
+    }
+
+    private StructArrayPublisher<Pose3d> networkedFuelPoses = NetworkTableInstance.getDefault()
+        .getStructArrayTopic("MyPoseArray", Pose3d.struct)
+        .publish();
+
+    @Override
+    public void simulationPeriodic() {
+        SimulatedArena.getInstance().simulationPeriodic();
+
+        Pose3d[] fuelPoses = SimulatedArena.getInstance()
+            .getGamePiecesArrayByType("Fuel");
+
+        networkedFuelPoses.accept(fuelPoses);
+    }
 }

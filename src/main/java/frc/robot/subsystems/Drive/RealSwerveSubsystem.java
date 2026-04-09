@@ -106,6 +106,10 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     public RealSwerveSubsystem() {
         super();
 
+        if (Utils.isSimulation()) {
+            startSimThread();
+        }
+
         sysID = new SysID(this);
 
         m_driveController = new HolonomicDriveController(
@@ -150,10 +154,6 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                 builder.addDoubleProperty("Robot Angle", () -> getPigeon2().getRotation2d().getRadians(), null);
             }
         });
-
-        if (Utils.isSimulation()) {
-            startSimThread();
-        }
 
         configurePathPlanner();
     }
@@ -276,8 +276,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                 vRot = m_driveController.getThetaController().calculate(currentPose().getRotation().getDegrees(), m_ensuredThetaSupplier.getAsDouble());
             }
 
+            SwerveRequest swerveRequest;
             if (m_fieldCentric) {
-                return m_fieldCentricRequest
+                swerveRequest = m_fieldCentricRequest
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
                     .withVelocityX(vx)
                     .withVelocityY(vy)
@@ -286,7 +287,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                     .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband)
                     .withDesaturateWheelSpeeds(true);
             } else {
-                return m_robotCentricRequest
+                swerveRequest = m_robotCentricRequest
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
                     .withVelocityX(vx)
                     .withVelocityY(vy)
@@ -295,6 +296,8 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                     .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband)
                     .withDesaturateWheelSpeeds(true);
             }
+
+            return swerveRequest;
         });
     }
 
