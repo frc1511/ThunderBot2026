@@ -17,12 +17,13 @@ import frc.util.CommandBuilder;
 import frc.util.Constants;
 import frc.util.Constants.Status;
 import frc.util.Constants.Storage.Kicker.KickerPID;
-import frc.util.Thunder.Modifiable;
 import frc.util.Thunder.ThunderSubsystem;
 import frc.util.Helpers;
 
 public class KickerSubsystem extends ThunderSubsystem {
     private TalonFX m_motor;
+
+    DoubleSupplier optimalSpeedSupplier = () -> 0;
 
     public KickerSubsystem() {
         TalonFXConfiguration kickerConfig = new TalonFXConfiguration();
@@ -46,8 +47,6 @@ public class KickerSubsystem extends ThunderSubsystem {
         } else {
             m_motor = null;
         }
-
-        new Modifiable("optimalRPM", this, () -> Constants.Storage.Kicker.kTargetKickerRPM);
     }
 
     @Override
@@ -60,13 +59,19 @@ public class KickerSubsystem extends ThunderSubsystem {
         SmartDashboard.putNumber("Kicker / PID Output", m_motor.getClosedLoopOutput().getValueAsDouble());
         SmartDashboard.putBoolean("Kicker / At Target RPM", atRPM());
         SmartDashboard.putNumber("Kicker / Output %", m_motor.get());
+
+        SmartDashboard.putNumber("SOTM / Kicker RPM", optimalSpeedSupplier.getAsDouble());
+    }
+
+    public void setOptimalSpeedGetter(DoubleSupplier supplier) {
+        optimalSpeedSupplier = supplier;
     }
 
     public Command run() {
         if (Broken.kickerDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motor.setControl(new VelocityVoltage(Helpers.RPMtoRPS((Double) getField("optimalRPM").getValue()))))
+            .onExecute(() -> m_motor.setControl(new VelocityVoltage(Helpers.RPMtoRPS(optimalSpeedSupplier.getAsDouble()))))
             .onEnd(m_motor::stopMotor);
     }
 

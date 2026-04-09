@@ -16,10 +16,14 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.util.Broken;
@@ -126,6 +130,17 @@ public class HoodSubsystem extends ThunderSubsystem {
     public void hddlPeriodic() {
         SmartDashboard.putNumber("Hood / Profiled Setpoint", m_motor.getClosedLoopReference().getValueAsDouble());
         SmartDashboard.putNumber("Hood / Profiled Setpoint Slope", m_motor.getClosedLoopReferenceSlope().getValueAsDouble());
+    }
+
+    public Command setCoastMode() {
+        if (Broken.pivotDisabled) return Commands.none(); 
+        return new CommandBuilder()
+            .onInitialize(() -> {
+                m_motor.getConfigurator().apply(new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Coast));
+            })
+            .onEnd(() -> {
+                m_motor.getConfigurator().apply(new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Brake));
+            });
     }
 
     public boolean isAtZero() {

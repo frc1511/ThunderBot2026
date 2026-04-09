@@ -3,6 +3,7 @@ package frc.robot;
 import java.util.ArrayList;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.util.CommandBuilder;
 import frc.util.Thunder.ThunderSubsystem;
@@ -45,6 +46,9 @@ public class ManualModeHandler {
         m_chooser_2.onChange((subsystem) -> {
             m_subsystem_2 = subsystem;
         });
+
+        SmartDashboard.putData("Manual / Subsytem 1", m_chooser_1);
+        SmartDashboard.putData("Manual / Subsytem 2", m_chooser_2);
     }
 
     public Command increaseManual1Speed() {

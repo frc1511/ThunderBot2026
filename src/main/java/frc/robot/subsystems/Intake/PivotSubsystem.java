@@ -17,6 +17,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
@@ -41,6 +42,7 @@ public class PivotSubsystem extends ThunderSubsystem {
                 .kS(Constants.Hunger.Pivot.PivotPID.kS)
                 .kCosRatio(Constants.Hunger.Pivot.kCosRatio)
                 .kCos(Constants.Hunger.Pivot.PivotPID.kCos);
+        pivotConfig.idleMode(IdleMode.kBrake);
 
         pivotConfig.encoder
             .positionConversionFactor(Constants.Hunger.Pivot.kEncoderConversionFactor);
@@ -79,11 +81,17 @@ public class PivotSubsystem extends ThunderSubsystem {
         SmartDashboard.putNumber("Pivot / PID Error", m_pidController.getSetpoint() - m_CANcoder.getPosition().getValueAsDouble());
     }
 
-    public void setMotorMode(IdleMode mode) {
-        if (Broken.pivotDisabled) return; 
-
-        pivotConfig.idleMode(mode);
-        m_motor.configure(pivotConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    public Command setCoastMode() {
+        if (Broken.pivotDisabled) return Commands.none(); 
+        return new CommandBuilder()
+            .onInitialize(() -> {
+                pivotConfig.idleMode(IdleMode.kCoast);
+                m_motor.configure(pivotConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+            })
+            .onEnd(() -> {
+                pivotConfig.idleMode(IdleMode.kBrake);
+                m_motor.configure(pivotConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+            });
     }
 
     public Command halt() {

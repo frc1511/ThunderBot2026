@@ -157,8 +157,7 @@ public class Robot extends TimedRobot {
         shooter.setOptimalSpeedGetter(hubOrchestrator::getOptimalShootSpeed);
         hood.setOptimalAngleGetter(hubOrchestrator::getOptimalHoodAngle);
         drivetrain.setOptimalRotationGetter(hubOrchestrator::getOptimalDriveOrientation);
-        
-        kicker.getField("optimalRPM").withValue(hubOrchestrator::getOptimalShootSpeed);
+        kicker.setOptimalSpeedGetter(hubOrchestrator::getOptimalShootSpeed);
         
         Alert.info("The robot has restarted");
         DriverStation.silenceJoystickConnectionWarning(true); // This hopefully helps with radio issues
@@ -370,7 +369,10 @@ public class Robot extends TimedRobot {
                                                          .onFalse(spindexer.halt()                                            .withName("SpindexerHalt"));
         }
 
-        { // Manual Aux Controls
+        pitMode.get().whileTrue(pivot.setCoastMode().ignoringDisable(true));
+        pitMode.get().whileTrue(hood.setCoastMode().ignoringDisable(true));
+
+        { // Manual Aux Controls (PitMode On, Plus On, Platinum Off)
             BooleanSupplier condition = () -> auxDisable.isOff() && oneDriverMode.isOff() && pitModePlus.isOn() && pitModePlatinumEditionTM.isOff();
 
             /**
@@ -408,16 +410,16 @@ public class Robot extends TimedRobot {
             auxController.leftTrigger() .and(condition).whileTrue(manualModeHandler.manual2ModifierSuperLow());
         }
         
-        { // Manual Aux SysID
+        { // Manual Aux SysID (PitMode On, Plus On, Platinum On)
             BooleanSupplier condition = () -> auxDisable.isOff() && oneDriverMode.isOff() && pitModePlus.isOn() && pitModePlatinumEditionTM.isOn();
 
-            if (Constants.kSysIDMode == Constants.SysIDMode.SHOOTER) {
+            if (Constants.kSysIDMode == Constants.SysIDMechanism.SHOOTER) {
                 ShooterSysID shooterSysID = new ShooterSysID(shooter);
                 auxController.povUp()   .and(condition).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
                 auxController.povRight().and(condition).whileTrue(shooterSysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
                 auxController.povDown() .and(condition).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
                 auxController.povLeft() .and(condition).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
-            } else if (Constants.kSysIDMode == Constants.SysIDMode.DRIVE) {
+            } else if (Constants.kSysIDMode == Constants.SysIDMechanism.DRIVE) {
                 SysID sysID = new SysID((RealSwerveSubsystem) drivetrain);
                 auxController.povUp()   .and(condition).whileTrue(sysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
                 auxController.povRight().and(condition).whileTrue(sysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
@@ -511,7 +513,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void disabledInit() {
-        pivot.setMotorMode(IdleMode.kCoast);
         CommandScheduler.getInstance().cancelAll();
     }
 
@@ -519,9 +520,7 @@ public class Robot extends TimedRobot {
     public void disabledPeriodic() {}
 
     @Override
-    public void disabledExit() {
-        pivot.setMotorMode(IdleMode.kBrake);
-    }
+    public void disabledExit() {}
 
     @Override
     public void autonomousInit() {

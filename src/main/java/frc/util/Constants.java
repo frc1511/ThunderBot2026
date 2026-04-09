@@ -66,12 +66,12 @@ public class Constants {
         DISCONNECTED
     }
 
-    public static enum SysIDMode {
+    public static enum SysIDMechanism {
         NONE,
         DRIVE,
         SHOOTER
     }
-    public static final SysIDMode kSysIDMode = SysIDMode.NONE;
+    public static final SysIDMechanism kSysIDMode = SysIDMechanism.NONE;
 
     public class IOMap {
         /*
@@ -287,7 +287,7 @@ public class Constants {
 
         public interface Pivot {
             interface PivotPID extends BasePID { 
-                double kP = 4.5;
+                double kP = 6.5;
                 double kI = .00;
                 double kD = 0.085;
                 double kS = .11;
