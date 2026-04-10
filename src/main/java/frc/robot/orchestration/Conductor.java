@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Robot;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
+import frc.robot.subsystems.Drive.Sim.SimulatedSwerveSubsystem;
 import frc.robot.subsystems.Hang.HangSubsystem;
 import frc.util.Helpers;
 
@@ -49,26 +50,26 @@ public class Conductor {
 
     public Command autoHang() {
         HangSubsystem hang = m_robot.hang;
-        SwerveSubsystem swerve = m_robot.drivetrain;
+        SimulatedSwerveSubsystem swerve = m_robot.drivetrain;
         return
             // Step 2/3: Lineup to the Y Position of the tower, Ensure that swerve is pointing in the correct direction
-            swerve.alignToTowerY()
-                  .alongWith(hang.extend())
+            // swerve.alignToTowerY()
+            //       .alongWith(hang.extend())
             // Step 4: Lineup to the correct X position
-            .andThen(
-                swerve
-                    .driveToPose(
-                        () -> {
-                            Pose2d currentPose = swerve.currentPose();
+            // .andThen(
+            //     swerve
+            //         .driveToPose(
+            //             () -> {
+            //                 Pose2d currentPose = swerve.currentPose();
 
-                            return Helpers.getTargetHangPose(currentPose);
-                        },
-                        List.of(.3d, .1d, .30d)) // List.of(.5d, .15d, .6d
-                .withTimeout(3)
-            )
-            // Step 5: Retract Hang
-            .andThen(
-                hang.retract()
-            );
+            //                 return Helpers.getTargetHangPose(currentPose);
+            //             },
+            //             List.of(.3d, .1d, .30d)) // List.of(.5d, .15d, .6d
+            //     .withTimeout(3)
+            // )
+            // // Step 5: Retract Hang
+            // .andThen(
+                hang.retract();
+            // );
     }
 }

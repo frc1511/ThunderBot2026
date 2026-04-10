@@ -10,7 +10,7 @@ import frc.util.Thunder.ThunderInterface;
 public class SafetyWatchdog extends SubsystemBase {
     private final Set<ThunderInterface> subsystems;
     public SafetyWatchdog(Robot robot) {
-        subsystems = Set.of(robot.drivetrain, robot.shooter, robot.hood, robot.turret, robot.spindexer, robot.kicker, robot.intake, robot.pivot, robot.hang);
+        subsystems = Set.of(robot.shooter, robot.hood, robot.turret, robot.spindexer, robot.kicker, robot.intake, robot.pivot, robot.hang);
     }
 
     @Override
