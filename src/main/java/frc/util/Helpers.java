@@ -163,6 +163,15 @@ public class Helpers {
         return new Trigger(() -> isHubActive(true));
     }
 
+    private static boolean pitModeEnabled = false;
+    public static void setPitMode(boolean enabled) {
+        pitModeEnabled = enabled;
+    }
+
+    public static boolean isPitModeEnabled() {
+        return pitModeEnabled;
+    }
+
     private static boolean pitModePlusEnabled = false;
     public static void setPitModePlus(boolean enabled) {
         pitModePlusEnabled = enabled;

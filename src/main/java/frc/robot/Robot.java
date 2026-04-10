@@ -12,7 +12,6 @@ import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.SignalLogger;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -59,6 +58,7 @@ import frc.util.Helpers;
 import frc.util.Thunder.ThunderInterface;
 import frc.util.Thunder.ThunderSubsystem;
 import frc.util.Thunder.ThunderSwitchboard;
+import frc.util.Thunder.Tuneable;
 import frc.util.Thunder.ThunderSwitchboard.ThunderSwitch;
 
 public class Robot extends TimedRobot {
@@ -237,6 +237,9 @@ public class Robot extends TimedRobot {
 
             Helpers.setPitModePlus(pitModePlus.isOn());
             pitModePlus.get().onChange(new InstantCommand(() -> Helpers.setPitModePlus(pitModePlus.isOn())));
+
+            Helpers.setPitMode(pitMode.isOn());
+            pitMode.get().onChange(new InstantCommand(() -> Helpers.setPitMode(pitMode.isOn())));
 
             Helpers.setBypassMode(bypassMode.isOn());
             bypassMode.get().onChange(new InstantCommand(() -> Helpers.setBypassMode(bypassMode.isOn())));
@@ -477,6 +480,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void robotPeriodic() {
+        Tuneable.periodic();
+
         if (!driverController.isConnected()) {
             Alert.error("Drive Controller Disconnected");
         }
@@ -494,7 +499,15 @@ public class Robot extends TimedRobot {
 
         SmartDashboard.putNumber("Extra / Frozen Dashboard Detector 2000", i++);
 
-        SmartDashboard.putString("Extra / Driver Aid / Hub Timer", String.format("%.3f", Math.max(25 - hubActiveTimer.get(), -2.0)).replace(".", "s"));
+        String bigText = String.format("%.3f", Math.max(25 - hubActiveTimer.get(), -2.0)).replace(".", "s");
+
+        if (pitMode.isOn() || pitModePlus.isOn() || pitModePlatinumEditionTM.isOn()) {
+            bigText = "!!! Pit Mode !!!";
+        } else if (PDH.getTotalCurrent() > 180) {
+            bigText = "!!! >180A Draw !!!";
+        }
+        
+        SmartDashboard.putString("Extra / Driver Aid / Hub Timer", bigText);
         SmartDashboard.putBoolean("Extra / Driver Aid / Hub Active", Helpers.isHubActive(true));
         SmartDashboard.putNumber("Extra / Driver Aid / Match Timer", Timer.getMatchTime());
 
