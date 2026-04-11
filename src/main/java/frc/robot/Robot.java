@@ -164,10 +164,10 @@ public class Robot extends TimedRobot {
         conductor = new Conductor(this);
 
         safetyWatchdog = new SafetyWatchdog(this);
-        
+
         shooter.setOptimalSpeedGetter(hubOrchestrator::getOptimalShootSpeed);
         hood.setOptimalAngleGetter(hubOrchestrator::getOptimalHoodAngle);
-        // drivetrain.setOptimalRotationGetter(hubOrchestrator::getOptimalDriveOrientation);
+        drivetrain.setOptimalRotationGetter(hubOrchestrator::getOptimalDriveOrientation);
 
         kicker.getField("optimalRPM").withValue(hubOrchestrator::getOptimalShootSpeed);
 

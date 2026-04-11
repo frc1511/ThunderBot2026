@@ -254,12 +254,24 @@ public class SimulatedSwerveSubsystem extends SimulatedSwerveBase implements Swe
                 vRot = m_driveController.getThetaController().calculate(currentPose().getRotation().getDegrees(), m_ensuredThetaSupplier.getAsDouble());
             }
 
-            m_mapleSimSwerveDrivetrain.mapleSimDrive.setRobotSpeeds(
-                new ChassisSpeeds(
-                    vy,
-                    vx,
-                    vRot)
-            );
+            if (m_fieldCentric) {
+                m_mapleSimSwerveDrivetrain.mapleSimDrive.setRobotSpeeds(
+                    new ChassisSpeeds(
+                        vy,
+                        vx,
+                        vRot
+                    )
+                );
+            } else {
+                m_mapleSimSwerveDrivetrain.mapleSimDrive.setRobotSpeeds(
+                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                        vy,
+                        vx,
+                        vRot,
+                        m_mapleSimSwerveDrivetrain.mapleSimDrive.getGyroSimulation().getGyroReading()
+                    )
+                );
+            }
         });
     }
 
@@ -289,6 +301,8 @@ public class SimulatedSwerveSubsystem extends SimulatedSwerveBase implements Swe
         SmartDashboard.putNumber("Drive/vx", getSpeed().vxMetersPerSecond);
         SmartDashboard.putNumber("Drive/vy", getSpeed().vyMetersPerSecond);
         SmartDashboard.putNumber("Drive/vRot", getSpeed().omegaRadiansPerSecond);
+        SmartDashboard.putNumber("SOTM / Drive Interpolated Theta", m_optimalRotationSupplier.getAsDouble());
+        SmartDashboard.putNumber("SOTM / Drive Current Theta", currentPose().getRotation().getRadians());
     }
 
     private MapleSimSwerveDrivetrain m_mapleSimSwerveDrivetrain = null;
