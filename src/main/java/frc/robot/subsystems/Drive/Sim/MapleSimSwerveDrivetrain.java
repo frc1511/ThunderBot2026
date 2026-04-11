@@ -9,7 +9,6 @@ package frc.robot.subsystems.Drive.Sim;
 import static edu.wpi.first.units.Units.*;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -49,7 +48,7 @@ import org.ironmaple.simulation.motorsims.SimulatedMotorController;
  * <p>It replaces the {@link com.ctre.phoenix6.swerve.SimSwerveDrivetrain} class.
  */
 public class MapleSimSwerveDrivetrain {
-    private final Pigeon2SimState pigeonSim;
+    private final Pigeon2SimState m_pigeonSim;
     private final SimSwerveModule[] simModules;
     public final SwerveDriveSimulation mapleSimDrive;
 
@@ -84,7 +83,7 @@ public class MapleSimSwerveDrivetrain {
             Pigeon2 pigeon,
             SwerveModule<TalonFX, TalonFX, CANcoder>[] modules,
             ArrayList<SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>> moduleConstants) {
-        this.pigeonSim = pigeon.getSimState();
+        this.m_pigeonSim = pigeon.getSimState();
         simModules = new SimSwerveModule[moduleConstants.size()];
         DriveTrainSimulationConfig simulationConfig = DriveTrainSimulationConfig.Default()
                 .withRobotMass(robotMassWithBumpers)
@@ -120,11 +119,10 @@ public class MapleSimSwerveDrivetrain {
      * the IMU.
      */
     public void update() {
-        SimulatedArena.getInstance().simulationPeriodic();
-        // pigeonSim.setRawYaw(
-        //         mapleSimDrive.getSimulatedDriveTrainPose().getRotation().getMeasure());
-        // pigeonSim.setAngularVelocityZ(RadiansPerSecond.of(
-        //         mapleSimDrive.getDriveTrainSimulatedChassisSpeedsRobotRelative().omegaRadiansPerSecond));
+        m_pigeonSim.setRawYaw(
+                mapleSimDrive.getSimulatedDriveTrainPose().getRotation().getMeasure());
+        m_pigeonSim.setAngularVelocityZ(RadiansPerSecond.of(
+                mapleSimDrive.getDriveTrainSimulatedChassisSpeedsRobotRelative().omegaRadiansPerSecond));
     }
 
     /**
@@ -175,14 +173,14 @@ public class MapleSimSwerveDrivetrain {
     }
 
     public static class TalonFXMotorControllerWithRemoteCanCoderSim extends TalonFXMotorControllerSim {
-        private final int encoderId;
+        // private final int encoderId;
         private final CANcoderSimState remoteCancoderSimState;
 
         public TalonFXMotorControllerWithRemoteCanCoderSim(TalonFX talonFX, CANcoder cancoder) {
             super(talonFX);
             this.remoteCancoderSimState = cancoder.getSimState();
 
-            this.encoderId = cancoder.getDeviceID();
+            // this.encoderId = cancoder.getDeviceID();
         }
 
         @Override
@@ -263,5 +261,9 @@ public class MapleSimSwerveDrivetrain {
                 .withSteerFrictionVoltage(Volts.of(0.05))
                 // Adjust steer inertia
                 .withSteerInertia(KilogramSquareMeters.of(0.05));
+    }
+
+    public Pigeon2SimState getSimPigeon() {
+        return m_pigeonSim;
     }
 }

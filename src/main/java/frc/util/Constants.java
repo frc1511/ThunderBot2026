@@ -48,6 +48,7 @@ public class Constants {
     public static boolean kLogTimeAndJoystick = false;
     public static boolean kLogSafetyWatchdogStatuses = false;
     public static double kHDDLRate = 200d; // Hz
+    public static final double kSimLoopPeriod = 0.002; // 2 ms
 
     public static final double kCANChainDisconnectTimeout = 0.5; // In seconds
 

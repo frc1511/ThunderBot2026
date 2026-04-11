@@ -9,13 +9,10 @@ import java.util.HashSet;
 import java.util.function.BooleanSupplier;
 
 import org.ironmaple.simulation.SimulatedArena;
-import org.ironmaple.simulation.motorsims.SimulatedBattery;
 import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnField;
 
 import com.ctre.phoenix6.HootAutoReplay;
 import com.ctre.phoenix6.SignalLogger;
-import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
@@ -28,6 +25,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
@@ -81,7 +79,7 @@ public class Robot extends TimedRobot {
     // private final Telemetry logger = new Telemetry(Constants.SwerveConstants.kMaxSpeed);
     private final HootAutoReplay m_timeAndJoystickReplay;
 
-    public final SimulatedSwerveSubsystem drivetrain;
+    public final SwerveSubsystem drivetrain;
 
     public final ShooterSubsystem shooter = new ShooterSubsystem();
     public final HoodSubsystem hood = new HoodSubsystem();
@@ -128,8 +126,7 @@ public class Robot extends TimedRobot {
     public HashSet<ThunderInterface> allSubsystems = new HashSet<>();
 
     public Robot() {
-        // drivetrain = isSimulation() ? new SimulatedSwerveSubsystem() : (Broken.drivetrainFullyDisabled ? new FakeSwerveSubsystem() : new RealSwerveSubsystem());
-        drivetrain = new SimulatedSwerveSubsystem(Constants.Swerve.kDrivetrainConstants);
+        drivetrain = isSimulation() ? new SimulatedSwerveSubsystem() : (Broken.drivetrainFullyDisabled ? new FakeSwerveSubsystem() : new RealSwerveSubsystem());
         allSubsystems.add(shooter);
         allSubsystems.add(hood);
         allSubsystems.add(turret);
@@ -186,7 +183,9 @@ public class Robot extends TimedRobot {
             m_timeAndJoystickReplay = null;
         }
 
-        drivetrain.resetPose(new Pose2d(3, 3, new Rotation2d()));
+        if (Robot.isSimulation()) {
+            drivetrain.resetControl(new Pose2d(3, 3, new Rotation2d()));
+        }
 
         { // Default Commands
             if (!Broken.hoodDisabled) hood.setDefaultCommand(hood.zero().withName("HoodHalt"));
@@ -198,38 +197,35 @@ public class Robot extends TimedRobot {
                 BooleanSupplier onedriveAuxFallback = () -> driveDisable.isOn() && auxDisable.isOff() && oneDriverMode.isOn();
 
                 drivetrain.setDefaultCommand(
-                    drivetrain.driveWithJoysticks(
-                        driverController::getLeftY, driverController::getLeftX, driverController::getRightX
-                        ).withName("DRIVING WITH JOYSTICKS"));
-                //     drivetrain
-                //         .driveWithJoysticks(
-                //             () -> {
-                //                 if (driveDisable.isOff()) {
-                //                     return driverController.getLeftX();
-                //                 } else if (onedriveAuxFallback.getAsBoolean()) {
-                //                     return auxController.getLeftX();
-                //                 }
-                //                 return 0;
-                //             },
-                //             () -> {
-                //                 if (driveDisable.isOff()) {
-                //                     return driverController.getLeftY();
-                //                 } else if (onedriveAuxFallback.getAsBoolean()) {
-                //                     return auxController.getLeftY();
-                //                 }
-                //                 return 0;
-                //             },
-                //             () -> {
-                //                 if (driveDisable.isOff()) {
-                //                     return driverController.getRightX();
-                //                 } else if (onedriveAuxFallback.getAsBoolean()) {
-                //                     return auxController.getRightX();
-                //                 }
-                //                 return 0;
-                //             })
-                //         .onlyIf(() -> !driverController.y().getAsBoolean())
-                //         .withName("DriveWithJoysticks")
-                // );
+                    drivetrain
+                        .driveWithJoysticks(
+                            () -> {
+                                if (driveDisable.isOff()) {
+                                    return driverController.getLeftX();
+                                } else if (onedriveAuxFallback.getAsBoolean()) {
+                                    return auxController.getLeftX();
+                                }
+                                return 0;
+                            },
+                            () -> {
+                                if (driveDisable.isOff()) {
+                                    return driverController.getLeftY();
+                                } else if (onedriveAuxFallback.getAsBoolean()) {
+                                    return auxController.getLeftY();
+                                }
+                                return 0;
+                            },
+                            () -> {
+                                if (driveDisable.isOff()) {
+                                    return driverController.getRightX();
+                                } else if (onedriveAuxFallback.getAsBoolean()) {
+                                    return auxController.getRightX();
+                                }
+                                return 0;
+                            })
+                        .onlyIf(() -> !driverController.y().getAsBoolean())
+                        .withName("DriveWithJoysticks")
+                );
             };
 
             RobotModeTriggers.disabled().onTrue(drivetrain.idle().withTimeout(.1));
@@ -251,9 +247,9 @@ public class Robot extends TimedRobot {
                     }).ignoringDisable(true)
                 );
 
-            // fieldCentric.get()
-            //     .onTrue(new InstantCommand(() -> drivetrain.setFieldCentric(true)))
-            //     .onFalse(new InstantCommand(() -> drivetrain.setFieldCentric(false)));
+            fieldCentric.get()
+                .onTrue(new InstantCommand(() -> drivetrain.setFieldCentric(true)))
+                .onFalse(new InstantCommand(() -> drivetrain.setFieldCentric(false)));
 
             Helpers.setPitModePlus(pitModePlus.isOn());
             pitModePlus.get().onChange(new InstantCommand(() -> Helpers.setPitModePlus(pitModePlus.isOn())));
@@ -269,10 +265,10 @@ public class Robot extends TimedRobot {
         { // Omnipresent Drive Controls (OneDrive Off/On)
             BooleanSupplier condition = () -> driveDisable.isOff(); // Always present on drive controller
 
-            // driverController.x().and(condition).whileTrue(drivetrain.brick().withName("DriveBrick")); // Points wheels inwards while held
-            // // driverController.x().and(condition).whileTrue(conductor.autoHang()); //* ONLY FOR TESTING AUTO HANG
-            // driverController.y().and(condition).whileTrue(drivetrain.hubLock().alongWith(shooter.holdSpeedForShoot().asProxy()).withName("DriveHubLockToggle")); // Lock onto the hub and shoot
-            // driverController.a().and(condition).onTrue(drivetrain.resetRotation().withName("DriveSeedFieldCentric")); // Reset IMU
+            driverController.x().and(condition).whileTrue(drivetrain.brick().withName("DriveBrick")); // Points wheels inwards while held
+            // driverController.x().and(condition).whileTrue(conductor.autoHang()); //* ONLY FOR TESTING AUTO HANG
+            driverController.y().and(condition).whileTrue(drivetrain.hubLock().alongWith(shooter.holdSpeedForShoot().asProxy()).withName("DriveHubLockToggle")); // Lock onto the hub and shoot
+            driverController.a().and(condition).onTrue(drivetrain.resetRotation().withName("DriveSeedFieldCentric")); // Reset IMU
         }
 
         { // Hang Controls
@@ -286,11 +282,11 @@ public class Robot extends TimedRobot {
         { // Default Drive Controls (OneDrive Off)
             BooleanSupplier condition = () -> driveDisable.isOff() && oneDriverMode.isOff();
 
-            // driverController.leftTrigger() .and(condition).whileTrue(drivetrain.trenchLock().withName("DriveTrenchLockToggle"));
-            // driverController.leftBumper()  .and(condition).onTrue(drivetrain.decreaseSpeed().withName("DriveSpeedDesc")); // Drive go snail
-            // driverController.rightBumper() .and(condition).onTrue(drivetrain.increaseSpeed().withName("DriveSpeedInc")); // Drive go weeee
-            // driverController.rightTrigger().and(condition).onTrue(new CommandBuilder().onExecute(() -> drivetrain.setFieldCentric(false)).isFinished(true).withName("DriveRobotCentricSetOn"))  // Temporary robot centric
-            //                                               .onFalse(new CommandBuilder().onExecute(() -> drivetrain.setFieldCentric(fieldCentric.isOn())).isFinished(true).withName("DriveRobotCentricSetOff"));
+            driverController.leftTrigger() .and(condition).whileTrue(drivetrain.trenchLock().withName("DriveTrenchLockToggle"));
+            driverController.leftBumper()  .and(condition).onTrue(drivetrain.decreaseSpeed().withName("DriveSpeedDesc")); // Drive go snail
+            driverController.rightBumper() .and(condition).onTrue(drivetrain.increaseSpeed().withName("DriveSpeedInc")); // Drive go weeee
+            driverController.rightTrigger().and(condition).onTrue(new CommandBuilder().onExecute(() -> drivetrain.setFieldCentric(false)).isFinished(true).withName("DriveRobotCentricSetOn"))  // Temporary robot centric
+                                                          .onFalse(new CommandBuilder().onExecute(() -> drivetrain.setFieldCentric(fieldCentric.isOn())).isFinished(true).withName("DriveRobotCentricSetOff"));
 
             // Puts the hang and hood in down mode when going under trench
             driverController.start().and(condition).whileTrue(
@@ -305,8 +301,8 @@ public class Robot extends TimedRobot {
         { // OneDrive Drive Controls (OneDrive On)
             BooleanSupplier condition = () -> driveDisable.isOff() && oneDriverMode.isOn();
 
-            // driverController.povLeft().and(condition).onTrue(drivetrain.decreaseSpeed().withName("OneDriveDriveDescSpeed")); // Drive go weeee
-            // driverController.povRight().and(condition).onTrue(drivetrain.increaseSpeed().withName("OneDriveDriveIncSpeed")); // Drive go snail
+            driverController.povLeft().and(condition).onTrue(drivetrain.decreaseSpeed().withName("OneDriveDriveDescSpeed")); // Drive go weeee
+            driverController.povRight().and(condition).onTrue(drivetrain.increaseSpeed().withName("OneDriveDriveIncSpeed")); // Drive go snail
 
             driverController.leftTrigger() .and(condition).whileTrue(intake.outtake().withName("OneDriveIntakeOuttake"));
             driverController.leftBumper()  .and(condition).whileTrue(shooter.holdSpeedForShoot().withName("OneDriveShootPreheat"));
@@ -348,15 +344,15 @@ public class Robot extends TimedRobot {
                 );
 
             auxController.b().and(condition)      .whileTrue(hang.jostle()             .withName("OneDriveBackupJostle"));
-            // auxController.x().and(condition)      .whileTrue(drivetrain.brick()        .withName("OneDriveBackupDriveBrick")); // Points wheels inwards while held
-            // auxController.y().and(condition)      .whileTrue(drivetrain.hubLock().alongWith(shooter.holdSpeedForShoot().asProxy()).withName("OneDriveBackupDriveHubLock")); // Lock onto hub and shoot
-            // auxController.a().and(condition)         .onTrue(drivetrain.resetRotation().withName("OneDriveBackupDriveSeedFieldCentric")); // Reset IMU
+            auxController.x().and(condition)      .whileTrue(drivetrain.brick()        .withName("OneDriveBackupDriveBrick")); // Points wheels inwards while held
+            auxController.y().and(condition)      .whileTrue(drivetrain.hubLock().alongWith(shooter.holdSpeedForShoot().asProxy()).withName("OneDriveBackupDriveHubLock")); // Lock onto hub and shoot
+            auxController.a().and(condition)         .onTrue(drivetrain.resetRotation().withName("OneDriveBackupDriveSeedFieldCentric")); // Reset IMU
 
             // These ones get overridden during pit mode plus
             condition = () -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff() && pitModePlus.isOff();
 
-            // auxController.povLeft().and(condition)   .onTrue(drivetrain.decreaseSpeed().withName("OneDriveBackupDriveDescSpeed")); // Drive go weeee
-            // auxController.povRight().and(condition)  .onTrue(drivetrain.increaseSpeed().withName("OneDriveBackupDriveIncSpeed")); // Drive go snail
+            auxController.povLeft().and(condition)   .onTrue(drivetrain.decreaseSpeed().withName("OneDriveBackupDriveDescSpeed")); // Drive go weeee
+            auxController.povRight().and(condition)  .onTrue(drivetrain.increaseSpeed().withName("OneDriveBackupDriveIncSpeed")); // Drive go snail
             auxController.povUp().and(condition)  .whileTrue(hang.extend()             .withName("OneDriveBackupHangExtend")) // Hang goes uppies (hold)
                                                     .onFalse(hang.halt()               .withName("OneDriveBackupHangStop"));
             auxController.povDown().and(condition).whileTrue(hang.retract()            .withName("OneDriveBackupHangRetract")) // hang goes downies (hold)
@@ -437,17 +433,17 @@ public class Robot extends TimedRobot {
                 auxController.povDown() .and(condition).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
                 auxController.povLeft() .and(condition).whileTrue(shooterSysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
             } else if (Constants.kSysIDMode == Constants.SysIDMode.DRIVE) {
-                // SysID sysID = new SysID((RealSwerveSubsystem) drivetrain);
-                // auxController.povUp()   .and(condition).whileTrue(sysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-                // auxController.povRight().and(condition).whileTrue(sysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-                // auxController.povDown() .and(condition).whileTrue(sysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
-                // auxController.povLeft() .and(condition).whileTrue(sysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+                SysID sysID = new SysID((RealSwerveSubsystem) drivetrain);
+                auxController.povUp()   .and(condition).whileTrue(sysID.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
+                auxController.povRight().and(condition).whileTrue(sysID.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
+                auxController.povDown() .and(condition).whileTrue(sysID.sysIdDynamic(SysIdRoutine.Direction.kForward));
+                auxController.povLeft() .and(condition).whileTrue(sysID.sysIdDynamic(SysIdRoutine.Direction.kReverse));
             }
         }
 
         // MARK: Auto
-        // NamedCommands.registerCommand("DB_Hub_AL_Start", drivetrain.setHubLock(true));
-        // NamedCommands.registerCommand("DB_Hub_AL_Stop", drivetrain.setHubLock(false));
+        NamedCommands.registerCommand("DB_Hub_AL_Start", drivetrain.setHubLock(true));
+        NamedCommands.registerCommand("DB_Hub_AL_Stop", drivetrain.setHubLock(false));
         NamedCommands.registerCommand("Preheat", shooter.holdSpeedForShoot().withTimeout(0));
         NamedCommands.registerCommand("Shoot", firingOrchestrator.fireThenStop().alongWith(hungerOrchestrator.jostleRepeatedly()).withTimeout(3));
         NamedCommands.registerCommand("AutoHang", conductor.autoHang());
@@ -522,7 +518,7 @@ public class Robot extends TimedRobot {
             allSubsystems.forEach(ThunderInterface::hddlPeriodic);
         }
 
-        // drivetrain.setLimelightDisable(limelightDisable.isOn());
+        drivetrain.setLimelightDisable(limelightDisable.isOn());
 
         conductor.periodic();
         CommandScheduler.getInstance().run();
@@ -545,8 +541,8 @@ public class Robot extends TimedRobot {
     @Override
     public void autonomousInit() {
         hubActiveTimer.start();
-        // drivetrain.setupTheta(true);
-        // drivetrain.setSpeedMultiplier(1.0);
+        drivetrain.setupTheta(true);
+        drivetrain.setSpeedMultiplier(1.0);
         Command autoCommand = autoChooser.getSelected();
         if (autoCommand != Commands.none()) {
             CommandScheduler.getInstance().schedule(autoCommand);
@@ -560,11 +556,11 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousExit() {
-        // drivetrain.setupTheta(false);
-        // drivetrain.setHubLock(false).execute();;
-        // CommandScheduler.getInstance().schedule(drivetrain.setHubLock(false).ignoringDisable(true));
+        drivetrain.setupTheta(false);
+        drivetrain.setHubLock(false).execute();;
+        CommandScheduler.getInstance().schedule(drivetrain.setHubLock(false).ignoringDisable(true));
         intake.stopEating().execute();
-        // CommandScheduler.getInstance().schedule(intake.stopEating().ignoringDisable(true));
+        CommandScheduler.getInstance().schedule(intake.stopEating().ignoringDisable(true));
     }
 
     @Override
@@ -590,10 +586,20 @@ public class Robot extends TimedRobot {
     @Override
     public void testExit() {}
 
+    Notifier m_simNotifier;
+
     @Override
     public void simulationInit() {
         SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(3, 3)));
         SimulatedArena.getInstance().placeGamePiecesOnField();
+
+        /* Run simulation at a faster rate so PID gains behave more reasonably */
+        m_simNotifier = new Notifier(this::simulationPeriodicFast);
+        m_simNotifier.startPeriodic(Constants.kSimLoopPeriod);
+    }
+
+    private void simulationPeriodicFast() {
+        SimulatedArena.getInstance().simulationPeriodic();
     }
 
     private StructArrayPublisher<Pose3d> networkedFuelPoses = NetworkTableInstance.getDefault()
@@ -602,7 +608,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void simulationPeriodic() {
-        // SimulatedArena.getInstance().simulationPeriodic();
+        SimulatedArena.getInstance().simulationPeriodic();
 
         Pose3d[] fuelPoses = SimulatedArena.getInstance()
             .getGamePiecesArrayByType("Fuel");

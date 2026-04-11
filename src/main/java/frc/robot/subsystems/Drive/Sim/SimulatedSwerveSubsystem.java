@@ -2,12 +2,10 @@ package frc.robot.subsystems.Drive.Sim;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -15,8 +13,10 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.controller.HolonomicDriveController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -25,17 +25,23 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Subsystem;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.orchestration.HubOrchestrator;
+import frc.robot.subsystems.Drive.SwerveSubsystem;
+import frc.util.Alert;
+import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
+import frc.util.Constants.Status;
+import frc.util.Constants.Swerve;
 import frc.util.Helpers;
+import frc.util.ZoneConstants;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -43,77 +49,39 @@ import java.util.function.Supplier;
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily be used in
  * command-based projects.
  */
-public class SimulatedSwerveSubsystem extends SimulatedSwerveBase implements Subsystem {
-    private static final double kSimLoopPeriod = 0.002; // 2 ms
-    private Notifier m_simNotifier = null;
-
-    /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
+public class SimulatedSwerveSubsystem extends SimulatedSwerveBase implements SwerveSubsystem {
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
-    /* Red alliance sees forward as 180 degrees (toward blue alliance wall) */
     private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
-    /* Keep track if we've ever applied the operator perspective before or not */
     private boolean m_hasAppliedOperatorPerspective = false;
 
-    Field2d m_currentField;
+    private Field2d m_currentField;
+    private Field2d m_targetField;
 
-    /** Swerve request to apply during robot-centric path following */
-    private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
+    private HolonomicDriveController m_driveController;
 
-    /* Swerve requests to apply during SysId characterization */
-    private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization =
-            new SwerveRequest.SysIdSwerveTranslation();
-    private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization =
-            new SwerveRequest.SysIdSwerveSteerGains();
-    private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization =
-            new SwerveRequest.SysIdSwerveRotation();
+    private Field2d m_targetCenterPoseField;
 
-    /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
-    private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
-            new SysIdRoutine.Config(
-                    null, // Use default ramp rate (1 V/s)
-                    Volts.of(4), // Reduce dynamic step voltage to 4 V to prevent brownout
-                    null, // Use default timeout (10 s)
-                    // Log state with SignalLogger class
-                    state -> SignalLogger.writeString("SysIdTranslation_State", state.toString())),
-            new SysIdRoutine.Mechanism(
-                    output -> setControl(m_translationCharacterization.withVolts(output)), null, this));
+    private Pose2d m_arcLockCenter;
+    private double m_arcLockDistance;
+    private double m_arcLockTheta;
+    
+    private boolean m_hubLock = false;
+    
+    private boolean m_trenchLock = false;
+    
+    private double m_trenchYPos = 0;
 
-    /* SysId routine for characterizing steer. This is used to find PID gains for the steer motors. */
-    private final SysIdRoutine m_sysIdRoutineSteer = new SysIdRoutine(
-            new SysIdRoutine.Config(
-                    null, // Use default ramp rate (1 V/s)
-                    Volts.of(7), // Use dynamic voltage of 7 V
-                    null, // Use default timeout (10 s)
-                    // Log state with SignalLogger class
-                    state -> SignalLogger.writeString("SysIdSteer_State", state.toString())),
-            new SysIdRoutine.Mechanism(volts -> setControl(m_steerCharacterization.withVolts(volts)), null, this));
+    private boolean m_isMoving = false;
 
-    /*
-     * SysId routine for characterizing rotation.
-     * This is used to find PID gains for the FieldCentricFacingAngle HeadingController.
-     * See the documentation of SwerveRequest.SysIdSwerveRotation for info on importing the log to SysId.
-     */
-    private final SysIdRoutine m_sysIdRoutineRotation = new SysIdRoutine(
-            new SysIdRoutine.Config(
-                    /* This is in radians per second², but SysId only supports "volts per second" */
-                    Volts.of(Math.PI / 6).per(Second),
-                    /* This is in radians per second, but SysId only supports "volts" */
-                    Volts.of(Math.PI),
-                    null, // Use default timeout (10 s)
-                    // Log state with SignalLogger class
-                    state -> SignalLogger.writeString("SysIdRotation_State", state.toString())),
-            new SysIdRoutine.Mechanism(
-                    output -> {
-                        /* output is actually radians per second, but SysId only supports "volts" */
-                        setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
-                        /* also log the requested output for SysId */
-                        SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
-                    },
-                    null,
-                    this));
+    /** 0% - 100% of max speed */
+    public double m_speedMultipler = 1.0; 
 
-    /* The SysId routine to test */
-    private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
+    private boolean m_ensureTheta = false;
+    private DoubleSupplier m_ensuredThetaSupplier = () -> 0;
+
+    DoubleSupplier m_optimalRotationSupplier = () -> 0;
+
+    private boolean m_fieldCentric;
 
     /**
      * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -127,6 +95,14 @@ public class SimulatedSwerveSubsystem extends SimulatedSwerveBase implements Sub
     public SimulatedSwerveSubsystem(
             SwerveDrivetrainConstants drivetrainConstants, SwerveModuleConstants<?, ?, ?>... modules) {
         super(drivetrainConstants, MapleSimSwerveDrivetrain.regulateModuleConstantsForSimulation(modules));
+        if (Utils.isSimulation()) {
+            startSimThread();
+        }
+        configureAutoBuilder();
+    }
+
+    public SimulatedSwerveSubsystem() {
+        super(Constants.Swerve.kDrivetrainConstants);
         if (Utils.isSimulation()) {
             startSimThread();
         }
@@ -196,18 +172,15 @@ public class SimulatedSwerveSubsystem extends SimulatedSwerveBase implements Sub
             var config = RobotConfig.fromGUISettings();
             AutoBuilder.configure(
                     () -> currentPose(), // Supplier of current robot pose
-                    this::resetPose, // Consumer for seeding pose against auto
+                    this::resetControl, // Consumer for seeding pose against auto
                     () -> getSpeed(), // Supplier of current robot speeds
                     // Consumer of ChassisSpeeds and feedforwards to drive the robot
-                    (speeds, feedforwards) -> setControl(m_pathApplyRobotSpeeds
-                            .withSpeeds(speeds)
-                            .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                            .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
+                    (speeds, feedforwards) -> m_mapleSimSwerveDrivetrain.mapleSimDrive.setRobotSpeeds(speeds),
                     new PPHolonomicDriveController(
                             // PID constants for translation
-                            new PIDConstants(10, 0, 0),
+                            new PIDConstants(Constants.Swerve.XYPID.kP, Constants.Swerve.XYPID.kI, Constants.Swerve.XYPID.kD),
                             // PID constants for rotation
-                            new PIDConstants(7, 0, 0)),
+                            new PIDConstants(Constants.Swerve.ThetaPID.kP, Constants.Swerve.XYPID.kI, Constants.Swerve.XYPID.kD)),
                     config,
                     // Assume the path needs to be flipped for Red vs Blue, this is normally the case
                     () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
@@ -234,50 +207,58 @@ public class SimulatedSwerveSubsystem extends SimulatedSwerveBase implements Sub
     public Command driveWithJoysticks(DoubleSupplier leftY, DoubleSupplier leftX, DoubleSupplier rightX) {
         return new CommandBuilder(this)
         .onExecute(() -> {
-            double vx = leftY.getAsDouble();
-            double vy = leftX.getAsDouble();
-            double vRot = rightX.getAsDouble();
-            if (Math.abs(vx) <= .15) vx = 0;
-            if (Math.abs(vy) <= .15) vy = 0;
-            if (Math.abs(vRot) <= .15) vRot = 0;
+            double actualSpeedMultiplier = m_speedMultipler;
+            if (Helpers.isBypassModeEnabled()) actualSpeedMultiplier = 1d;
+
+            double vx = -leftY.getAsDouble() * Constants.Swerve.kMaxSpeed * actualSpeedMultiplier;
+            double vy = -leftX.getAsDouble() * Constants.Swerve.kMaxSpeed * actualSpeedMultiplier;
+            double vRot = -rightX.getAsDouble() * Constants.Swerve.kMaxAngularRate * actualSpeedMultiplier;
+
+            if (m_hubLock) {
+                m_arcLockCenter = Helpers.allianceHub();
+
+                Rotation2d targetAngle = new Rotation2d(m_optimalRotationSupplier.getAsDouble() - Math.PI/2 - getShooterAngleCompensation());
+
+                vRot = m_driveController.calculate(
+                        currentPose(),
+                        new Pose2d(currentPose().getTranslation(), targetAngle),
+                        0,
+                        targetAngle
+                    ).omegaRadiansPerSecond * Swerve.kMaxAngularRate;
+            }
+
+            if (m_trenchLock) {
+                Translation2d currentTranslation = currentPose().getTranslation();
+
+                Rotation2d rotation = currentPose().getRotation();
+
+                Pose2d target = new Pose2d(new Translation2d(currentTranslation.getX(), m_trenchYPos), rotation);
+
+                vy = m_driveController.calculate(
+                        currentPose(),
+                        target,
+                        0,
+                        rotation
+                    ).vyMetersPerSecond * Swerve.kMaxSpeed;
+
+                if (m_fieldCentric && Math.abs(rotation.getDegrees()) < 90) {
+                    vy *= -1;
+                }
+
+                m_targetField.setRobotPose(target);
+            }
+
+            if (m_ensureTheta) {
+                vRot = m_driveController.getThetaController().calculate(currentPose().getRotation().getDegrees(), m_ensuredThetaSupplier.getAsDouble());
+            }
+
             m_mapleSimSwerveDrivetrain.mapleSimDrive.setRobotSpeeds(
                 new ChassisSpeeds(
-                    -vx * Constants.Swerve.kMaxSpeed,
-                    -vy * Constants.Swerve.kMaxSpeed,
-                    -vRot * Constants.Swerve.kMaxAngularRate)
+                    vy,
+                    vx,
+                    vRot)
             );
         });
-        //     SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-        //                     .withDeadband(Constants.Swerve.kMaxSpeed * 0.1)
-        //                     .withRotationalDeadband(Constants.Swerve.kMaxAngularRate * 0.1) // Add a 10% deadband
-        //                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-        // return applyRequest(() -> {
-        //     m_mapleSimSwerveDrivetrain.mapleSimDrive.setRobotSpeeds(getSpeed());
-        //     return drive.withVelocityX(-leftY.getAsDouble() * Constants.Swerve.kMaxSpeed) // Drive forward with negative Y (forward)
-        //                 .withVelocityY(-leftX.getAsDouble() * Constants.Swerve.kMaxSpeed) // Drive left with negative X (left)
-        //                 .withRotationalRate(-rightX.getAsDouble() * Constants.Swerve.kMaxAngularRate); // Drive counterclockwise with negative X (left)
-        //             });
-    }
-
-    /**
-     * Runs the SysId Quasistatic test in the given direction for the routine specified by
-     * {@link #m_sysIdRoutineToApply}.
-     *
-     * @param direction Direction of the SysId Quasistatic test
-     * @return Command to run
-     */
-    public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-        return m_sysIdRoutineToApply.quasistatic(direction);
-    }
-
-    /**
-     * Runs the SysId Dynamic test in the given direction for the routine specified by {@link #m_sysIdRoutineToApply}.
-     *
-     * @param direction Direction of the SysId Dynamic test
-     * @return Command to run
-     */
-    public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-        return m_sysIdRoutineToApply.dynamic(direction);
     }
 
     @Override
@@ -306,17 +287,27 @@ public class SimulatedSwerveSubsystem extends SimulatedSwerveBase implements Sub
         SmartDashboard.putNumber("Drive/vx", getSpeed().vxMetersPerSecond);
         SmartDashboard.putNumber("Drive/vy", getSpeed().vyMetersPerSecond);
         SmartDashboard.putNumber("Drive/vRot", getSpeed().omegaRadiansPerSecond);
-        // DogLog.log("Drive/TargetStates", getState().ModuleTargets);
-        // DogLog.log("Drive/MeasuredStates", getState().ModuleStates);
-        // DogLog.log("Drive/MeasuredSpeeds", getState().Speeds);
-        // if (mapleSimSwerveDrivetrain != null)
-        //     DogLog.log("Drive/SimulationPose", mapleSimSwerveDrivetrain.mapleSimDrive.getSimulatedDriveTrainPose());
     }
 
     private MapleSimSwerveDrivetrain m_mapleSimSwerveDrivetrain = null;
 
     private void startSimThread() {
         m_currentField = new Field2d();
+
+        m_driveController = new HolonomicDriveController(
+            Swerve.kHolonomicXPIDController,
+            Swerve.kHolonomicYPIDController,
+            Swerve.kHolonomicThetaPIDController
+        );
+        m_driveController.setTolerance(new Pose2d(Swerve.kGotoXYTolerance, Swerve.kGotoXYTolerance, new Rotation2d(Swerve.kGotoThetaTolerance)));
+
+        m_currentField = new Field2d();
+        m_targetField = new Field2d();
+
+        m_targetCenterPoseField = new Field2d();
+
+        m_fieldCentric = true;
+
         ArrayList<SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>> moduleConstants = new ArrayList<SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>>();
         moduleConstants.add(Constants.Swerve.FrontLeft);
         moduleConstants.add(Constants.Swerve.FrontRight);
@@ -324,7 +315,7 @@ public class SimulatedSwerveSubsystem extends SimulatedSwerveBase implements Sub
         moduleConstants.add(Constants.Swerve.BackRight);
 
         m_mapleSimSwerveDrivetrain = new MapleSimSwerveDrivetrain(
-                Seconds.of(kSimLoopPeriod),
+                Seconds.of(Constants.kSimLoopPeriod),
                 Pounds.of(115),
                 Inches.of(36),
                 Inches.of(31),
@@ -336,9 +327,6 @@ public class SimulatedSwerveSubsystem extends SimulatedSwerveBase implements Sub
                 getModules(),
                 moduleConstants
                 );
-        /* Run simulation at a faster rate so PID gains behave more reasonably */
-        m_simNotifier = new Notifier(m_mapleSimSwerveDrivetrain::update);
-        m_simNotifier.startPeriodic(kSimLoopPeriod);
     }
 
     @Override
@@ -353,4 +341,302 @@ public class SimulatedSwerveSubsystem extends SimulatedSwerveBase implements Sub
     public ChassisSpeeds getSpeed() {
         return m_mapleSimSwerveDrivetrain.mapleSimDrive.getDriveTrainSimulatedChassisSpeedsFieldRelative();
     }
+
+    public Command resetRotation() {
+        return new CommandBuilder(this)
+            .onExecute(() -> {
+                getPigeon2().setYaw(0);
+                m_mapleSimSwerveDrivetrain.getSimPigeon().setRawYaw(0);
+            }).isFinished(true);
+    }
+
+    public Command increaseSpeed() {
+        return new CommandBuilder(this).onExecute(() -> m_speedMultipler = Math.min(m_speedMultipler + Swerve.kSpeedStep, 1d)).isFinished(true);
+    }
+
+    public Command decreaseSpeed() {
+        return new CommandBuilder(this).onExecute(() -> m_speedMultipler = Math.max(m_speedMultipler - Swerve.kSpeedStep, 0d)).isFinished(true);
+    }
+
+    public void setSpeedMultiplier(double speedMultipler) {
+        m_speedMultipler = speedMultipler;
+    }
+
+    public Command pointWithController(DoubleSupplier leftX, DoubleSupplier leftY) {
+        return CommandBuilder.none(this);
+    }
+
+    public Command driveLockedToArcWithJoysticks(DoubleSupplier leftX) {
+        return driveToPose()
+            .withFinishAllowance(false)
+            .withTarget(
+                () -> {
+                    m_arcLockTheta += Math.toRadians(leftX.getAsDouble());
+
+                    m_targetCenterPoseField.setRobotPose(m_arcLockCenter);
+
+                    SmartDashboard.putData(m_targetCenterPoseField);
+
+                    return new Pose2d(
+                        Math.cos(m_arcLockTheta) * m_arcLockDistance + m_arcLockCenter.getX(),
+                        Math.sin(m_arcLockTheta) * m_arcLockDistance + m_arcLockCenter.getY(),
+                        new Rotation2d(m_arcLockTheta + Math.PI/2 - getShooterAngleCompensation())
+                    );
+                }
+            )
+            .onInitialize(
+                () -> {
+                    m_arcLockCenter = Helpers.allianceHub();
+
+                    Pose2d currentPose = currentPose();
+
+                    double dX = currentPose.getX() - m_arcLockCenter.getX();
+                    double dY = currentPose.getY() - m_arcLockCenter.getY();
+
+                    m_arcLockDistance = Math.hypot(dX, dY);
+                    m_arcLockTheta = Math.atan2(dY, dX);
+                }
+            );
+    }
+
+    public Status status() {
+        if (Broken.drivetrainFullyDisabled) return Status.DISABLED;
+        if (!isCANSafe()) return Status.DISCONNECTED;
+        if (m_isMoving) return Status.ACTIVE;
+        return Status.IDLE;
+    }
+
+    public void setOptimalRotationGetter(DoubleSupplier supplier) {
+        m_optimalRotationSupplier = supplier;
+    }
+
+    public Command alignToTowerY() {
+        return driveToPose()
+            .withTarget(
+                () -> {
+                    Pose2d targetPose = Helpers.getTargetHangPose(currentPose());
+
+                    return new Pose2d(
+                        targetPose.getX(),
+                        currentPose().getY(),
+                        targetPose.getRotation()
+                    );
+                }
+            )
+            .withVelocityPercentLimits(List.of(.25d, .2d, .25d));
+    }
+
+    public Command brick() {
+        return CommandBuilder.none(this);
+    }
+
+    public Command idle() {
+        return CommandBuilder.none(this);
+    }
+
+    public CommandBuilder driveToPose(Supplier<Pose2d> target) {
+        return driveToPose().withTarget(target);
+    }
+
+    public DriveToPose driveToPose() {
+        return new DriveToPose();
+    }
+
+    public CommandBuilder driveToPose(Supplier<Pose2d> target, List<Double> speedPercents) {
+        return new DriveToPose().withTarget(target).withVelocityPercentLimits(speedPercents);
+    }
+
+    /**
+     * <h3>DriveToPose</h3>
+     * <p>This structure uses <code>with*</code> methods.</p>
+     * <p>This means you can just create an instance with the helper method of <code>SwerveSubsystem.driveToPose</code> and only have to worry about adding the targetPose, along with anything else you need.</p>
+     */
+    public class DriveToPose extends CommandBuilder {
+        private DoubleSupplier m_targetVelocity = () -> 0.0d;
+        private BooleanSupplier m_allowedToFinish = () -> true;
+        private double m_slowdownX = 1.0;
+        private double m_slowdownY = 1.0;
+        private double m_slowdownT = 1.0;
+
+        public DriveToPose() {
+            super(SimulatedSwerveSubsystem.this);
+            isFinished(
+                () -> m_driveController.atReference() && m_allowedToFinish.getAsBoolean()
+            );
+        }
+
+        public DriveToPose withTargetVelocity(double target) {
+            return withTargetVelocity(() -> target);
+        }
+
+        public DriveToPose withTargetVelocity(DoubleSupplier target) {
+            m_targetVelocity = target;
+            return this;
+        }
+
+        public DriveToPose withFinishAllowance(boolean allow) {
+            return withFinishAllowance(() -> allow);
+        }
+
+        public DriveToPose withFinishAllowance(BooleanSupplier isAllowed) {
+            m_allowedToFinish = isAllowed;
+            isFinished(
+                () -> m_driveController.atReference() && m_allowedToFinish.getAsBoolean()
+            );
+            return this;
+        }
+
+        public DriveToPose withTarget(Pose2d target) {
+            return withTarget(() -> target);
+        }
+
+        public DriveToPose withVelocityPercentLimits(List<Double> percents) {
+            if (percents.size() != 3) {
+                Alert.critical("Percents array is of invalid length");
+                return this;
+            }
+            m_slowdownX = percents.get(0);
+            m_slowdownY = percents.get(1);
+            m_slowdownT = percents.get(2);
+            return this;
+        }
+
+        public DriveToPose withTarget(Supplier<Pose2d> target) {
+            onExecute(() -> {
+                    Pose2d targetPose = target.get();
+                    ChassisSpeeds speeds = m_driveController.calculate(
+                        currentPose(),
+                        targetPose,
+                        m_targetVelocity.getAsDouble(),
+                        targetPose.getRotation()
+                    );
+                    setControl(
+                        new SwerveRequest.RobotCentric()
+                            .withVelocityX(speeds.vxMetersPerSecond * Swerve.kMaxSpeed * m_slowdownX)
+                            .withVelocityY(speeds.vyMetersPerSecond * Swerve.kMaxSpeed * m_slowdownY)
+                            .withRotationalRate(speeds.omegaRadiansPerSecond * Swerve.kMaxAngularRate * m_slowdownT)
+                            .withDeadband(Swerve.kVelocityDeadband * 0.5)
+                            .withRotationalDeadband(Swerve.kAngularVelocityDeadband)
+                    );
+                }
+            );
+            onInitialize(() -> {
+                resetPose(currentPose());
+            });
+            return this;
+        }
+    }
+
+    private boolean m_hasBeenRegistered = false;
+
+    public void registerSubsystem() {
+        if (!m_hasBeenRegistered) {
+            CommandScheduler.getInstance().registerSubsystem(this);
+            m_hasBeenRegistered = true;
+        }
+    }
+
+    public boolean isRegistered() {
+        return m_hasBeenRegistered;
+    }
+
+    public void setFieldCentric(boolean isOn) {
+        m_fieldCentric = isOn;
+    }
+
+    public void setLimelightDisable(boolean isDisabled) {}
+
+    @Override
+    public void hddlPeriodic() {};
+
+    public Command setHubLock(Boolean isOn) {
+        return new CommandBuilder().onExecute(() -> {
+            m_hubLock = isOn;
+        }).isFinished(true);
+    }
+
+    public Command hubLock() {
+        return new CommandBuilder()
+            .onExecute(() -> {
+                m_hubLock = true;
+            })
+            .onEnd(() -> {
+                m_hubLock = false;
+            });
+    }
+
+    public Command trenchLock() {
+        return new CommandBuilder()
+            .onExecute(() -> {
+                Translation2d closestTrench = ZoneConstants.closestTrench(currentPose().getTranslation());
+
+                System.out.println(closestTrench.getDistance(currentPose().getTranslation()));
+
+                if (closestTrench.getDistance(currentPose().getTranslation()) > Constants.Swerve.kTrenchLockMaxDist) {
+                    m_trenchLock = false;
+                    return;
+                }
+
+                m_trenchYPos = closestTrench.getY();
+                m_trenchLock = true;
+            })
+            .onEnd(() -> {
+                m_trenchLock = false;
+                return;
+            });
+    }
+
+    public boolean isCANSafe() {
+        if (Helpers.isBypassModeEnabled()) return true;
+        for (int i = 0; i < getModules().length; i++) {
+            if (!Helpers.onCANChain(getModule(i).getDriveMotor()) || !Helpers.onCANChain(getModule(i).getSteerMotor()) || !Helpers.onCANChain(getModule(i).getEncoder())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * {@code thetaSupplier} should be in degrees
+     */
+    public void ensureTheta(DoubleSupplier thetaSupplier) {
+        m_ensureTheta = true;
+        m_ensuredThetaSupplier = thetaSupplier;
+    }
+
+    public void clearEnsuredTheta() {
+        m_ensureTheta = false;
+        m_ensuredThetaSupplier = () -> 0;
+    }
+
+    public Command toggleFieldCentric() {
+        return new CommandBuilder()
+            .onExecute(() -> m_fieldCentric = !m_fieldCentric)
+            .isFinished(true);
+    }
+
+    public void resetControl(Pose2d pose) {
+        resetPose(pose);
+        m_driveController.getXController().reset();
+        m_driveController.getYController().reset();
+        m_driveController.getThetaController().reset(pose.getRotation().getRadians());
+    }
+
+    public void setupTheta(boolean isAuto) {
+        if (isAuto) {
+            m_driveController.getThetaController().setPID(Constants.Swerve.ThetaAutoPID.kP, Constants.Swerve.ThetaAutoPID.kI, Constants.Swerve.ThetaAutoPID.kD);
+        } else {
+            m_driveController.getThetaController().setPID(Constants.Swerve.ThetaPID.kP, Constants.Swerve.ThetaPID.kI, Constants.Swerve.ThetaPID.kD);
+        }
+    }
+
+    public double getShooterAngleCompensation() {
+        Pose2d currentPose = currentPose();
+
+        double dX = currentPose.getX() - HubOrchestrator.virtualHub.getX();
+        double dY = currentPose.getY() - HubOrchestrator.virtualHub.getY();
+
+        return Math.PI/2 - Math.acos(Constants.Swerve.kShooterOffset / Math.hypot(dX, dY));
+    }
+
 }

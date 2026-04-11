@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.orchestration.CannonOrchestrator.Orientation;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
-import frc.robot.subsystems.Drive.Sim.SimulatedSwerveSubsystem;
 import frc.util.Constants;
 import frc.util.FiringTable;
 import frc.util.Helpers;
@@ -22,7 +21,7 @@ import frc.util.FiringTable.FiringDataPoint;
 
 public class HubOrchestrator {
     CannonOrchestrator cannonOrchestrator;
-    SimulatedSwerveSubsystem swerveSubsystem;
+    SwerveSubsystem swerveSubsystem;
     FiringTable firingTable;
 
     Pair<FiringDataPoint, Double> latestConvergance;
