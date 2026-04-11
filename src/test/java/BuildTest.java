@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class BuildTest {
-  static Robot robot = null;
+  static Robot robot;
 
   @BeforeEach
   void robotBuilds() {
@@ -43,7 +43,7 @@ class BuildTest {
     robot.autonomousInit();
     robot.teleopInit();
   }
-  
+
   @Test
   void periodic() {
     assertNotNull(robot);

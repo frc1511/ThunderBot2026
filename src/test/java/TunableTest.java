@@ -1,10 +1,8 @@
-import frc.robot.Robot;
 import frc.util.Thunder.Tuneable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +23,7 @@ class TunableTest {
   }
 
   @Test
+  @SuppressWarnings("unused")
   void typesAllowed() {
     Tuneable<Double>    x1 = new Tuneable<>(1.0d, "Name");
     Tuneable<Double[]>  x2 = new Tuneable<>(new Double[] {0.1d}, "Name");

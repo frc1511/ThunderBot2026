@@ -10,8 +10,8 @@ import frc.util.Alert;
 import frc.util.Helpers;
 
 public class Tuneable<T extends Object> {
-    static public ArrayList<Tuneable> tuneables = new ArrayList<Tuneable>();
-    
+    static public ArrayList<Tuneable<? extends Object>> tuneables = new ArrayList<Tuneable<? extends Object>>();
+
     public T value;
     public String m_name;
     public boolean m_hasUpdated = true;
@@ -32,7 +32,7 @@ public class Tuneable<T extends Object> {
     }
 
     public void update() {
-        update_((Tuneable<Object>)this);
+        update_(safer(this));
     }
 
     static List<String> allowedTypes = Arrays.asList(
@@ -84,9 +84,15 @@ public class Tuneable<T extends Object> {
 
     static public void periodic() {
         if (Helpers.isPitModeEnabled()) {
-            for (Tuneable<Object> t : tuneables) {
-                update_(t);
-            }
+            tuneables.forEach(t -> {
+                Tuneable.update_(safer(t));
+            });
         }
-    } 
+    }
+
+    static private Tuneable<Object> safer(Tuneable<?> t) {
+        @SuppressWarnings("unchecked")
+        Tuneable<Object> safe = (Tuneable<Object>)t;
+        return safe;
+    }
 }

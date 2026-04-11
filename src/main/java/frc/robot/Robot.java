@@ -232,17 +232,17 @@ public class Robot extends TimedRobot {
                 );
 
             fieldCentric.get()
-                .onTrue(new InstantCommand(() -> drivetrain.setFieldCentric(true)))
-                .onFalse(new InstantCommand(() -> drivetrain.setFieldCentric(false)));
+                .onTrue(new InstantCommand(() -> drivetrain.setFieldCentric(true)).ignoringDisable(true))
+                .onFalse(new InstantCommand(() -> drivetrain.setFieldCentric(false)).ignoringDisable(true));
 
             Helpers.setPitModePlus(pitModePlus.isOn());
-            pitModePlus.get().onChange(new InstantCommand(() -> Helpers.setPitModePlus(pitModePlus.isOn())));
+            pitModePlus.get().onChange(new InstantCommand(() -> Helpers.setPitModePlus(pitModePlus.isOn())).ignoringDisable(true));
 
             Helpers.setPitMode(pitMode.isOn());
-            pitMode.get().onChange(new InstantCommand(() -> Helpers.setPitMode(pitMode.isOn())));
+            pitMode.get().onChange(new InstantCommand(() -> Helpers.setPitMode(pitMode.isOn())).ignoringDisable(true));
 
             Helpers.setBypassMode(bypassMode.isOn());
-            bypassMode.get().onChange(new InstantCommand(() -> Helpers.setBypassMode(bypassMode.isOn())));
+            bypassMode.get().onChange(new InstantCommand(() -> Helpers.setBypassMode(bypassMode.isOn())).ignoringDisable(true));
         }
 
         /**********************/
@@ -296,6 +296,7 @@ public class Robot extends TimedRobot {
             driverController.rightTrigger().and(condition).whileTrue(hungerOrchestrator.consume().withName("OneDriveHungerIntake"));
             driverController.rightBumper() .and(condition).whileTrue(firingOrchestrator.fire().withName("OneDriveFiringFire"));
             driverController.back()        .and(condition).onTrue(pivot.up().withName("OneDrivePivotUp"));
+            driverController.start()       .and(condition).whileTrue(hungerOrchestrator.jostleRepeatedly());
         }
 
         /**********************/
@@ -481,6 +482,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotPeriodic() {
         Tuneable.periodic();
+        manualModeHandler.periodic();
 
         if (!driverController.isConnected()) {
             Alert.error("Drive Controller Disconnected");
@@ -511,7 +513,11 @@ public class Robot extends TimedRobot {
         SmartDashboard.putBoolean("Extra / Driver Aid / Hub Active", Helpers.isHubActive(true));
         SmartDashboard.putNumber("Extra / Driver Aid / Match Timer", Timer.getMatchTime());
 
-        SmartDashboard.putBoolean("Extra / Driver Aid / Tench Mode Active", conductor.trenchSafe());
+        SmartDashboard.putBoolean("Extra / Driver Aid / Tench Safe", conductor.trenchSafe());
+
+        SmartDashboard.putBoolean("Extra / Bypass Mode", Helpers.isBypassModeEnabled());
+        SmartDashboard.putBoolean("Extra / Pit Mode+ Mode", Helpers.isPitModePlusEnabled());
+        SmartDashboard.putBoolean("Extra / Pit Mode Platinum Mode", pitModePlatinumEditionTM.isOn());
 
         // If the HDDL is not running, run them at the normal rate
         if (!Constants.kUseHDDL) {
