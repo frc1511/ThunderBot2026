@@ -53,7 +53,7 @@ import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
  */
 public class SimulatedSwerveSubsystem extends SimulatedSwerveBase implements SwerveSubsystem {
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
-    private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
+    private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.kZero;
     private boolean m_hasAppliedOperatorPerspective = false;
 
     private Field2d m_currentField;
@@ -257,8 +257,8 @@ public class SimulatedSwerveSubsystem extends SimulatedSwerveBase implements Swe
             if (m_fieldCentric) {
                 m_mapleSimSwerveDrivetrain.mapleSimDrive.setRobotSpeeds(
                     new ChassisSpeeds(
-                        vy,
-                        vx,
+                        vy * (Helpers.isBlueAlliance() ? 1 : -1),
+                        vx * (Helpers.isBlueAlliance() ? 1 : -1),
                         vRot
                     )
                 );
@@ -266,7 +266,7 @@ public class SimulatedSwerveSubsystem extends SimulatedSwerveBase implements Swe
                 m_mapleSimSwerveDrivetrain.mapleSimDrive.setRobotSpeeds(
                     ChassisSpeeds.fromFieldRelativeSpeeds(
                         vy,
-                        vx,
+                        -vx,
                         vRot,
                         m_mapleSimSwerveDrivetrain.mapleSimDrive.getGyroSimulation().getGyroReading()
                     )

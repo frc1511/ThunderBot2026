@@ -596,12 +596,12 @@ public class Robot extends TimedRobot {
 
     @Override
     public void simulationInit() {
-        SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(4, 3)));
-        SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(4, 3)));
-        SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(4, 3)));
-        SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(4, 3)));
-        SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(4, 3)));
-        // SimulatedArena.getInstance().placeGamePiecesOnField();
+        // SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(4, 3)));
+        // SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(4, 3)));
+        // SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(4, 3)));
+        // SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(4, 3)));
+        // SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(4, 3)));
+        SimulatedArena.getInstance().placeGamePiecesOnField();
 
         /* Run simulation at a faster rate so PID gains behave more reasonably */
         m_simNotifier = new Notifier(this::simulationPeriodicFast);

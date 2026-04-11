@@ -91,9 +91,9 @@ public class Conductor {
         double kFakeAirResistance = .45; // Non scientific, just makes the numbers happier
         RebuiltFuelOnFly fuel = new RebuiltFuelOnFly(
             m_robot.drivetrain.currentPose().getTranslation(),
-            new Translation2d(-.3, .3),
-            m_robot.drivetrain.getSpeed(),
-            m_robot.drivetrain.currentPose().getRotation().plus(Rotation2d.kCCW_90deg),
+            new Translation2d(-.3, -.3),
+            m_robot.drivetrain.getSpeed().times(kFakeAirResistance),
+            m_robot.drivetrain.currentPose().getRotation().plus(Rotation2d.kCW_90deg),
             Inches.of(10),
             MetersPerSecond.of(m_robot.hubOrchestrator.getOptimalShootSpeed() * 2 * Math.PI / 60 * .0889 * kFakeAirResistance),
             Degrees.of(m_robot.hubOrchestrator.getOptimalHoodAngle() * 360 + 50));
