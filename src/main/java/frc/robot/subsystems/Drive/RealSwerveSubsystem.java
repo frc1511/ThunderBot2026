@@ -755,4 +755,8 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     public boolean isRegistered() {
         return m_hasBeenRegistered;
     }
+
+    public Field2d getMainField() {
+        return m_currentField;
+    }
 }

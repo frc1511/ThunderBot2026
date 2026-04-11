@@ -1,8 +1,20 @@
 package frc.robot.orchestration;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 import java.util.List;
 
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnFly;
+
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -70,5 +82,35 @@ public class Conductor {
             .andThen(
                 hang.retract()
             );
+    }
+
+    public void shootSimulatedFuel() {
+        if (m_robot.intake.getSimulatedFuelCount() <= 0) return;
+        m_robot.intake.decreaseSimulatedFuelCount();
+
+        double kFakeAirResistance = .45; // Non scientific, just makes the numbers happier
+        RebuiltFuelOnFly fuel = new RebuiltFuelOnFly(
+            m_robot.drivetrain.currentPose().getTranslation(),
+            new Translation2d(-.3, .3),
+            m_robot.drivetrain.getSpeed(),
+            m_robot.drivetrain.currentPose().getRotation().plus(Rotation2d.kCCW_90deg),
+            Inches.of(10),
+            MetersPerSecond.of(m_robot.hubOrchestrator.getOptimalShootSpeed() * 2 * Math.PI / 60 * .0889 * kFakeAirResistance),
+            Degrees.of(m_robot.hubOrchestrator.getOptimalHoodAngle() * 360 + 50));
+
+        Translation2d hub = Helpers.allianceHub().getTranslation();
+        fuel
+            .withTargetPosition(() -> new Translation3d(hub.getX(), hub.getY(), Meters.convertFrom(62, Inches)))
+            .withTargetTolerance(new Translation3d(.75, .75, 0.1))
+            .withHitTargetCallBack(() -> System.out.println("Successful Shot!"))
+            .withProjectileTrajectoryDisplayCallBack(
+                // Callback for when the fuel will eventually hit the target (if configured)
+                (pose3ds) -> m_robot.networkedFuelPoses.accept(pose3ds.toArray(new Pose3d[0])),
+                // Callback for when the fuel will eventually miss the target, or if no target is configured
+                (pose3ds) -> m_robot.networkedFuelPoses.accept(pose3ds.toArray(new Pose3d[0]))
+                )
+            .enableBecomesGamePieceOnFieldAfterTouchGround();
+
+        SimulatedArena.getInstance().addGamePieceProjectile(fuel);
     }
 }

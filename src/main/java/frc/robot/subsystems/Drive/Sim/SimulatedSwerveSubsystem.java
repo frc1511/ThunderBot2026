@@ -45,6 +45,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import org.ironmaple.simulation.drivesims.AbstractDriveTrainSimulation;
+
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily be used in
  * command-based projects.
@@ -639,4 +641,11 @@ public class SimulatedSwerveSubsystem extends SimulatedSwerveBase implements Swe
         return Math.PI/2 - Math.acos(Constants.Swerve.kShooterOffset / Math.hypot(dX, dY));
     }
 
+    public AbstractDriveTrainSimulation getAbstractSim() {
+        return m_mapleSimSwerveDrivetrain.mapleSimDrive;
+    }
+
+    public Field2d getMainField() {
+        return m_currentField;
+    }
 }

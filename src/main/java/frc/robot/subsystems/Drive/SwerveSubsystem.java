@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.util.CommandBuilder;
 import frc.util.Constants.Status;
@@ -90,4 +91,6 @@ public interface SwerveSubsystem extends ThunderInterface {
     public CommandBuilder driveToPose(Supplier<Pose2d> target);
 
     public CommandBuilder driveToPose(Supplier<Pose2d> target, List<Double> speedPercents);
+
+    public Field2d getMainField();
 }

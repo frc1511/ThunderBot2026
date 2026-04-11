@@ -14,10 +14,13 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.Robot;
+import frc.robot.orchestration.Conductor;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
@@ -33,6 +36,10 @@ public class ShooterSubsystem extends ThunderSubsystem {
     private double m_targetSpeed = 0;
 
     private DoubleSupplier optimalSpeedSupplier = () -> 0d;
+
+    private Conductor m_conductorReferenceForSimulation;
+
+    private Timer m_simTimer;
 
     public ShooterSubsystem() {
         TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
@@ -78,12 +85,17 @@ public class ShooterSubsystem extends ThunderSubsystem {
         }
     }
 
+    public void initSim(Conductor conductor) {
+        m_conductorReferenceForSimulation = conductor;
+        m_simTimer = new Timer();
+    }
+
     public void setOptimalSpeedGetter(DoubleSupplier supplier) {
         optimalSpeedSupplier = supplier;
     }
 
     public boolean shooterAtSpeed() {
-        if (Broken.shooterFullyDisabled || Helpers.isBypassModeEnabled()) return true;
+        if (Broken.shooterFullyDisabled || Helpers.isBypassModeEnabled() || Robot.isSimulation()) return true;
 
         return Math.abs(Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()) - m_targetSpeed) < Constants.Shooter.kShooterAtSpeedTolerance && Helpers.RPStoRPM(m_primaryMotor.getClosedLoopError().getValueAsDouble()) < Constants.Shooter.kShooterAtSpeedTolerance;
     }
@@ -147,7 +159,20 @@ public class ShooterSubsystem extends ThunderSubsystem {
         if (Broken.shooterFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
-            .onExecute(() -> runAtSpeed(optimalSpeedSupplier.getAsDouble()))
+            .onInitialize(() -> {
+                if (Robot.isSimulation()) {
+                    m_simTimer.restart();
+                }
+            })
+            .onExecute(() -> {
+                if (Robot.isSimulation()) {
+                    if (m_simTimer.get() > 1) {
+                        m_conductorReferenceForSimulation.shootSimulatedFuel();
+                        m_simTimer.restart();
+                    }
+                }
+                runAtSpeed(optimalSpeedSupplier.getAsDouble());
+            })
             .onEnd(this::halt);
     }
 

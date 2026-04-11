@@ -135,7 +135,7 @@ public class Robot extends TimedRobot {
         allSubsystems.add(intake);
         allSubsystems.add(pivot);
         allSubsystems.add(hang);
-        // allSubsystems.add(drivetrain);
+        allSubsystems.add(drivetrain);
 
         allSubsystems.forEach(ThunderInterface::registerSubsystem);
 
@@ -170,7 +170,13 @@ public class Robot extends TimedRobot {
         // drivetrain.setOptimalRotationGetter(hubOrchestrator::getOptimalDriveOrientation);
 
         kicker.getField("optimalRPM").withValue(hubOrchestrator::getOptimalShootSpeed);
-        
+
+        if (Robot.isSimulation()) {
+            SimulatedSwerveSubsystem simDrive = (SimulatedSwerveSubsystem)drivetrain;
+            intake.initSim(simDrive.getAbstractSim());
+            shooter.initSim(conductor);
+        }
+
         Alert.info("The robot has restarted");
         DriverStation.silenceJoystickConnectionWarning(true); // This hopefully helps with radio issues
         SignalLogger.enableAutoLogging(Constants.kUseSignalLogger);
@@ -590,8 +596,12 @@ public class Robot extends TimedRobot {
 
     @Override
     public void simulationInit() {
-        SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(3, 3)));
-        SimulatedArena.getInstance().placeGamePiecesOnField();
+        SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(4, 3)));
+        SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(4, 3)));
+        SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(4, 3)));
+        SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(4, 3)));
+        SimulatedArena.getInstance().addGamePiece(new RebuiltFuelOnField(new Translation2d(4, 3)));
+        // SimulatedArena.getInstance().placeGamePiecesOnField();
 
         /* Run simulation at a faster rate so PID gains behave more reasonably */
         m_simNotifier = new Notifier(this::simulationPeriodicFast);
@@ -602,7 +612,7 @@ public class Robot extends TimedRobot {
         SimulatedArena.getInstance().simulationPeriodic();
     }
 
-    private StructArrayPublisher<Pose3d> networkedFuelPoses = NetworkTableInstance.getDefault()
+    public StructArrayPublisher<Pose3d> networkedFuelPoses = NetworkTableInstance.getDefault()
         .getStructArrayTopic("MyPoseArray", Pose3d.struct)
         .publish();
 
