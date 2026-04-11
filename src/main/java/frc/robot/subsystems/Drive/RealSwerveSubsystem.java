@@ -41,6 +41,7 @@ import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants.Status;
 import frc.util.Constants.Swerve;
+import frc.util.LimelightHelpers.PoseEstimate;
 import frc.util.LimelightHelpers.RawFiducial;
 import frc.util.ZoneConstants.ZoneInfo;
 import frc.util.LimelightHelpers;
@@ -74,6 +75,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
     private Field2d m_currentField;
     private Field2d m_targetField;
+
+    private Field2d m_rearLimelightEstimate;
+    private Field2d m_mainLimelightEstimate;
 
     private Field2d m_targetCenterPoseField;
 
@@ -117,6 +121,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
         m_currentField = new Field2d();
         m_targetField = new Field2d();
+
+        m_rearLimelightEstimate = new Field2d();
+        m_mainLimelightEstimate = new Field2d();
 
         m_targetCenterPoseField = new Field2d();
 
@@ -424,6 +431,14 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         m_currentField.setRobotPose(currentPose());
         SmartDashboard.putData("Drive / Current Pose", m_currentField);
         SmartDashboard.putData("Drive / Target Pose", m_targetField);
+        if (!m_limelightDisable) {
+            PoseEstimate rearLimelight = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-rear");
+            PoseEstimate limelight = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+            if (rearLimelight != null) m_rearLimelightEstimate.setRobotPose(rearLimelight.pose);
+            if (limelight != null) m_mainLimelightEstimate.setRobotPose(limelight.pose);
+            SmartDashboard.putData("Drive / Rear Limelight Estimate", m_rearLimelightEstimate);
+            SmartDashboard.putData("Drive / Main Limelight Estimate", m_mainLimelightEstimate);
+        }
         SmartDashboard.putNumber("Drive / Speed Multiplier", m_speedMultipler);
 
         SmartDashboard.putString("Drive / Current Zone", ZoneConstants.checkZone(currentPose().getTranslation()).fullName());
