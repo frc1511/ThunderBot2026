@@ -36,10 +36,10 @@ public class Tuneable<T extends Object> {
     }
 
     static List<String> allowedTypes = Arrays.asList(
-         Double.class.getName(),  Double[].class.getName(),
+        Double.class.getName(),  Double[].class.getName(),
         Boolean.class.getName(), Boolean[].class.getName(),
-         String.class.getName(),  String[].class.getName(),
-         Byte[].class.getName());
+        String.class.getName(),  String[].class.getName(),
+        Byte[].class.getName());
 
     static private void update_(Tuneable<Object> t) {
         String key = "Tunables / " + t.m_name;

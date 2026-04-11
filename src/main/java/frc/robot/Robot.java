@@ -373,8 +373,8 @@ public class Robot extends TimedRobot {
                                                          .onFalse(spindexer.halt()                                            .withName("SpindexerHalt"));
         }
 
-        pitMode.get().whileTrue(pivot.setCoastMode().ignoringDisable(true));
-        pitMode.get().whileTrue(hood.setCoastMode().ignoringDisable(true));
+        pitMode.get().and(this::isDisabled).whileTrue(pivot.setCoastMode().ignoringDisable(true));
+        pitMode.get().and(this::isDisabled).whileTrue(hood.setCoastMode().ignoringDisable(true));
 
         { // Manual Aux Controls (PitMode On, Plus On, Platinum Off)
             BooleanSupplier condition = () -> auxDisable.isOff() && oneDriverMode.isOff() && pitModePlus.isOn() && pitModePlatinumEditionTM.isOff();
@@ -505,9 +505,10 @@ public class Robot extends TimedRobot {
 
         if (pitMode.isOn() || pitModePlus.isOn() || pitModePlatinumEditionTM.isOn()) {
             bigText = "!!! Pit Mode !!!";
-        } else if (PDH.getTotalCurrent() > 180) {
-            bigText = "!!! >180A Draw !!!";
         }
+        // } else if (PDH.getTotalCurrent() > 180) {
+        //     bigText = "!!! >180A Draw !!!";
+        // }
         
         SmartDashboard.putString("Extra / Driver Aid / Hub Timer", bigText);
         SmartDashboard.putBoolean("Extra / Driver Aid / Hub Active", Helpers.isHubActive(true));

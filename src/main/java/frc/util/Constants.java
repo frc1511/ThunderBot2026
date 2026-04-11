@@ -204,13 +204,13 @@ public class Constants {
             }
         }
     }
-    
+
     public interface Shooter {
         double kMaxShooterSpeed = 0.5d;
         double kShooterAtSpeedTolerance = 100d;
         double kTargetShooterRPM = 1900d;
         double kFeedRPM = 2200d;
-        
+
         public interface TurretPID extends BasePID {}
         double kTurretTolerance = 0.5d;
 

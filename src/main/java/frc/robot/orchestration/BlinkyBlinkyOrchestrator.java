@@ -38,11 +38,11 @@ public class BlinkyBlinkyOrchestrator {
         m_brightnessPercent = SmartDashboard.getNumber("LEDs / Brightness", 1d);
 
         if (!Broken.blinkyBlinkyDisableStatus()) {
-            if (robot.hungerOrchestrator.isIntaking()) {
+            if (robot.pitMode.isOn()) {
                 m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 15, 255, 255);
+                    m_buffer.setHSV(index, 0, 0, (int)Math.floor(40 * m_brightnessPercent));
                 });
-            }  else if (robot.hang.climbClimbingButHasntClumbJustYet()) {
+            } else if (robot.hang.climbClimbingButHasntClumbJustYet()) {
                 double position = robot.hang.getPosition();
                 double hangPercent = position / Constants.HangConstants.kMaxDeployDistanceRotations;
                 int fullNumber = Helpers.clamp((int) Math.floor(hangPercent * 9) - 1, 0, 9);
@@ -50,6 +50,10 @@ public class BlinkyBlinkyOrchestrator {
                 m_buffer.forEach((index, r, g, b) -> {
                     int value = index % 9 <= fullNumber ? 255 : (int) Math.floor(leftover * 255);
                     m_buffer.setHSV(index, 150, 255, value);
+                });
+            } else if (robot.hungerOrchestrator.isIntaking()) {
+                m_buffer.forEach((index, r, g, b) -> {
+                    m_buffer.setHSV(index, 15, 255, 255);
                 });
             } else if (robot.conductor.cannonReady()) {
                 m_strobeProgress = (m_strobeProgress + 1) & 0xff;
@@ -63,10 +67,6 @@ public class BlinkyBlinkyOrchestrator {
             } else if (robot.conductor.trenchSafe()) {
                 m_buffer.forEach((index, r, g, b) -> {
                     m_buffer.setHSV(index, 140, 255, (int)Math.floor(255 * m_brightnessPercent));
-                });
-            } else if (robot.pitMode.isOn()) {
-                m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 0, 0, (int)Math.floor(40 * m_brightnessPercent));
                 });
             } else {
                 m_buffer.forEach((index, r, g, b) -> {
