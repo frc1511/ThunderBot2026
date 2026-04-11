@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.util.CommandBuilder;
-import frc.util.Thunder.Command;
 import frc.util.Thunder.ThunderSubsystem;
 
 public class ManualModeHandler {
@@ -56,9 +55,14 @@ public class ManualModeHandler {
     public void periodic() {
         SmartDashboard.putNumber("Manual / Subsystem 1 Speed", m_subsystem_1_velocity);
         SmartDashboard.putNumber("Manual / Subsystem 2 Speed", m_subsystem_2_velocity);
+    }
 
-        SmartDashboard.putString("Manual / Subsystem 1 Actual Name", m_chooser_1.getSelected().getName());
-        SmartDashboard.putString("Manual / Subsystem 2 Actual Name", m_chooser_2.getSelected().getName());
+    private Command setDirectionForward() {
+        return new CommandBuilder().onExecute(() -> m_direction_mult = 1d).isFinished(true);
+    }
+
+    private Command setDirectionBackward() {
+        return new CommandBuilder().onExecute(() -> m_direction_mult = -1d).isFinished(true);
     }
 
     public Command increaseManual1Speed() {
@@ -81,24 +85,20 @@ public class ManualModeHandler {
             m_subsystem_2_velocity = Math.max(0, m_subsystem_2_velocity - m_subsystem_2_speed_increment));
     }
 
-    ///////
-
     public Command runSubsystem1Forward() {
-        m_direction_mult = 1;
-        return m_subsystem_1_manual;
+        return setDirectionForward().andThen(m_subsystem_1_manual.asProxy());
     }
 
     public Command runSubsystem1Reverse() {
-        m_direction_mult = -1;
-        return m_subsystem_1_manual.manual(() -> -m_subsystem_1_velocity);
+        return setDirectionBackward().andThen(m_subsystem_1_manual.asProxy());
     }
 
     public Command runSubsystem2Forward() {
-        return m_subsystem_2.manual(() ->  m_subsystem_2_velocity);
+        return setDirectionForward().andThen(m_subsystem_2_manual.asProxy());
     }
 
     public Command runSubsystem2Reverse() {
-        return m_subsystem_2.manual(() -> -m_subsystem_2_velocity);
+        return setDirectionBackward().andThen(m_subsystem_2_manual.asProxy());
     }
 
     //////
