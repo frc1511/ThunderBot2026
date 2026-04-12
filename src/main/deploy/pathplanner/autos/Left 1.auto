@@ -31,19 +31,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Shoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Left 1 Pre Climb"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Hang"
+            "name": "ShootForever"
           }
         }
       ]

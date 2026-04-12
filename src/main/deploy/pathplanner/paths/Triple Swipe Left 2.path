@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.279544889733603,
-        "y": 7.503121071729642
+        "x": 4.343102272727272,
+        "y": 7.467170454545454
       },
       "isLocked": false,
       "linkedName": "Triple Swipe Left 1"
@@ -68,8 +68,8 @@
         "y": 7.43625
       },
       "prevControl": {
-        "x": 4.6419999999999995,
-        "y": 7.539318181818182
+        "x": 4.631693181818182,
+        "y": 7.477477272727273
       },
       "nextControl": null,
       "isLocked": false,
@@ -79,7 +79,7 @@
   "rotationTargets": [
     {
       "waypointRelativePos": 0.3682864450127875,
-      "rotationDegrees": 180.0
+      "rotationDegrees": -174.17299747824137
     },
     {
       "waypointRelativePos": 0.8951406649616367,
@@ -136,7 +136,7 @@
   "folder": "Triple Swipe Left",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -173.0
+    "rotation": -173.19868517601842
   },
   "useDefaultConstraints": true
 }
