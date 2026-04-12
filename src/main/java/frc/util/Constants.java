@@ -384,8 +384,8 @@ public class Constants {
             double kI = .1;
         }
         public interface ThetaPID extends BasePID {
-            double kP = 1.1;
-            double kD = .07;
+            double kP = 8;
+            double kD = 1;
         }
 
         public interface ThetaAutoPID extends BasePID {
@@ -395,6 +395,9 @@ public class Constants {
         public static final PIDController kHolonomicXPIDController = new PIDController(XYPID.kP, XYPID.kI, XYPID.kD);
         public static final PIDController kHolonomicYPIDController = new PIDController(XYPID.kP, XYPID.kI, XYPID.kD);
         public static final ProfiledPIDController kHolonomicThetaPIDController = new ProfiledPIDController(ThetaPID.kP, ThetaPID.kI, ThetaPID.kD, new Constraints(kMaxAngularRate, kMaxAngularAcceleration));
+        static {
+            kHolonomicThetaPIDController.setTolerance(.05, .05);
+        }
 
         public static Pose2d targetPose = new Pose2d(
             11.887319 - 1,

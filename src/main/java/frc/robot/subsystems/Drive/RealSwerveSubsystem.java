@@ -81,7 +81,6 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
     private Field2d m_targetCenterPoseField;
 
-    private Pose2d m_arcLockCenter;
     private double m_arcLockDistance;
     private double m_arcLockTheta;
     
@@ -147,7 +146,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                 builder.addDoubleProperty("Module 1 Drive Current", () -> getModule(1).getDriveMotor().getSupplyCurrent().getValueAsDouble(), null);
                 builder.addDoubleProperty("Module 1 Steer Temp", () -> getModule(1).getSteerMotor().getDeviceTemp().getValueAsDouble(), null);
                 builder.addDoubleProperty("Module 1 Drive Temp", () -> getModule(1).getDriveMotor().getDeviceTemp().getValueAsDouble(), null);
-                
+
                 builder.addDoubleProperty("Module 2 Angle", () -> getModule(2).getCurrentState().angle.getRadians(), null);
                 builder.addDoubleProperty("Module 2 Vel", () -> getModule(2).getCurrentState().speedMetersPerSecond, null);
                 builder.addDoubleProperty("Module 2 Steer Current", () -> getModule(2).getSteerMotor().getSupplyCurrent().getValueAsDouble(), null);
@@ -260,8 +259,6 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             }
 
             if (m_hubLock) {
-                m_arcLockCenter = Helpers.allianceHub();
-
                 Rotation2d targetAngle = new Rotation2d(m_optimalRotationSupplier.getAsDouble() - Math.PI/2 - getShooterAngleCompensation());
 
                 vRot = m_driveController.calculate(
@@ -269,7 +266,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                         new Pose2d(currentPose().getTranslation(), targetAngle),
                         0,
                         targetAngle
-                    ).omegaRadiansPerSecond * Swerve.kMaxAngularRate;
+                    ).omegaRadiansPerSecond;
             }
 
             if (m_trenchLock) {
@@ -626,25 +623,23 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                 () -> {
                     m_arcLockTheta += Math.toRadians(leftX.getAsDouble());
 
-                    m_targetCenterPoseField.setRobotPose(m_arcLockCenter);
+                    m_targetCenterPoseField.setRobotPose(Helpers.allianceHub());
 
                     SmartDashboard.putData(m_targetCenterPoseField);
 
                     return new Pose2d(
-                        Math.cos(m_arcLockTheta) * m_arcLockDistance + m_arcLockCenter.getX(),
-                        Math.sin(m_arcLockTheta) * m_arcLockDistance + m_arcLockCenter.getY(),
+                        Math.cos(m_arcLockTheta) * m_arcLockDistance + Helpers.allianceHub().getX(),
+                        Math.sin(m_arcLockTheta) * m_arcLockDistance + Helpers.allianceHub().getY(),
                         new Rotation2d(m_arcLockTheta + Math.PI/2 - getShooterAngleCompensation())
                     );
                 }
             )
             .onInitialize(
                 () -> {
-                    m_arcLockCenter = Helpers.allianceHub();
-
                     Pose2d currentPose = currentPose();
 
-                    double dX = currentPose.getX() - m_arcLockCenter.getX();
-                    double dY = currentPose.getY() - m_arcLockCenter.getY();
+                    double dX = currentPose.getX() - Helpers.allianceHub().getX();
+                    double dY = currentPose.getY() - Helpers.allianceHub().getY();
 
                     m_arcLockDistance = Math.hypot(dX, dY);
                     m_arcLockTheta = Math.atan2(dY, dX);
