@@ -13,12 +13,6 @@
         {
           "type": "named",
           "data": {
-            "name": "Preheat"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "Intake"
           }
         },

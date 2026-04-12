@@ -5,6 +5,12 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "PivotDown"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "C3P2"
