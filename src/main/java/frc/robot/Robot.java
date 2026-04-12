@@ -269,7 +269,7 @@ public class Robot extends TimedRobot {
         { // Default Drive Controls (OneDrive Off)
             BooleanSupplier condition = () -> driveDisable.isOff() && oneDriverMode.isOff();
 
-            driverController.leftTrigger() .and(condition).whileTrue(drivetrain.trenchLock().withName("DriveTrenchLockToggle"));
+            driverController.leftTrigger() .and(condition).whileTrue(drivetrain.temporarySlowmode().withName("DriveTemporarySlowdown"));
             driverController.leftBumper()  .and(condition).onTrue(drivetrain.decreaseSpeed().withName("DriveSpeedDesc")); // Drive go snail
             driverController.rightBumper() .and(condition).onTrue(drivetrain.increaseSpeed().withName("DriveSpeedInc")); // Drive go weeee
             driverController.rightTrigger().and(condition).onTrue(new CommandBuilder().onExecute(() -> drivetrain.setFieldCentric(false)).isFinished(true).withName("DriveRobotCentricSetOn"))  // Temporary robot centric
@@ -358,13 +358,13 @@ public class Robot extends TimedRobot {
             auxController.x().and(condition)              .onTrue(hood.toPosition(() -> Constants.Hood.Position.TRENCH.get()) .withName("PresetTower"));
             auxController.b().and(condition)              .onTrue(hood.toPosition(() -> Constants.Hood.Position.TRENCH.get()) .withName("PresetTrench"));
             auxController.a().and(condition)              .onTrue(hood.toPosition(() -> Constants.Hood.Position.HUB.get())    .withName("PresetHub"));
-            auxController.leftBumper().and(condition)  .whileTrue(shooter.holdSpeedForShoot()                                 .withName("ShooterPreheat"))
+            auxController.leftBumper().and(condition)  .whileTrue(shooter.holdSpeedForShoot().asProxy()                       .withName("ShooterPreheat"))
                                                          .onFalse(shooter.halt()                                              .withName("ShooterHalt"));
             auxController.leftTrigger().and(condition) .whileTrue(intake.outtake()                                            .withName("IntakeOuttake"))
                                                          .onFalse(intake.stopEating()                                         .withName("IntakeHalt"));
             auxController.back().and(condition)        .whileTrue(pivot.up()                                                  .withName("PivotUp"));
 
-            auxController.rightBumper().and(condition) .whileTrue(firingOrchestrator.fire()                                   .withName("FiringFire"))
+            auxController.rightBumper().and(condition) .whileTrue(firingOrchestrator.fire().asProxy()                         .withName("FiringFire"))
                                                          .onFalse(firingOrchestrator.halt()                                   .withName("FiringHalt"));
             auxController.rightTrigger().and(condition).whileTrue(hungerOrchestrator.consume()                                .withName("HungerConsume"))
                                                          .onFalse(intake.stopEating()                                         .withName("IntakeHalt"));

@@ -153,4 +153,8 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
     public boolean isRegistered() {
         return m_hasBeenRegistered;
     }
+
+    public Command temporarySlowmode() {
+        return CommandBuilder.none(this);
+    }
 }

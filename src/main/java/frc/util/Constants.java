@@ -296,7 +296,7 @@ public class Constants {
             double kCosRatio = 1;
 
             enum Position {
-                TOP(-0.41), HALFWAY_DOWN(-0.208), BOTTOM(-0.09); // They change alot but should be approx right
+                TOP(-0.27), HALFWAY_DOWN(-0.0308), BOTTOM(0.0668); // They change alot but should be approx right
 
                 private double m_value;
 
@@ -308,7 +308,7 @@ public class Constants {
                     return this.m_value;
                 }
             }
-            double kCANcoderOffset = -.8497;
+            double kCANcoderOffset = -0.5086;
 
             double kTolerance = 0.015d;
             double kBigTolerance = 0.02d;
@@ -343,6 +343,7 @@ public class Constants {
         public static final double kTimeOfFlightConvergenceTolerance = 0.01;
         public static final int kTimeOfFlightConvergenceMaxRecursions = 20;
         public static final double kMaximumLimelightDistance = 3d;
+        public static final double kTemporarySlowdownAmount = .15d;
 
         // Max Speed
         public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.9); // DON"T TOUCH, USE MULTIPLIER FOR MAX SPEED INSTEAD

@@ -138,21 +138,29 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                 builder.addDoubleProperty("Module 0 Vel", () -> getModule(0).getCurrentState().speedMetersPerSecond, null);
                 builder.addDoubleProperty("Module 0 Steer Current", () -> getModule(0).getSteerMotor().getSupplyCurrent().getValueAsDouble(), null);
                 builder.addDoubleProperty("Module 0 Drive Current", () -> getModule(0).getDriveMotor().getSupplyCurrent().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 0 Steer Temp", () -> getModule(0).getSteerMotor().getDeviceTemp().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 0 Drive Temp", () -> getModule(0).getDriveMotor().getDeviceTemp().getValueAsDouble(), null);
 
                 builder.addDoubleProperty("Module 1 Angle", () -> getModule(1).getCurrentState().angle.getRadians(), null);
                 builder.addDoubleProperty("Module 1 Vel", () -> getModule(1).getCurrentState().speedMetersPerSecond, null);
                 builder.addDoubleProperty("Module 1 Steer Current", () -> getModule(1).getSteerMotor().getSupplyCurrent().getValueAsDouble(), null);
                 builder.addDoubleProperty("Module 1 Drive Current", () -> getModule(1).getDriveMotor().getSupplyCurrent().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 1 Steer Temp", () -> getModule(1).getSteerMotor().getDeviceTemp().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 1 Drive Temp", () -> getModule(1).getDriveMotor().getDeviceTemp().getValueAsDouble(), null);
                 
                 builder.addDoubleProperty("Module 2 Angle", () -> getModule(2).getCurrentState().angle.getRadians(), null);
                 builder.addDoubleProperty("Module 2 Vel", () -> getModule(2).getCurrentState().speedMetersPerSecond, null);
                 builder.addDoubleProperty("Module 2 Steer Current", () -> getModule(2).getSteerMotor().getSupplyCurrent().getValueAsDouble(), null);
                 builder.addDoubleProperty("Module 2 Drive Current", () -> getModule(2).getDriveMotor().getSupplyCurrent().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 2 Steer Temp", () -> getModule(2).getSteerMotor().getDeviceTemp().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 2 Drive Temp", () -> getModule(2).getDriveMotor().getDeviceTemp().getValueAsDouble(), null);
 
                 builder.addDoubleProperty("Module 3 Angle", () -> getModule(3).getCurrentState().angle.getRadians(), null);
                 builder.addDoubleProperty("Module 3 Vel", () -> getModule(3).getCurrentState().speedMetersPerSecond, null);
                 builder.addDoubleProperty("Module 3 Steer Current", () -> getModule(3).getSteerMotor().getSupplyCurrent().getValueAsDouble(), null);
                 builder.addDoubleProperty("Module 3 Drive Current", () -> getModule(3).getDriveMotor().getSupplyCurrent().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 3 Steer Temp", () -> getModule(3).getSteerMotor().getDeviceTemp().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 3 Drive Temp", () -> getModule(3).getDriveMotor().getDeviceTemp().getValueAsDouble(), null);
 
                 builder.addDoubleProperty("Robot Angle", () -> getPigeon2().getRotation2d().getRadians(), null);
             }
@@ -244,6 +252,12 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             double vx = -leftY.getAsDouble() * Constants.Swerve.kMaxSpeed * actualSpeedMultiplier;
             double vy = -leftX.getAsDouble() * Constants.Swerve.kMaxSpeed * actualSpeedMultiplier;
             double vRot = -rightX.getAsDouble() * Constants.Swerve.kMaxAngularRate * actualSpeedMultiplier;
+
+            if (m_isTemporarilySlowed) {
+                vx *= Constants.Swerve.kTemporarySlowdownAmount;
+                vy *= Constants.Swerve.kTemporarySlowdownAmount;
+                vRot *= Constants.Swerve.kTemporarySlowdownAmount;
+            }
 
             if (m_hubLock) {
                 m_arcLockCenter = Helpers.allianceHub();
@@ -766,5 +780,17 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
     public boolean isRegistered() {
         return m_hasBeenRegistered;
+    }
+
+    private static boolean m_isTemporarilySlowed = false;
+    public Command temporarySlowmode() {
+        return new CommandBuilder() // should NOT require drivetrain 
+            .onExecute(() -> {
+                m_isTemporarilySlowed = true;
+            })
+            .onEnd(() -> {
+                m_isTemporarilySlowed = false;
+            })
+            .isFinished(false);
     }
 }

@@ -48,12 +48,15 @@ public class IntakeSubsystem extends ThunderSubsystem {
             if (!Broken.intakeLeftDisabled) {
                 m_motorLeft = new TalonFX(Constants.IOMap.Intake.kChompMotorLeft);
                 m_motorLeft.getConfigurator().apply(intakeConfig);
-                if (Broken.intakeRightDisabled) {
-                    m_primaryMotor = m_motorLeft;
-                } else {
-                    m_motorLeft.setControl(new Follower(Constants.IOMap.Intake.kChompMotorRight, MotorAlignmentValue.Opposed));
-                    m_primaryMotor = m_motorRight;
-                }
+            }
+
+            if (Broken.intakeRightDisabled) {
+                m_primaryMotor = m_motorLeft;
+            } else if (Broken.intakeLeftDisabled) {
+                m_primaryMotor = m_motorRight;
+            } else {
+                m_motorLeft.setControl(new Follower(Constants.IOMap.Intake.kChompMotorRight, MotorAlignmentValue.Opposed));
+                m_primaryMotor = m_motorRight;
             }
         } else {
             Broken.intakeFullyDisabled = true;
