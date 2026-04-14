@@ -38,7 +38,7 @@ public class HoodSubsystem extends ThunderSubsystem {
 
     private boolean isUsingInbuiltEncoder = false;
 
-    private double trueSetpoint = 0;
+    private double trueSetpoint = Constants.Hood.Position.BOTTOM.get();
 
     private DoubleSupplier optimalAngleSupplier = () -> 0;
 

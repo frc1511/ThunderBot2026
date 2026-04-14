@@ -51,6 +51,7 @@ public class HangSubsystem extends ThunderSubsystem {
             .allowedClosedLoopError(Constants.HangConstants.kSetpointPositionTolerance, ClosedLoopSlot.kSlot0)
             .outputRange(Constants.HangConstants.kMaxPullSpeed, Constants.HangConstants.kMaxDeploySpeed);
         
+        m_isClimbing = false;
         m_isZeroed = false;
 
         if (!Broken.hangFullyDisabled) {

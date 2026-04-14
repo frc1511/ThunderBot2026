@@ -40,7 +40,7 @@ public class BlinkyBlinkyOrchestrator {
         if (!Broken.blinkyBlinkyDisableStatus()) {
             if (robot.pitMode.isOn()) {
                 m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 0, 0, (int)Math.floor(40 * m_brightnessPercent));
+                    m_buffer.setHSV(index, 0, 0, (int)Math.floor(60 * m_brightnessPercent));
                 });
             } else if (robot.hang.climbClimbingButHasntClumbJustYet()) {
                 double position = robot.hang.getPosition();
@@ -51,7 +51,7 @@ public class BlinkyBlinkyOrchestrator {
                     int value = index % 9 <= fullNumber ? 255 : (int) Math.floor(leftover * 255);
                     m_buffer.setHSV(index, 150, 255, value);
                 });
-            } else if (robot.hungerOrchestrator.isIntaking()) {
+            } else if (robot.intake.isRunning()) {
                 m_buffer.forEach((index, r, g, b) -> {
                     m_buffer.setHSV(index, 15, 255, 255);
                 });
