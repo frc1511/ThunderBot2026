@@ -229,6 +229,8 @@ public class Constants {
         }
 
         double kReverseSpeed = -0.2d;
+
+        int kFuelEstimationLookback = 6;
     }
 
     public interface Hood {

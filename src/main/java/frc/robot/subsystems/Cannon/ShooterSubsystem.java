@@ -2,6 +2,7 @@ package frc.robot.subsystems.Cannon;
 
 import static edu.wpi.first.units.Units.Amps;
 
+import java.util.ArrayList;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -33,6 +34,8 @@ public class ShooterSubsystem extends ThunderSubsystem {
     private double m_targetSpeed = 0;
 
     private DoubleSupplier optimalSpeedSupplier = () -> 0d;
+
+    private ArrayList<Double> m_lastVoltages;
 
     public ShooterSubsystem() {
         TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
@@ -76,6 +79,12 @@ public class ShooterSubsystem extends ThunderSubsystem {
             Broken.shooterFullyDisabled = true;
             m_primaryMotor = null;
         }
+
+        m_lastVoltages = new ArrayList<Double>();
+        for (int i = 0; i < Constants.Shooter.kFuelEstimationLookback; i++) {
+            m_lastVoltages.add(0d);
+        }
+
     }
 
     public void setOptimalSpeedGetter(DoubleSupplier supplier) {
@@ -96,6 +105,10 @@ public class ShooterSubsystem extends ThunderSubsystem {
         SmartDashboard.putNumber("Shooter / Setpoint Error", Math.abs(Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()) - m_targetSpeed));
 
         SmartDashboard.putNumber("SOTM / Shooter RPM", optimalSpeedSupplier.getAsDouble());
+
+        checkIfShotFuel();
+
+        SmartDashboard.putNumber("Shooter / Total Estimated Fuel Shot", m_totalShotFuel);
     }
 
     @Override
@@ -193,5 +206,33 @@ public class ShooterSubsystem extends ThunderSubsystem {
 
     public boolean isActuallyShooting() {
         return Math.abs(getMotorRate()) > 5;
+    }
+
+    private int m_totalShotFuel = 0;
+
+    public void checkIfShotFuel() {
+        double currentVoltage = m_primaryMotor.getMotorVoltage().getValueAsDouble();
+
+        if (m_lastVoltages.size() >= Constants.Shooter.kFuelEstimationLookback) {
+            m_lastVoltages.remove(0);
+        }
+        m_lastVoltages.add(currentVoltage);
+
+        double firstSum = m_lastVoltages.subList(0, (Integer)Constants.Shooter.kFuelEstimationLookback/3).stream().mapToDouble(Double::doubleValue).sum();
+        double secondSum = m_lastVoltages.subList((Integer)Constants.Shooter.kFuelEstimationLookback/3, Constants.Shooter.kFuelEstimationLookback/3*2).stream().mapToDouble(Double::doubleValue).sum();
+        double thirdSum = m_lastVoltages.subList((Integer)Constants.Shooter.kFuelEstimationLookback/3*2, Constants.Shooter.kFuelEstimationLookback).stream().mapToDouble(Double::doubleValue).sum();
+
+        double firstAverage = firstSum / (Constants.Shooter.kFuelEstimationLookback/3);
+        double secondAverage = secondSum / (Constants.Shooter.kFuelEstimationLookback/3);
+        double thirdAverage = thirdSum / (Constants.Shooter.kFuelEstimationLookback/3);
+
+        double firstDelta = secondAverage - firstAverage;
+        double secondDelta = thirdAverage - secondAverage;
+
+        if (secondDelta < 0 && firstDelta >= 0) {
+            if (thirdAverage < .1 || secondAverage < .1) {
+                m_totalShotFuel++;
+            }
+        }
     }
 }
