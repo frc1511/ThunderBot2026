@@ -98,8 +98,11 @@ public class IntakeSubsystem extends ThunderSubsystem {
             .onExecute(() -> {
                 m_primaryMotor.set(Constants.Hunger.Intake.kEatPercent);
             })
-            .isFinished(true)
-            .withName(Constants.Hunger.Intake.intakeCommandName);
+            .isFinished(true);
+    }
+
+    public boolean isRunning() {
+        return Helpers.isRunning(m_primaryMotor);
     }
 
     /** 
