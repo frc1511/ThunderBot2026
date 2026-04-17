@@ -298,7 +298,7 @@ public class Constants {
             double kCosRatio = 1;
 
             enum Position {
-                TOP(-0.27), HALFWAY_DOWN(-0.0308), BOTTOM(0.0668); // They change alot but should be approx right
+                TOP(-0.35), HALFWAY_DOWN(-0.233), BOTTOM(0.0); // They change alot but should be approx right
 
                 private double m_value;
 
@@ -310,7 +310,7 @@ public class Constants {
                     return this.m_value;
                 }
             }
-            double kCANcoderOffset = -0.5086;
+            double kCANcoderOffset = -0.080811;
 
             double kTolerance = 0.015d;
             double kBigTolerance = 0.02d;
