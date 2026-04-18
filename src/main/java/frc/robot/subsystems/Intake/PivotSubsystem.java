@@ -4,6 +4,7 @@ import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.PersistMode;
@@ -37,10 +38,12 @@ public class PivotSubsystem extends ThunderSubsystem {
         pivotConfig.closedLoop
                     .pid(Constants.Hunger.Pivot.PivotPID.kP, Constants.Hunger.Pivot.PivotPID.kI, Constants.Hunger.Pivot.PivotPID.kD)
                     .allowedClosedLoopError(Constants.Hunger.Pivot.kTolerance, ClosedLoopSlot.kSlot0)
+                    .outputRange(-0.4, 0.7)
                 .feedForward
                     .kS(Constants.Hunger.Pivot.PivotPID.kS)
                     .kCosRatio(Constants.Hunger.Pivot.kCosRatio)
                     .kCos(Constants.Hunger.Pivot.PivotPID.kCos);
+        pivotConfig.inverted(true);
         pivotConfig.idleMode(IdleMode.kBrake);
 
         pivotConfig.encoder
@@ -48,7 +51,7 @@ public class PivotSubsystem extends ThunderSubsystem {
 
         if (!Broken.pivotDisabled) {
             m_CANcoder = new CANcoder(Constants.IOMap.Intake.kCANcoder);
-            m_CANcoder.getConfigurator().apply(new MagnetSensorConfigs().withMagnetOffset(Constants.Hunger.Pivot.kCANcoderOffset));
+            m_CANcoder.getConfigurator().apply(new MagnetSensorConfigs().withMagnetOffset(Constants.Hunger.Pivot.kCANcoderOffset).withSensorDirection(SensorDirectionValue.Clockwise_Positive));
 
             m_motor = new SparkMax(Constants.IOMap.Intake.kPivotMotor, MotorType.kBrushless);
             m_motor.configure(pivotConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -78,6 +81,7 @@ public class PivotSubsystem extends ThunderSubsystem {
         SmartDashboard.putNumber("Pivot / Output %", m_motor.getAppliedOutput());
         SmartDashboard.putNumber("Pivot / Output A", m_motor.getOutputCurrent());
         SmartDashboard.putNumber("Pivot / PID Error", m_pidController.getSetpoint() - m_CANcoder.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Pivot / Velocity", m_CANcoder.getVelocity().getValueAsDouble());
     }
 
     public Command setCoastMode() {

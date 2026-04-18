@@ -71,15 +71,15 @@ public class Robot extends TimedRobot {
 
     public final SwerveSubsystem drivetrain = Broken.drivetrainFullyDisabled ? new FakeSwerveSubsystem() : new RealSwerveSubsystem();
 
-    public final ShooterSubsystem shooter = new ShooterSubsystem();
-    public final HoodSubsystem hood = new HoodSubsystem();
-    public final TurretSubsystem turret = new TurretSubsystem();
+    public final ShooterSubsystem shooter;
+    public final HoodSubsystem hood;
+    public final TurretSubsystem turret;
 
-    public final SpindexerSubsystem spindexer = new SpindexerSubsystem();
-    public final KickerSubsystem kicker = new KickerSubsystem();
-    public final IntakeSubsystem intake = new IntakeSubsystem();
-    public final PivotSubsystem pivot = new PivotSubsystem();
-    public final HangSubsystem hang = new HangSubsystem();
+    public final SpindexerSubsystem spindexer;
+    public final KickerSubsystem kicker;
+    public final IntakeSubsystem intake;
+    public final PivotSubsystem pivot;
+    public final HangSubsystem hang;
 
     public final SafetyWatchdog safetyWatchdog;
 
@@ -116,6 +116,18 @@ public class Robot extends TimedRobot {
     public HashSet<ThunderInterface> allSubsystems = new HashSet<>();
 
     public Robot() {
+        blinkyBlinkyOrchestrator = new BlinkyBlinkyOrchestrator(this);
+        blinkyBlinkyOrchestrator.bootStatus(0);
+
+        shooter = new ShooterSubsystem();
+        hood = new HoodSubsystem();
+        turret = new TurretSubsystem();
+        spindexer = new SpindexerSubsystem();
+        kicker = new KickerSubsystem();
+        intake = new IntakeSubsystem();
+        pivot = new PivotSubsystem();
+        hang = new HangSubsystem();
+
         allSubsystems.add(shooter);
         allSubsystems.add(hood);
         allSubsystems.add(turret);
@@ -142,9 +154,11 @@ public class Robot extends TimedRobot {
             DataLogManager.start();
         }
 
+
+        blinkyBlinkyOrchestrator.bootStatus(1);
+
         // MARK: Orchestration
 
-        blinkyBlinkyOrchestrator = new BlinkyBlinkyOrchestrator(this);
         cannonOrchestrator = new CannonOrchestrator(this);
         firingOrchestrator = new FiringOrchestrator(this);
         hubOrchestrator = new HubOrchestrator(this);
@@ -170,6 +184,8 @@ public class Robot extends TimedRobot {
         } else {
             m_timeAndJoystickReplay = null;
         }
+
+        blinkyBlinkyOrchestrator.bootStatus(2);
 
         { // Default Commands
             if (!Broken.hoodDisabled) hood.setDefaultCommand(hood.zero().withName("HoodHalt"));
@@ -432,6 +448,8 @@ public class Robot extends TimedRobot {
             }
         }
 
+        blinkyBlinkyOrchestrator.bootStatus(3);
+
         // MARK: Auto
         NamedCommands.registerCommand("DB_Hub_AL_Start", drivetrain.setHubLock(true));
         NamedCommands.registerCommand("DB_Hub_AL_Stop", drivetrain.setHubLock(false));
@@ -469,6 +487,8 @@ public class Robot extends TimedRobot {
                 });
             }, 1d/Constants.kHDDLRate, .005d);
         }
+
+        blinkyBlinkyOrchestrator.bootStatus(4);
     }    
 
     @SuppressWarnings("all") // Identical Expressions Warning Suppression (BuildConsts)

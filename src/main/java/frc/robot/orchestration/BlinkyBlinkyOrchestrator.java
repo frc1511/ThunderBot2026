@@ -2,6 +2,7 @@ package frc.robot.orchestration;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.util.Broken;
@@ -34,6 +35,24 @@ public class BlinkyBlinkyOrchestrator {
         SmartDashboard.putNumber("LEDs / Brightness", 1d);
     }
 
+    public void bootStatus(int status) {
+        m_buffer.forEach((index, r, g, b) -> {
+            if (status == 0) { // Pre-subsytems
+                m_buffer.setHSV(index, 0, 255, percentToV(index % 2 == 0 ? 1 : 0));
+            } else if (status == 1) { // Pre-orchestration
+                m_buffer.setHSV(index, 30, 255, percentToV(index % 2 == 0 ? 1 : 0));
+            } else if (status == 2) { // Pre-controllers / Pre-defaults
+                m_buffer.setHSV(index, 90, 255, percentToV(index % 2 == 0 ? 1 : 0));
+            } else if (status == 3) { // Pre-auto / Extra
+                m_buffer.setHSV(index, 140, 255, percentToV(index % 2 == 0 ? 1 : 0));
+            } else if (status == 4) { // End of construction
+                m_buffer.setHSV(index, 60, 255, percentToV(index % 2 == 0 ? 1 : 0));
+            }
+        });
+
+        m_led.setData(m_buffer);
+    }
+
     private int percentToV(double percent) {
         return (int)Math.floor(255 * percent);
     }
@@ -45,6 +64,10 @@ public class BlinkyBlinkyOrchestrator {
             if (robot.pitMode.isOn()) {
                 m_buffer.forEach((index, r, g, b) -> {
                     m_buffer.setHSV(index, 0, 0, percentToV(m_brightnessPercent * 0.6));
+                });
+            } else if (!DriverStation.isDSAttached()) {
+                m_buffer.forEach((index, r, g, b) -> {
+                    m_buffer.setHSV(index, 0, 255, percentToV(Math.floor(index / 9) % 2 == Math.floor(frame / 20) % 2 ? 1 : 0));
                 });
             } else if (robot.hang.climbClimbingButHasntClumbJustYet()) {
                 double position = robot.hang.getPosition();
