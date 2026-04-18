@@ -316,6 +316,19 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         });
     }
 
+    public Command driveWithVelocities(double vx, double vy, double vRot) {
+        return applyRequest(() -> 
+            m_robotCentricRequest
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                .withVelocityX(vx)
+                .withVelocityY(vy)
+                .withRotationalRate(vRot)
+                .withDeadband(Constants.Swerve.kVelocityDeadband)
+                .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband)
+                .withDesaturateWheelSpeeds(true)
+        );
+    }
+
     public Command brick() {
         return applyRequest(() -> m_brickRequest).withName("driveBrick");
     }

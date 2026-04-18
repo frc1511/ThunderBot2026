@@ -10,6 +10,7 @@ import frc.robot.Robot;
 import frc.robot.subsystems.Drive.SwerveSubsystem;
 import frc.robot.subsystems.Hang.HangSubsystem;
 import frc.util.Helpers;
+import frc.util.Constants.IOMap.Swerve;
 
 public class Conductor {
     public HubOrchestrator hub;
@@ -66,6 +67,8 @@ public class Conductor {
                         List.of(.3d, .1d, .30d)) // List.of(.5d, .15d, .6d
                 .withTimeout(3)
             )
+            .andThen(swerve.driveWithVelocities(0d, 1d, 0d).withTimeout(0.3))
+            .andThen(swerve.driveWithVelocities(-1d, 0d, 0d).withTimeout(0.2))
             // Step 5: Retract Hang
             .andThen(
                 hang.retract()

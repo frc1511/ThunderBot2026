@@ -92,4 +92,6 @@ public interface SwerveSubsystem extends ThunderInterface {
     public CommandBuilder driveToPose(Supplier<Pose2d> target, List<Double> speedPercents);
 
     public Command temporarySlowmode();
+
+    public Command driveWithVelocities(double vx, double vy, double vRot);
 }

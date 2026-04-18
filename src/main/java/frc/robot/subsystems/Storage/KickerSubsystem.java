@@ -69,10 +69,10 @@ public class KickerSubsystem extends ThunderSubsystem {
 
     public Command run() {
         if (Broken.kickerDisabled) return CommandBuilder.none(this);
-        return this.manual(() -> 1.0);
-        // return new CommandBuilder(this)
-        //     .onExecute(() -> m_motor.setControl(new VelocityVoltage(Helpers.RPMtoRPS(optimalSpeedSupplier.getAsDouble()))))
-        //     .onEnd(m_motor::stopMotor);
+        // return this.manual(() -> 1.0);
+        return new CommandBuilder(this)
+            .onExecute(() -> m_motor.setControl(new VelocityVoltage(Helpers.RPMtoRPS(optimalSpeedSupplier.getAsDouble()))))
+            .onEnd(m_motor::stopMotor);
     }
 
     public Command halt() {

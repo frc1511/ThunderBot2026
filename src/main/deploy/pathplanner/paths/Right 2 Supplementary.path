@@ -72,7 +72,7 @@
         "y": 7.43625
       },
       "nextControl": {
-        "x": 3.7839154408094346,
+        "x": 3.7839154408094338,
         "y": 7.449532797782572
       },
       "isLocked": false,
@@ -152,7 +152,7 @@
     },
     {
       "name": "PivotDown",
-      "waypointRelativePos": 1.571834992887625,
+      "waypointRelativePos": 0.9815078236130863,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -180,7 +180,7 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.9,
+    "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -189,13 +189,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -162.68106156848526
+    "rotation": -164.4071890607338
   },
   "reversed": false,
   "folder": "Right 2",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -30.57922687248897
+    "rotation": -25.67
   },
   "useDefaultConstraints": true
 }

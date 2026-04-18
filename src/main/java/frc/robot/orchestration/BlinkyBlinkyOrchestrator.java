@@ -9,7 +9,7 @@ import frc.util.Broken;
 import frc.util.Constants;
 import frc.util.Helpers;
 
-public class BlinkyBlinkyOrchestrator {
+public class BlinkyBlinkyOrchestrator implements AutoCloseable {
     private AddressableLED m_led;
     private AddressableLEDBuffer m_buffer;
 
@@ -35,6 +35,15 @@ public class BlinkyBlinkyOrchestrator {
         SmartDashboard.putNumber("LEDs / Brightness", 1d);
     }
 
+    @Override
+    public void close() {
+        m_buffer.forEach((index, r, g, b) -> {
+            m_buffer.setHSV(index, index % 2 == 0 ? 30 : 60, 255, percentToV(1));
+        });
+        
+        m_led.setData(m_buffer);
+    }
+
     public void bootStatus(int status) {
         m_buffer.forEach((index, r, g, b) -> {
             if (status == 0) { // Pre-subsytems
@@ -57,49 +66,63 @@ public class BlinkyBlinkyOrchestrator {
         return (int)Math.floor(255 * percent);
     }
 
+    private void createBuffer() {
+        if (!DriverStation.isDSAttached()) {
+            m_buffer.forEach((index, r, g, b) -> {
+                m_buffer.setHSV(index, 0, 255, percentToV(Math.floor(index / 9) % 2 == Math.floor(frame / 20) % 2 ? 1 : 0));
+            });
+            return;
+        } 
+        if (robot.pitMode.isOn()) {
+            m_buffer.forEach((index, r, g, b) -> {
+                m_buffer.setHSV(index, 0, 0, percentToV(m_brightnessPercent * 0.6));
+            });
+            return;
+        } 
+        if (robot.hang.climbClimbingButHasntClumbJustYet()) {
+            double position = robot.hang.getPosition();
+            double hangPercent = position / Constants.HangConstants.kMaxDeployDistanceRotations;
+            int fullNumber = Helpers.clamp((int) Math.floor(hangPercent * 9) - 1, 0, 9);
+            double leftover = (hangPercent * 9) - fullNumber;
+            m_buffer.forEach((index, r, g, b) -> {
+                int value = index % 9 <= fullNumber ? 255 : percentToV(leftover);
+                m_buffer.setHSV(index, 150, 255, value);
+            });
+        } else if (robot.intake.isRunning()) {
+            m_buffer.forEach((index, r, g, b) -> {
+                m_buffer.setHSV(index, 15, 255, 255);
+            });
+        } else if (robot.conductor.cannonReady()) {
+            m_strobeProgress = (m_strobeProgress + 1) & 0xff;
+            m_buffer.forEach((index, r, g, b) -> {
+                m_buffer.setHSV(index, 55, m_strobeProgress, percentToV(m_brightnessPercent));
+            });
+        } else if (robot.conductor.inStartingConfiguration() && DriverStation.isDisabled()) {
+            m_buffer.forEach((index, r, g, b) -> {
+                m_buffer.setHSV(index, 50,  20,  percentToV(m_brightnessPercent));
+            });
+        } else if (robot.conductor.trenchSafe()) {
+            m_buffer.forEach((index, r, g, b) -> {
+                m_buffer.setHSV(index, 140, 255, percentToV(m_brightnessPercent));
+            });
+        } else {
+            m_buffer.forEach((index, r, g, b) -> {
+                m_buffer.setHSV(index, ((index / Constants.BlinkyBlinky.kLength * 180) + frame / 5) % 180, 255, percentToV(m_brightnessPercent));
+            });
+        }
+        if (Helpers.isHubActive(false)) {
+            m_buffer.forEach((index, r, g, b) -> {
+                if (index % 2 == 0 && Math.floor(frame / 20) % 2 == 0 )
+                    m_buffer.setHSV(index, 60, 255, percentToV(m_brightnessPercent));
+            });
+        }
+    }
+
     public void sparkle() {
         m_brightnessPercent = SmartDashboard.getNumber("LEDs / Brightness", 1d);
 
         if (!Broken.blinkyBlinkyDisableStatus()) {
-            if (robot.pitMode.isOn()) {
-                m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 0, 0, percentToV(m_brightnessPercent * 0.6));
-                });
-            } else if (!DriverStation.isDSAttached()) {
-                m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 0, 255, percentToV(Math.floor(index / 9) % 2 == Math.floor(frame / 20) % 2 ? 1 : 0));
-                });
-            } else if (robot.hang.climbClimbingButHasntClumbJustYet()) {
-                double position = robot.hang.getPosition();
-                double hangPercent = position / Constants.HangConstants.kMaxDeployDistanceRotations;
-                int fullNumber = Helpers.clamp((int) Math.floor(hangPercent * 9) - 1, 0, 9);
-                double leftover = (hangPercent * 9) - fullNumber;
-                m_buffer.forEach((index, r, g, b) -> {
-                    int value = index % 9 <= fullNumber ? 255 : percentToV(leftover);
-                    m_buffer.setHSV(index, 150, 255, value);
-                });
-            } else if (robot.intake.isRunning()) {
-                m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 15, 255, 255);
-                });
-            } else if (robot.conductor.cannonReady()) {
-                m_strobeProgress = (m_strobeProgress + 1) & 0xff;
-                m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 55, m_strobeProgress, percentToV(m_brightnessPercent));
-                });
-            } else if (robot.conductor.inStartingConfiguration()) {
-                m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 50,  20,  percentToV(m_brightnessPercent));
-                });
-            } else if (robot.conductor.trenchSafe()) {
-                m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, 140, 255, percentToV(m_brightnessPercent));
-                });
-            } else {
-                m_buffer.forEach((index, r, g, b) -> {
-                    m_buffer.setHSV(index, ((index / Constants.BlinkyBlinky.kLength * 180) + frame / 5) % 180, 255, percentToV(m_brightnessPercent));
-                });
-            }
+            createBuffer();
             ++frame;
         } else {
             m_buffer.forEach((index, r, g, b) -> {

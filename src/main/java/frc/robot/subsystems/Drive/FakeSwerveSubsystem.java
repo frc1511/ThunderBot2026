@@ -157,4 +157,8 @@ public class FakeSwerveSubsystem implements SwerveSubsystem {
     public Command temporarySlowmode() {
         return CommandBuilder.none(this);
     }
+
+    public Command driveWithVelocities(double vx, double vy, double vRot) {
+        return CommandBuilder.none(this);
+    };
 }
