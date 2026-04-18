@@ -40,25 +40,6 @@
           "data": {
             "pathName": "Left Middle Double Part 2"
           }
-        },
-        {
-          "type": "sequential",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Preheat"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "ShootForever"
-                }
-              }
-            ]
-          }
         }
       ]
     }

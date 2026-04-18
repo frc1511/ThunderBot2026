@@ -1,5 +1,7 @@
 package frc.robot.orchestration;
 
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -20,6 +22,9 @@ public class BlinkyBlinkyOrchestrator implements AutoCloseable {
 
     private double m_brightnessPercent;
 
+    public double batteryVoltage = 0;
+    private Debouncer voltage;
+
     public BlinkyBlinkyOrchestrator(Robot robot) {
         m_led = new AddressableLED(Constants.IOMap.BlinkyBlinky.kPWMport);
 
@@ -33,6 +38,7 @@ public class BlinkyBlinkyOrchestrator implements AutoCloseable {
 
         m_brightnessPercent = 1d;
         SmartDashboard.putNumber("LEDs / Brightness", 1d);
+        voltage = new Debouncer(1);
     }
 
     @Override
@@ -40,7 +46,7 @@ public class BlinkyBlinkyOrchestrator implements AutoCloseable {
         m_buffer.forEach((index, r, g, b) -> {
             m_buffer.setHSV(index, index % 2 == 0 ? 30 : 60, 255, percentToV(1));
         });
-        
+
         m_led.setData(m_buffer);
     }
 
@@ -67,6 +73,12 @@ public class BlinkyBlinkyOrchestrator implements AutoCloseable {
     }
 
     private void createBuffer() {
+        if (voltage.calculate(batteryVoltage <= 9.5)) {
+            m_buffer.forEach((index, r, g, b) -> {
+                m_buffer.setHSV(index, 0, 255, percentToV(Math.floor(frame / 5) % 2 == 0 ? 1 : 0));
+            });
+            return;
+        } 
         if (!DriverStation.isDSAttached()) {
             m_buffer.forEach((index, r, g, b) -> {
                 m_buffer.setHSV(index, 0, 255, percentToV(Math.floor(index / 9) % 2 == Math.floor(frame / 20) % 2 ? 1 : 0));
@@ -110,7 +122,7 @@ public class BlinkyBlinkyOrchestrator implements AutoCloseable {
                 m_buffer.setHSV(index, ((index / Constants.BlinkyBlinky.kLength * 180) + frame / 5) % 180, 255, percentToV(m_brightnessPercent));
             });
         }
-        if (Helpers.isHubActive(false)) {
+        if (Helpers.isHubActive(false) && !DriverStation.getGameSpecificMessage().isEmpty()) {
             m_buffer.forEach((index, r, g, b) -> {
                 if (index % 2 == 0 && Math.floor(frame / 20) % 2 == 0 )
                     m_buffer.setHSV(index, 60, 255, percentToV(m_brightnessPercent));

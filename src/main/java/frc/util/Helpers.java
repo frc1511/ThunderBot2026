@@ -203,9 +203,9 @@ public class Helpers {
         double y = currentPose.getY();
         if (isBlueAlliance()) {
             if (y <= 4d) {
-                target = new Pose2d(1.0375 + xOffset, 3.2523 - yOffset, Rotation2d.kZero);
+                target = new Pose2d(1.0375 + .1 + xOffset, 3.2523 - yOffset, Rotation2d.kZero);
             } else {
-                target = new Pose2d(1.0375 - xOffset, 4.2391 + yOffset, Rotation2d.kPi);
+                target = new Pose2d(1.0375 + .1 - xOffset, 4.2391 + yOffset, Rotation2d.kPi);
             }
         } else {
             if (y <= 4d) {

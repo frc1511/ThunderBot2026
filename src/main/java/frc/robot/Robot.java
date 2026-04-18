@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -454,7 +455,7 @@ public class Robot extends TimedRobot {
         NamedCommands.registerCommand("DB_Hub_AL_Start", drivetrain.setHubLock(true));
         NamedCommands.registerCommand("DB_Hub_AL_Stop", drivetrain.setHubLock(false));
         NamedCommands.registerCommand("Preheat", shooter.holdSpeedForShoot().withTimeout(0));
-        NamedCommands.registerCommand("Shoot", firingOrchestrator.fireThenStop().alongWith(hungerOrchestrator.jostleRepeatedly()).withTimeout(3));
+        NamedCommands.registerCommand("Shoot", firingOrchestrator.fireThenStop().alongWith(new WaitCommand(2).andThen(hungerOrchestrator.jostleRepeatedly())).withTimeout(3));
         NamedCommands.registerCommand("AutoHang", conductor.autoHang());
         NamedCommands.registerCommand("Intake", intake.eatStart());
         NamedCommands.registerCommand("StopIntake", intake.stopEating());
@@ -504,6 +505,8 @@ public class Robot extends TimedRobot {
         Tuneable.periodic();
         manualModeHandler.periodic();
 
+        blinkyBlinkyOrchestrator.batteryVoltage = PDH.getVoltage();
+
         if (!driverController.isConnected()) {
             Alert.error("Drive Controller Disconnected");
         }
@@ -526,9 +529,6 @@ public class Robot extends TimedRobot {
         if (pitMode.isOn() || pitModePlus.isOn() || pitModePlatinumEditionTM.isOn()) {
             bigText = "!!! Pit Mode !!!";
         }
-        // } else if (PDH.getTotalCurrent() > 180) {
-        //     bigText = "!!! >180A Draw !!!";
-        // }
         
         SmartDashboard.putString("Extra / Driver Aid / Hub Timer", bigText);
         SmartDashboard.putBoolean("Extra / Driver Aid / Hub Active", Helpers.isHubActive(true));

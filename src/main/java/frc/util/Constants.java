@@ -310,7 +310,7 @@ public class Constants {
                     return this.m_value;
                 }
             }
-            double kCANcoderOffset = 0.088623;
+            double kCANcoderOffset = 0.07870;
 
             double kTolerance = 0.015d;
             double kBigTolerance = 0.02d;

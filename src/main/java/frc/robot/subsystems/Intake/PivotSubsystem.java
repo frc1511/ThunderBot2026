@@ -147,7 +147,7 @@ public class PivotSubsystem extends ThunderSubsystem {
     public Command jostleRepeatedly() {
         if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
-        return halfwayDown()
+        return halfwayDown().withTimeout(1.5)
             .andThen(down()).repeatedly();
     }
 

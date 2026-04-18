@@ -143,6 +143,12 @@
       }
     },
     {
+      "name": "PivotDown",
+      "waypointRelativePos": 2.0056899004267414,
+      "endWaypointRelativePos": null,
+      "command": null
+    },
+    {
       "name": "Intake",
       "waypointRelativePos": 2.147937411095305,
       "endWaypointRelativePos": null,
