@@ -1,10 +1,9 @@
 package frc.robot.orchestration;
 
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import java.util.Random;
+
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.util.Broken;
@@ -15,15 +14,7 @@ public class BlinkyBlinkyOrchestrator implements AutoCloseable {
     private AddressableLED m_led;
     private AddressableLEDBuffer m_buffer;
 
-    private Robot robot;
-
-    private int m_strobeProgress = 0;
-    private int frame = 0;
-
-    private double m_brightnessPercent;
-
     public double batteryVoltage = 0;
-    private Debouncer voltage;
 
     public BlinkyBlinkyOrchestrator(Robot robot) {
         m_led = new AddressableLED(Constants.IOMap.BlinkyBlinky.kPWMport);
@@ -34,11 +25,7 @@ public class BlinkyBlinkyOrchestrator implements AutoCloseable {
         m_led.setData(m_buffer);
         m_led.start();
 
-        this.robot = robot;
-
-        m_brightnessPercent = 1d;
         SmartDashboard.putNumber("LEDs / Brightness", 1d);
-        voltage = new Debouncer(1);
     }
 
     @Override
@@ -72,70 +59,144 @@ public class BlinkyBlinkyOrchestrator implements AutoCloseable {
         return (int)Math.floor(255 * percent);
     }
 
-    private void createBuffer() {
-        if (voltage.calculate(batteryVoltage <= 9.5)) {
-            m_buffer.forEach((index, r, g, b) -> {
-                m_buffer.setHSV(index, 0, 255, percentToV(Math.floor(frame / 5) % 2 == 0 ? 1 : 0));
-            });
-            return;
-        } 
-        if (!DriverStation.isDSAttached()) {
-            m_buffer.forEach((index, r, g, b) -> {
-                m_buffer.setHSV(index, 0, 255, percentToV(Math.floor(index / 9) % 2 == Math.floor(frame / 20) % 2 ? 1 : 0));
-            });
-            return;
-        } 
-        if (robot.pitMode.isOn()) {
-            m_buffer.forEach((index, r, g, b) -> {
-                m_buffer.setHSV(index, 0, 0, percentToV(m_brightnessPercent * 0.6));
-            });
-            return;
-        } 
-        if (robot.hang.climbClimbingButHasntClumbJustYet()) {
-            double position = robot.hang.getPosition();
-            double hangPercent = position / Constants.HangConstants.kMaxDeployDistanceRotations;
-            int fullNumber = Helpers.clamp((int) Math.floor(hangPercent * 9) - 1, 0, 9);
-            double leftover = (hangPercent * 9) - fullNumber;
-            m_buffer.forEach((index, r, g, b) -> {
-                int value = index % 9 <= fullNumber ? 255 : percentToV(leftover);
-                m_buffer.setHSV(index, 150, 255, value);
-            });
-        } else if (robot.intake.isRunning()) {
-            m_buffer.forEach((index, r, g, b) -> {
-                m_buffer.setHSV(index, 15, 255, 255);
-            });
-        } else if (robot.conductor.cannonReady()) {
-            m_strobeProgress = (m_strobeProgress + 1) & 0xff;
-            m_buffer.forEach((index, r, g, b) -> {
-                m_buffer.setHSV(index, 55, m_strobeProgress, percentToV(m_brightnessPercent));
-            });
-        } else if (robot.conductor.inStartingConfiguration() && DriverStation.isDisabled()) {
-            m_buffer.forEach((index, r, g, b) -> {
-                m_buffer.setHSV(index, 50,  20,  percentToV(m_brightnessPercent));
-            });
-        } else if (robot.conductor.trenchSafe()) {
-            m_buffer.forEach((index, r, g, b) -> {
-                m_buffer.setHSV(index, 140, 255, percentToV(m_brightnessPercent));
-            });
-        } else {
-            m_buffer.forEach((index, r, g, b) -> {
-                m_buffer.setHSV(index, ((index / Constants.BlinkyBlinky.kLength * 180) + frame / 5) % 180, 255, percentToV(m_brightnessPercent));
-            });
+    private int p1Score = 0;
+    private int p2Score = 0;
+
+    private int p1ScoreOffset = 27;
+    private int p2ScoreOffset = 35;
+
+    private double p1y = 4.5;
+    private double p2y = 4.5;
+
+    private double ballX = 2.5;
+    private double ballY = 4.5;
+
+    private double ballVX = 0;
+    private double ballVY = 0;
+
+    private int coordToIndex(double x, double y) {
+        int roundedX = (int)x;
+        int roundedY = (int)y;
+
+        int index = 0;
+
+        switch (roundedX) {
+            case 0:
+                index = 8 - roundedY;
+                break;
+            case 1:
+                index = 9 + roundedY;
+                break;
+            case 2:
+                index = 26 - roundedY;
+                break;
+            case 3:
+                index = 45 + roundedY;
+                break;
+            case 4:
+                index = 62 - roundedY;
+                break;
+            case 5:
+                index = 63 + roundedY;
+                break;
         }
-        if (Helpers.isHubActive(false) && !DriverStation.getGameSpecificMessage().isEmpty()) {
-            m_buffer.forEach((index, r, g, b) -> {
-                if (index % 2 == 0 && Math.floor(frame / 20) % 2 == 0 )
-                    m_buffer.setHSV(index, 60, 255, percentToV(m_brightnessPercent));
-            });
+
+        return index;
+    }
+
+    public void startRound() {
+        Random rand = new Random();
+        ballVX = (rand.nextDouble() - .5) / 20;
+        ballVY = (rand.nextDouble() - .5) / 20;
+        ballX = 2.5;
+        ballY = 4.5;
+    }
+
+    public void restart() {
+        p1Score = 0;
+        p2Score = 0;
+        startRound();
+    }
+
+    private void createBuffer(boolean p1Up, boolean p1Down, boolean p2Up, boolean p2Down) {
+        if (p1Up) {
+            p1y = Helpers.clamp(p1y + .1, 0, 8);
+        }
+        if (p1Down) {
+            p1y = Helpers.clamp(p1y - .1, 0, 8);
+        }
+        if (p2Up) {
+            p2y = Helpers.clamp(p2y + .1, 0, 8);
+        }
+        if (p2Down) {
+            p2y = Helpers.clamp(p2y - .1, 0, 8);
+        }
+
+        // Clear All
+        m_buffer.forEach((index, r, g, b) -> {
+            m_buffer.setHSV(index, 0, 0, 0);
+        });
+
+        if (p1Score > 8) {
+            m_buffer.setHSV(4, 60, 255, 255);
+            m_buffer.setHSV(11, 60, 255, 255);
+            m_buffer.setHSV(15, 60, 255, 255);
+            m_buffer.setHSV(22, 60, 255, 255);
+        } else if (p2Score > 8) {
+            m_buffer.setHSV(71 - 4, 120, 255, 255);
+            m_buffer.setHSV(71 - 11, 120, 255, 255);
+            m_buffer.setHSV(71 - 15, 120, 255, 255);
+            m_buffer.setHSV(71 - 22, 120, 255, 255);
+        } else {
+            ballX = ballX + ballVX;
+            ballY = ballY + ballVY;
+
+            if (ballY < 0) {
+                ballVY *= -1;
+                ballY = 0;
+            }
+
+            if (ballY > 8) {
+                ballVY *= -1;
+                ballY = 8;
+            }
+
+            if (ballX < 0) {
+                double dY = Math.abs(ballY - p1y);
+                if (dY < 1.5) {
+                    ballVX *= -1;
+                    ballX = 1;
+                } else {
+                    p2Score++;
+                    startRound();
+                }
+            }
+            if (ballX > 5) {
+                double dY = Math.abs(ballY - p2y);
+                if (dY < 1.5) {
+                    ballVX *= -1;
+                    ballX = 4;
+                } else {
+                    p1Score++;
+                    startRound();
+                }
+            }
+            // Players
+            m_buffer.setHSV(coordToIndex(0, p1y), 0, 0, 255);
+            m_buffer.setHSV(coordToIndex(5, p2y), 0, 0, 255);
+
+            // Score
+            m_buffer.setHSV(p1Score + p1ScoreOffset, 0, 0, 255);
+            m_buffer.setHSV(p2Score + p2ScoreOffset, 0, 0, 255);
+
+            // Ball
+            m_buffer.setHSV(coordToIndex(ballX, ballY), 0, 0, 255);
         }
     }
 
-    public void sparkle() {
-        m_brightnessPercent = SmartDashboard.getNumber("LEDs / Brightness", 1d);
-
+    public void sparkle(boolean p1Up, boolean p1Down, boolean p2Up, boolean p2Down) {
         if (!Broken.blinkyBlinkyDisableStatus()) {
-            createBuffer();
-            ++frame;
+            createBuffer(p1Up, p1Down, p2Up, p2Down);
         } else {
             m_buffer.forEach((index, r, g, b) -> {
                 m_buffer.setHSV(index, 0, 0, 0);
