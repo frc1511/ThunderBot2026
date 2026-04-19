@@ -7,18 +7,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class BuildTest {
-  static Robot robot = null;
+  static Robot robot;
 
   @BeforeEach
   void robotBuilds() {
-    assert HAL.initialize(500, 0); // initialize the HAL, crash if failed
     if (robot == null) {
+      assert HAL.initialize(500, 0); // initialize the HAL, crash if failed
       try {
         robot = new Robot();
       } catch (Exception e) {
         e.printStackTrace();
+      }
       assertNotNull(robot);
-    }
     }
   }
 
@@ -43,7 +43,7 @@ class BuildTest {
     robot.autonomousInit();
     robot.teleopInit();
   }
-  
+
   @Test
   void periodic() {
     assertNotNull(robot);

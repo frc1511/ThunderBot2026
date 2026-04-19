@@ -12,18 +12,18 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
 import frc.util.Constants.Status;
 import frc.util.Constants.Storage.Kicker.KickerPID;
-import frc.util.Thunder.Modifiable;
 import frc.util.Thunder.ThunderSubsystem;
 import frc.util.Helpers;
 
 public class KickerSubsystem extends ThunderSubsystem {
     private TalonFX m_motor;
+
+    DoubleSupplier optimalSpeedSupplier = () -> 0;
 
     public KickerSubsystem() {
         TalonFXConfiguration kickerConfig = new TalonFXConfiguration();
@@ -47,42 +47,48 @@ public class KickerSubsystem extends ThunderSubsystem {
         } else {
             m_motor = null;
         }
-
-        new Modifiable("optimalRPM", this, () -> Constants.Storage.Kicker.kTargetKickerRPM);
     }
 
     @Override
     public void periodic() {
         if (Broken.kickerDisabled) return;
 
-        SmartDashboard.putNumber("kicker_vel_rpm", Helpers.RPStoRPM(m_motor.getVelocity().getValueAsDouble()));
-        SmartDashboard.putNumber("kicker_target_rpm", Helpers.RPStoRPM(m_motor.getClosedLoopReference().getValueAsDouble()));
-        SmartDashboard.putNumber("kicker_pid_setpoint", m_motor.getClosedLoopReference().getValueAsDouble());
-        SmartDashboard.putNumber("kicker_pid_out", m_motor.getClosedLoopOutput().getValueAsDouble());
-        SmartDashboard.putBoolean("kicker_at_target_rpm", atRPM());
-        SmartDashboard.putNumber("kicker_%_out", m_motor.get());
+        SmartDashboard.putNumber("Kicker / Speed RPM", Helpers.RPStoRPM(m_motor.getVelocity().getValueAsDouble()));
+        SmartDashboard.putNumber("Kicker / Target RPM", Helpers.RPStoRPM(m_motor.getClosedLoopReference().getValueAsDouble()));
+        SmartDashboard.putNumber("Kicker / PID Setpoint", m_motor.getClosedLoopReference().getValueAsDouble());
+        SmartDashboard.putNumber("Kicker / PID Output", m_motor.getClosedLoopOutput().getValueAsDouble());
+        SmartDashboard.putBoolean("Kicker / At Target RPM", atRPM());
+        SmartDashboard.putNumber("Kicker / Output %", m_motor.get());
+
+        SmartDashboard.putNumber("SOTM / Kicker RPM", optimalSpeedSupplier.getAsDouble());
+    }
+
+    public void setOptimalSpeedGetter(DoubleSupplier supplier) {
+        optimalSpeedSupplier = supplier;
     }
 
     public Command run() {
-        if (Broken.kickerDisabled) return Commands.none();
-
+        if (Broken.kickerDisabled) return CommandBuilder.none(this);
+        // return this.manual(() -> 1.0);
         return new CommandBuilder(this)
-            .onExecute(() -> m_motor.setControl(new VelocityVoltage(Helpers.RPMtoRPS((Double) getField("optimalRPM").getValue()))))
+            .onExecute(() -> m_motor.setControl(new VelocityVoltage(Helpers.RPMtoRPS(optimalSpeedSupplier.getAsDouble()))))
             .onEnd(m_motor::stopMotor);
     }
 
     public Command halt() {
-        if (Broken.kickerDisabled) return Commands.none();
+        if (Broken.kickerDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(m_motor::stopMotor);
     }
 
-    public Command manual_kicker(DoubleSupplier speed) {
-        if (Broken.kickerDisabled) return Commands.none();
+    @Override
+    public Command manual(DoubleSupplier speed) {
+        if (Broken.kickerDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motor.set(speed.getAsDouble()));
+            .onExecute(() -> m_motor.set(speed.getAsDouble()))
+            .onEnd(() -> m_motor.stopMotor());
     }
 
     public Status status() {

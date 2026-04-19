@@ -66,7 +66,7 @@ public class SysID {
         */
         m_sysIdRoutineRotation = new SysIdRoutine(
             new SysIdRoutine.Config(
-                Volts.of(Math.PI / 6).per(Second),
+                Volts.of(Math.PI / 5).per(Second),
                 Volts.of(Math.PI),
                 null, // Use default timeout (10 s)
                 state -> SignalLogger.writeString("SysIdRotation_State", state.toString())
@@ -75,6 +75,8 @@ public class SysID {
                 output -> {
                     m_Subsystem.setControl(m_rotationCharacterization.withRotationalRate(output.in(Volts)));
                     SignalLogger.writeDouble("Rotational_Rate", output.in(Volts));
+                    SignalLogger.writeDouble("Rotation", m_Subsystem.getPigeon2().getYaw().getValueAsDouble());
+                    SignalLogger.writeDouble("Pigeon_Rate", m_Subsystem.getPigeon2().getAngularVelocityZDevice().getValueAsDouble());
                 },
                 null,
                 m_Subsystem

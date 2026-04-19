@@ -1,0 +1,54 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 2.1271363636363634,
+        "y": 5.148136363636363
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 1.9127631322082266,
+        "y": 5.0195124247794825
+      },
+      "isLocked": false,
+      "linkedName": "C3P3e"
+    },
+    {
+      "anchor": {
+        "x": 1.228,
+        "y": 5.045
+      },
+      "prevControl": {
+        "x": 1.7330340909090909,
+        "y": 5.034693181818183
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 180.0
+  },
+  "reversed": false,
+  "folder": "C3",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -122.47119229084852
+  },
+  "useDefaultConstraints": true
+}

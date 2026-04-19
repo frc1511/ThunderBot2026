@@ -25,7 +25,7 @@
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "Left 1 Hang"
     }
   ],
   "rotationTargets": [
@@ -38,12 +38,6 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "Preheat",
-      "waypointRelativePos": 0.32486631016042844,
-      "endWaypointRelativePos": null,
-      "command": null
-    },
-    {
       "name": "StopIntake",
       "waypointRelativePos": 0.37032085561497374,
       "endWaypointRelativePos": null,
@@ -51,7 +45,7 @@
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.9,
+    "maxVelocity": 3.0,
     "maxAcceleration": 3.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
@@ -60,7 +54,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -121.21840276434634
+    "rotation": -111.80140948635182
   },
   "reversed": false,
   "folder": "Left 1",

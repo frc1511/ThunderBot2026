@@ -21,19 +21,12 @@ public class FiringTable {
     public List<FiringDataPoint> firingTable = new ArrayList<FiringDataPoint>();
 
     public FiringTable() {
-        // TOF fudged bc we dont need it rn
-        firingTable.add(new FiringDataPoint(2.169, 1700, .05, .7));
-        firingTable.add(new FiringDataPoint(2.476, 1750, .1, .8));
-        firingTable.add(new FiringDataPoint(3.000, 1840, 0.11, 0.86));
-        firingTable.add(new FiringDataPoint(3.465, 1880, .12, .945));
-        firingTable.add(new FiringDataPoint(3.715, 1965, .13, .98));
-        firingTable.add(new FiringDataPoint(3.790, 1970, 0.14, 1));
-        firingTable.add(new FiringDataPoint(4.021, 1990, 0.16, 1.0174));
-        firingTable.add(new FiringDataPoint(4.92, 2120, 0.175, 1.1875));
-
-        // firingTable.add(new FiringDataPoint(2.99, 1880, 0.25, 0.86));
-        // firingTable.add(new FiringDataPoint(3.76, 1980, 0.245, 1.0174));
-        // firingTable.add(new FiringDataPoint(4.95, 2080, 0.241, 1.1875));
+        firingTable.add(new FiringDataPoint(1.722, 1730, 0.01, 0.76));
+        firingTable.add(new FiringDataPoint(2.231, 1800, 0.25, 0.82));
+        firingTable.add(new FiringDataPoint(2.804, 1950, 0.04, 0.99));
+        firingTable.add(new FiringDataPoint(3.628, 2040, 0.05, 1.11));
+        firingTable.add(new FiringDataPoint(4.037, 2170, 0.06, 1.21));
+        firingTable.add(new FiringDataPoint(4.411, 2180, 0.07, 1.24));
     }
 
     public FiringDataPoint lerp(double distance) {
@@ -48,6 +41,10 @@ public class FiringTable {
         }
 
         double lerpPercentage = (distance - lastPoint.distance) / (currentPoint.distance - lastPoint.distance); // How far the distance is past the last point divided by how far it is between the 2 points
+
+        if (lerpPercentage < 0d) {
+            return new FiringDataPoint(currentPoint.distance, currentPoint.speedRPM, currentPoint.hoodAngle, currentPoint.timeOfFlight);
+        }
 
         return new FiringDataPoint(
             distance, 

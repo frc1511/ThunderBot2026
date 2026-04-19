@@ -29,7 +29,6 @@ import frc.util.Constants;
 import frc.util.Helpers;
 import frc.util.Constants.Hood;
 import frc.util.Constants.Status;
-import frc.util.Thunder.Modifiable;
 import frc.util.Thunder.ThunderSubsystem;
 
 public class HoodSubsystem extends ThunderSubsystem {
@@ -39,12 +38,13 @@ public class HoodSubsystem extends ThunderSubsystem {
 
     private boolean isUsingInbuiltEncoder = false;
 
-    private double trueSetpoint = 0;
+    private double trueSetpoint = Constants.Hood.Position.BOTTOM.get();
 
     private DoubleSupplier optimalAngleSupplier = () -> 0;
 
+    private BooleanSupplier isReadyToMove = () -> isZeroed() || Helpers.isBypassModeEnabled();
+
     public HoodSubsystem() {
-        // new Modifiable("isConfirmedZeroed", this, () -> Boolean.FALSE);
         TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
         hoodConfig.Slot0 = new Slot0Configs()
             .withKP(Constants.Hood.HoodPID.kP).withKI(Constants.Hood.HoodPID.kI).withKD(Constants.Hood.HoodPID.kD)
@@ -78,13 +78,10 @@ public class HoodSubsystem extends ThunderSubsystem {
             m_motor.getClosedLoopReferenceSlope().setUpdateFrequency(200);
 
             m_beamBreakZero = new DigitalInput(Constants.IOMap.Hood.kDIObeamBreak);
-            if (!Broken.hoodBeamBreakDisabled && isAtZero()) {
-                forceZeroEncoders();
-            } else if (Broken.hoodBeamBreakDisabled) {
-                forceZeroEncoders();
-            }
-
-            if (!Helpers.onCANChain(m_encoder)) {
+            if (!Broken.hoodBeamBreakDisabled && isAtZero() ||
+                    Broken.hoodBeamBreakDisabled ||
+                    !Helpers.onCANChain(m_encoder) ||
+                    Helpers.isBypassModeEnabled()) {
                 forceZeroEncoders();
             }
 
@@ -111,38 +108,36 @@ public class HoodSubsystem extends ThunderSubsystem {
     public void periodic() {
         if (Broken.hoodDisabled) return;
         
-        SmartDashboard.putNumber("hood_cancoder_rots", m_encoder.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber("hood_motor_rots", m_motor.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber("hood_vel", m_encoder.getVelocity().getValueAsDouble());
-        SmartDashboard.putBoolean("hood_atPos", atPosition());
-        SmartDashboard.putNumber("hood_output_V", m_motor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("hood_setpoint", trueSetpoint);
-        // SmartDashboard.putNumber("hood_profiled_setpoint", m_motor.getClosedLoopReference().getValueAsDouble());
-        // SmartDashboard.putNumber("hood_profiled_setpoint_d-dx", m_motor.getClosedLoopReferenceSlope().getValueAsDouble());
-        SmartDashboard.putBoolean("hood_isZeroed", isZeroed());
-        SmartDashboard.putBoolean("hood_zeroSensorTripped", isAtZero());
-        SmartDashboard.putNumber("hood_err", m_motor.getClosedLoopError().getValueAsDouble());
+        SmartDashboard.putNumber("Hood / Cancoder ROT", m_encoder.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Hood / Motor ROT", m_motor.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Hood / Vel RPS", m_encoder.getVelocity().getValueAsDouble());
+        SmartDashboard.putBoolean("Hood / At Target Position", atPosition());
+        SmartDashboard.putNumber("Hood / Motor Output V", m_motor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Hood / Final Setpoint", trueSetpoint);
+        // SmartDashboard.putNumber("Hood / profiled_setpoint", m_motor.getClosedLoopReference().getValueAsDouble());
+        // SmartDashboard.putNumber("Hood / profiled_setpoint_d-dx", m_motor.getClosedLoopReferenceSlope().getValueAsDouble());
+        SmartDashboard.putBoolean("Hood / Is Zeroed", isZeroed());
+        SmartDashboard.putBoolean("Hood / Zero Sensor Tripped", isAtZero());
+        SmartDashboard.putNumber("Hood / Setpoint Error", m_motor.getClosedLoopError().getValueAsDouble());
 
-        if (!isZeroed()) {
-            // CommandScheduler.getInstance().schedule(zero().withName("HoodZeroInbuilt"));
-        }
+        SmartDashboard.putNumber("SOTM / Hood Target Theta", optimalAngleSupplier.getAsDouble());
     }
 
     @Override
     public void hddlPeriodic() {
-        SmartDashboard.putNumber("hood_profiled_setpoint", m_motor.getClosedLoopReference().getValueAsDouble());
-        SmartDashboard.putNumber("hood_profiled_setpoint_d-dx", m_motor.getClosedLoopReferenceSlope().getValueAsDouble());
+        SmartDashboard.putNumber("Hood / Profiled Setpoint", m_motor.getClosedLoopReference().getValueAsDouble());
+        SmartDashboard.putNumber("Hood / Profiled Setpoint Slope", m_motor.getClosedLoopReferenceSlope().getValueAsDouble());
     }
 
-    private void zeroEncodersLightly() {
-        // Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
-        // if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) isConfirmedZeroed.withValue(() -> Boolean.TRUE);
-        isConfirmedZeroed = true;
-
-        double currentPosition = m_encoder.getPosition().getValueAsDouble();
-        double newPos = currentPosition - Math.floor(currentPosition);
-        if (newPos >= 0.9) newPos -= 1;
-        m_encoder.setPosition(newPos); // Remove the full digit; i.e 1.2489 -> 0.2489
+    public Command setCoastMode() {
+        if (Broken.pivotDisabled) return Commands.none(); 
+        return new CommandBuilder()
+            .onInitialize(() -> {
+                m_motor.getConfigurator().apply(new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Coast));
+            })
+            .onEnd(() -> {
+                m_motor.getConfigurator().apply(new MotorOutputConfigs().withNeutralMode(NeutralModeValue.Brake));
+            });
     }
 
     public boolean isAtZero() {
@@ -152,53 +147,43 @@ public class HoodSubsystem extends ThunderSubsystem {
 
     private boolean isConfirmedZeroed = false;
     public boolean isZeroed() {
-        // Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
-        // if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) return (Boolean) isConfirmedZeroed.getValue();
         return isConfirmedZeroed;
     }
 
     public boolean atPosition() {
-        if (Broken.hoodDisabled) return true;
+        if (Broken.hoodDisabled || Helpers.isBypassModeEnabled()) return true;
 
         return Math.abs(trueSetpoint - m_motor.getPosition().getValueAsDouble()) < Constants.Hood.kHoodTolerance && Math.abs(m_encoder.getVelocity().getValueAsDouble()) < Constants.Hood.kHoodSetpointMaxVelocity;
     }
 
     public Command zero() {
-        if (Broken.hoodDisabled) return new InstantCommand(() -> {}, this);
+        if (Broken.hoodDisabled) return CommandBuilder.none(this);
         if (Broken.hoodBeamBreakDisabled) {
             forceZeroEncoders();
-            // Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
-            // if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) isConfirmedZeroed.withValue(() -> true);
             isConfirmedZeroed = true;
-            return new InstantCommand(() -> {}, this);
+            return CommandBuilder.none(this);
         }
 
         return new CommandBuilder(this)
             .onExecute(() -> {
-                if (!isConfirmedZeroed) {
-                    m_motor.set(-Hood.kZeroingSpeed);
-                    if (isAtZero()) {
-                        forceZeroEncoders();
+                if (Helpers.isBypassModeEnabled()) { // Don't run zeroing procedures if in pit mode plus
+                    m_motor.stopMotor();
+                } else {
+                    if (!isConfirmedZeroed) {
+                        m_motor.set(-Hood.kZeroingSpeed);
+                        if (isAtZero()) {
+                            forceZeroEncoders();
+                            m_motor.stopMotor();
+                        }
+                    } else {
                         m_motor.stopMotor();
                     }
-                } else {
-                    m_motor.stopMotor();
                 }
-            })
-            .isFinished(() -> {
-                return false;
-                // if (isAtZero()) {
-                // }
-                // return isAtZero();
             });
-            // .onEnd(() -> {
-            //     forceZeroEncoders();
-            //     m_motor.stopMotor();
-            // });
     }
 
     public Command toPosition(Supplier<Double> targetPosition) {
-        if (Broken.hoodDisabled) return Commands.none();
+        if (Broken.hoodDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this) 
             .onInitialize(() -> {
@@ -209,16 +194,16 @@ public class HoodSubsystem extends ThunderSubsystem {
                 m_motor.setControl(new MotionMagicVoltage(trueSetpoint));
             })
             .isFinished(this::atPosition)
-            .onlyIf(this::isZeroed);
+            .onlyIf(isReadyToMove);
     }
 
-    public Command manual_hood(DoubleSupplier speed) {
-        if (Broken.hoodDisabled) return Commands.none();
+    @Override
+    public Command manual(DoubleSupplier speed) {
+        if (Broken.hoodDisabled) return CommandBuilder.none(this);
         
         return new CommandBuilder(this)
-            .onExecute(() -> {
-                m_motor.set(speed.getAsDouble());
-            });
+            .onExecute(() -> m_motor.set(speed.getAsDouble()))
+            .onEnd(() -> m_motor.stopMotor());
     }
 
     public boolean safeForTrench() {
@@ -228,7 +213,7 @@ public class HoodSubsystem extends ThunderSubsystem {
     }
 
     public Command stowForTrench() {
-        if (Broken.hoodDisabled) return Commands.none();
+        if (Broken.hoodDisabled) return CommandBuilder.none(this);
         
         double currentSetpoint = m_motor.getClosedLoopReference().getValueAsDouble();
 
@@ -241,21 +226,19 @@ public class HoodSubsystem extends ThunderSubsystem {
                 m_motor.setControl(new MotionMagicVoltage(trueSetpoint));
             })
             .onEnd(() -> m_motor.setControl(new MotionMagicVoltage(currentSetpoint)))
-            .onlyIf(this::isZeroed);
+            .onlyIf(isReadyToMove);
     }
 
     public void forceZeroEncoders() {
         if (Broken.hoodDisabled) return;
 
-        // Modifiable isConfirmedZeroed = getField("isConfirmedZeroed");
-        // if (isConfirmedZeroed != null && isConfirmedZeroed.getValue() instanceof Boolean) isConfirmedZeroed.withValue(() -> Boolean.TRUE);
         isConfirmedZeroed = true;
         m_encoder.setPosition(0);
         m_motor.setPosition(0);
     }
 
     public Command halt() {
-        if (Broken.hoodDisabled) return new InstantCommand(()->{}, this);
+        if (Broken.hoodDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -264,7 +247,7 @@ public class HoodSubsystem extends ThunderSubsystem {
     }
 
     public Command setBrakeMode(BooleanSupplier brakeOn) {
-        if (Broken.hoodDisabled) return Commands.none();
+        if (Broken.hoodDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -284,7 +267,7 @@ public class HoodSubsystem extends ThunderSubsystem {
     }
 
     public Command toOptimalPosition() {
-        if (Broken.hoodDisabled) return Commands.none();
+        if (Broken.hoodDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onInitialize(() -> {
@@ -295,7 +278,7 @@ public class HoodSubsystem extends ThunderSubsystem {
                 m_motor.setControl(new MotionMagicVoltage(trueSetpoint));
             })
             .isFinished(this::atPosition)
-            .onlyIf(this::isZeroed);
+            .onlyIf(isReadyToMove);
     }
 
     public Constants.Hood.Position getTargetPosition() {

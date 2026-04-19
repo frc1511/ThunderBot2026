@@ -1,5 +1,6 @@
 package frc.robot.subsystems.Drive;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -33,12 +34,15 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.orchestration.HubOrchestrator;
 import frc.util.Alert;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants.Status;
 import frc.util.Constants.Swerve;
+import frc.util.LimelightHelpers.PoseEstimate;
+import frc.util.LimelightHelpers.RawFiducial;
 import frc.util.ZoneConstants.ZoneInfo;
 import frc.util.LimelightHelpers;
 import frc.util.ZoneConstants;
@@ -72,9 +76,11 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     private Field2d m_currentField;
     private Field2d m_targetField;
 
+    private Field2d m_rearLimelightEstimate;
+    private Field2d m_mainLimelightEstimate;
+
     private Field2d m_targetCenterPoseField;
 
-    private Pose2d m_arcLockCenter;
     private double m_arcLockDistance;
     private double m_arcLockTheta;
     
@@ -82,19 +88,17 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     
     private boolean m_trenchLock = false;
     
-    private double m_trenchXPos = 0;
+    private double m_trenchYPos = 0;
 
     private boolean m_isMoving = false;
 
     private boolean m_limelightDisable;
 
-    public double m_speedMultipler = 1.0; // 0% - 100% of max speed
+    /** 0% - 100% of max speed */
+    public double m_speedMultipler = 1.0; 
 
     private boolean m_ensureTheta = false;
     private DoubleSupplier m_ensuredThetaSupplier = () -> 0;
-
-    private Pose2d m_lastPose;
-    private Pose2d m_currentPose;
 
     File file = new File("/home/lvuser/logs/driverPreferences.csv");
     FileWriter outputfile;
@@ -117,12 +121,12 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         m_currentField = new Field2d();
         m_targetField = new Field2d();
 
+        m_rearLimelightEstimate = new Field2d();
+        m_mainLimelightEstimate = new Field2d();
+
         m_targetCenterPoseField = new Field2d();
 
         m_fieldCentric = true;
-
-        m_lastPose = Pose2d.kZero;
-        m_currentPose = Pose2d.kZero;
 
         SmartDashboard.putData("Swerve Data", new Sendable() {
             @Override
@@ -133,21 +137,29 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                 builder.addDoubleProperty("Module 0 Vel", () -> getModule(0).getCurrentState().speedMetersPerSecond, null);
                 builder.addDoubleProperty("Module 0 Steer Current", () -> getModule(0).getSteerMotor().getSupplyCurrent().getValueAsDouble(), null);
                 builder.addDoubleProperty("Module 0 Drive Current", () -> getModule(0).getDriveMotor().getSupplyCurrent().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 0 Steer Temp", () -> getModule(0).getSteerMotor().getDeviceTemp().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 0 Drive Temp", () -> getModule(0).getDriveMotor().getDeviceTemp().getValueAsDouble(), null);
 
                 builder.addDoubleProperty("Module 1 Angle", () -> getModule(1).getCurrentState().angle.getRadians(), null);
                 builder.addDoubleProperty("Module 1 Vel", () -> getModule(1).getCurrentState().speedMetersPerSecond, null);
                 builder.addDoubleProperty("Module 1 Steer Current", () -> getModule(1).getSteerMotor().getSupplyCurrent().getValueAsDouble(), null);
                 builder.addDoubleProperty("Module 1 Drive Current", () -> getModule(1).getDriveMotor().getSupplyCurrent().getValueAsDouble(), null);
-                
+                builder.addDoubleProperty("Module 1 Steer Temp", () -> getModule(1).getSteerMotor().getDeviceTemp().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 1 Drive Temp", () -> getModule(1).getDriveMotor().getDeviceTemp().getValueAsDouble(), null);
+
                 builder.addDoubleProperty("Module 2 Angle", () -> getModule(2).getCurrentState().angle.getRadians(), null);
                 builder.addDoubleProperty("Module 2 Vel", () -> getModule(2).getCurrentState().speedMetersPerSecond, null);
                 builder.addDoubleProperty("Module 2 Steer Current", () -> getModule(2).getSteerMotor().getSupplyCurrent().getValueAsDouble(), null);
                 builder.addDoubleProperty("Module 2 Drive Current", () -> getModule(2).getDriveMotor().getSupplyCurrent().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 2 Steer Temp", () -> getModule(2).getSteerMotor().getDeviceTemp().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 2 Drive Temp", () -> getModule(2).getDriveMotor().getDeviceTemp().getValueAsDouble(), null);
 
                 builder.addDoubleProperty("Module 3 Angle", () -> getModule(3).getCurrentState().angle.getRadians(), null);
                 builder.addDoubleProperty("Module 3 Vel", () -> getModule(3).getCurrentState().speedMetersPerSecond, null);
                 builder.addDoubleProperty("Module 3 Steer Current", () -> getModule(3).getSteerMotor().getSupplyCurrent().getValueAsDouble(), null);
                 builder.addDoubleProperty("Module 3 Drive Current", () -> getModule(3).getDriveMotor().getSupplyCurrent().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 3 Steer Temp", () -> getModule(3).getSteerMotor().getDeviceTemp().getValueAsDouble(), null);
+                builder.addDoubleProperty("Module 3 Drive Temp", () -> getModule(3).getDriveMotor().getDeviceTemp().getValueAsDouble(), null);
 
                 builder.addDoubleProperty("Robot Angle", () -> getPigeon2().getRotation2d().getRadians(), null);
             }
@@ -158,23 +170,6 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         }
 
         configurePathPlanner();
-
-        // try {
-            // boolean needsInit = !file.exists();
-            // FileWriter outputfile = new FileWriter(file);
-            
-            // if (needsInit) {
-            //     CSVWriter writer = new CSVWriter(outputfile);
-    
-            //     String[] header = {"Area", "Orientation"};
-            //     writer.writeNext(header);
-    
-            //     writer.close();
-            // }
-        // }
-        // catch (IOException e) {
-        //     e.printStackTrace();
-        // }
     }
 
     @Override
@@ -199,11 +194,11 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     }
 
     public Command increaseSpeed() {
-        return new InstantCommand(() -> m_speedMultipler = Math.min(m_speedMultipler + Swerve.kSpeedStep, 1d));
+        return new CommandBuilder(this).onExecute(() -> m_speedMultipler = Math.min(m_speedMultipler + Swerve.kSpeedStep, 1d)).isFinished(true);
     }
-    
+
     public Command decreaseSpeed() {
-        return new InstantCommand(() -> m_speedMultipler = Math.max(m_speedMultipler - Swerve.kSpeedStep, 0d));
+        return new CommandBuilder(this).onExecute(() -> m_speedMultipler = Math.max(m_speedMultipler - Swerve.kSpeedStep, 0d)).isFinished(true);
     }
 
     public void setSpeedMultiplier(double speedMultipler) {
@@ -231,11 +226,14 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             .onExecute(() -> {
                 Translation2d closestTrench = ZoneConstants.closestTrench(currentPose().getTranslation());
 
-                System.out.println(Math.abs(closestTrench.getX() - currentPose().getX()));
+                System.out.println(closestTrench.getDistance(currentPose().getTranslation()));
 
-                if (Math.abs(closestTrench.getX() - currentPose().getX()) > Constants.Swerve.kTrenchLockMaxDist) return;
+                if (closestTrench.getDistance(currentPose().getTranslation()) > Constants.Swerve.kTrenchLockMaxDist) {
+                    m_trenchLock = false;
+                    return;
+                }
 
-                m_trenchXPos = closestTrench.getX();
+                m_trenchYPos = closestTrench.getY();
                 m_trenchLock = true;
             })
             .onEnd(() -> {
@@ -247,37 +245,49 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     public Command driveWithJoysticks(DoubleSupplier leftX, DoubleSupplier leftY, DoubleSupplier rightX) {
         return applyRequest(() -> {
             // YES! The y and x are swapped on purpose, it has to do with coordinate systems in the library so just leave it like this please!
-            double vx = -leftY.getAsDouble() * Constants.Swerve.kMaxSpeed * m_speedMultipler;
-            double vy = -leftX.getAsDouble() * Constants.Swerve.kMaxSpeed * m_speedMultipler;
-            double vRot = -rightX.getAsDouble() * Constants.Swerve.kMaxAngularRate * m_speedMultipler;
+            double actualSpeedMultiplier = m_speedMultipler;
+            if (Helpers.isBypassModeEnabled()) actualSpeedMultiplier = 1d;
+
+            double vx = -leftY.getAsDouble() * Constants.Swerve.kMaxSpeed * actualSpeedMultiplier;
+            double vy = -leftX.getAsDouble() * Constants.Swerve.kMaxSpeed * actualSpeedMultiplier;
+            double vRot = -rightX.getAsDouble() * Constants.Swerve.kMaxAngularRate * actualSpeedMultiplier;
+
+            if (m_isTemporarilySlowed) {
+                vx *= Constants.Swerve.kTemporarySlowdownAmount;
+                vy *= Constants.Swerve.kTemporarySlowdownAmount;
+                vRot *= Constants.Swerve.kTemporarySlowdownAmount;
+            }
 
             if (m_hubLock) {
-                m_arcLockCenter = Helpers.allianceHub();
-
-                double dX = currentPose().getX() - m_arcLockCenter.getX();
-                double dY = currentPose().getY() - m_arcLockCenter.getY();
-
-                Rotation2d targetAngle = new Rotation2d(Math.atan2(dY, dX) + Math.PI/2 - getShooterAngleCompensation());
-
-                SmartDashboard.putNumber("Drive intended hub lock theta", m_optimalRotationSupplier.getAsDouble());
+                Rotation2d targetAngle = new Rotation2d(m_optimalRotationSupplier.getAsDouble() - Math.PI/2 - getShooterAngleCompensation());
 
                 vRot = m_driveController.calculate(
                         currentPose(),
                         new Pose2d(currentPose().getTranslation(), targetAngle),
-                        Math.hypot(dX, dY),
+                        0,
                         targetAngle
-                    ).omegaRadiansPerSecond * Swerve.kMaxAngularRate;
+                    ).omegaRadiansPerSecond;
             }
 
             if (m_trenchLock) {
                 Translation2d currentTranslation = currentPose().getTranslation();
-                
-                vx = m_driveController.calculate(
+
+                Rotation2d rotation = currentPose().getRotation();
+
+                Pose2d target = new Pose2d(new Translation2d(currentTranslation.getX(), m_trenchYPos), rotation);
+
+                vy = m_driveController.calculate(
                         currentPose(),
-                        new Pose2d(new Translation2d(m_trenchXPos, currentTranslation.getY()), currentPose().getRotation()),
+                        target,
                         0,
-                        currentPose().getRotation()
-                    ).vxMetersPerSecond * Swerve.kMaxSpeed;
+                        rotation
+                    ).vyMetersPerSecond * Swerve.kMaxSpeed;
+
+                if (m_fieldCentric && Math.abs(rotation.getDegrees()) < 90) {
+                    vy *= -1;
+                }
+
+                m_targetField.setRobotPose(target);
             }
 
             if (m_ensureTheta) {
@@ -291,7 +301,8 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                     .withVelocityY(vy)
                     .withRotationalRate(vRot)
                     .withDeadband(Constants.Swerve.kVelocityDeadband)
-                    .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband);
+                    .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband)
+                    .withDesaturateWheelSpeeds(true);
             } else {
                 return m_robotCentricRequest
                     .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
@@ -299,9 +310,23 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                     .withVelocityY(vy)
                     .withRotationalRate(vRot)
                     .withDeadband(Constants.Swerve.kVelocityDeadband)
-                    .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband);
+                    .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband)
+                    .withDesaturateWheelSpeeds(true);
             }
         });
+    }
+
+    public Command driveWithVelocities(double vx, double vy, double vRot) {
+        return applyRequest(() -> 
+            m_robotCentricRequest
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+                .withVelocityX(vx)
+                .withVelocityY(vy)
+                .withRotationalRate(vRot)
+                .withDeadband(Constants.Swerve.kVelocityDeadband)
+                .withRotationalDeadband(Constants.Swerve.kAngularVelocityDeadband)
+                .withDesaturateWheelSpeeds(true)
+        );
     }
 
     public Command brick() {
@@ -361,95 +386,111 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         }
 
         if (!m_limelightDisable) {
-            Matrix<N3, N1> visionMeasurementStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
-            visionMeasurementStdDevs.set(0, 0, 0.2);
-            visionMeasurementStdDevs.set(1, 0, 0.2);
-            visionMeasurementStdDevs.set(2, 0, 0.2);
-            LimelightHelpers.PoseEstimate limelightMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
-            LimelightHelpers.PoseEstimate limelightRearMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-rear");
-            if (limelightMeasurement != null) {
-                if (limelightMeasurement.tagCount >= 2 ||
-                    (limelightMeasurement.tagCount == 1 && limelightMeasurement.rawFiducials[0].ambiguity < 0.2)) {
-                    // if (DriverStation.isAutonomousEnabled()) {
-                    //     addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds, visionMeasurementStdDevs);
-                    // } else {
-                        addVisionMeasurement(limelightMeasurement.pose, limelightMeasurement.timestampSeconds);
-                    // }
+            Matrix<N3, N1> teleStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
+            teleStdDevs.set(0, 0, 0.1);
+            teleStdDevs.set(1, 0, 0.1);
+            teleStdDevs.set(2, 0, 99999999);
+
+            Matrix<N3, N1> teleGoodStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
+            teleGoodStdDevs.set(0, 0, 0.01);
+            teleGoodStdDevs.set(1, 0, 0.01);
+            teleGoodStdDevs.set(2, 0, 99999999);
+
+            Matrix<N3, N1> wheelMeasurementStdDevs = new Matrix<N3, N1>(Nat.N3(), Nat.N1());
+            wheelMeasurementStdDevs.set(0, 0, 0.01);
+            wheelMeasurementStdDevs.set(1, 0, 0.01);
+            wheelMeasurementStdDevs.set(2, 0, 0.01);
+
+            setStateStdDevs(wheelMeasurementStdDevs);
+
+            LimelightHelpers.SetRobotOrientation("limelight", currentPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+            LimelightHelpers.SetRobotOrientation("limelight-rear", currentPose().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+
+            LimelightHelpers.PoseEstimate mt2_shooter = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+            LimelightHelpers.PoseEstimate mt2_rear = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-rear");
+            if (mt2_shooter != null) {
+                if (mt2_shooter.tagCount >= 2 ||
+                    (mt2_shooter.tagCount == 1 && mt2_shooter.rawFiducials[0].ambiguity < 0.2)) {
+                    double minimumDistance = mt2_shooter.rawFiducials[0].distToRobot;
+                    for (RawFiducial fiducial : mt2_shooter.rawFiducials) {
+                        if (fiducial.distToRobot < minimumDistance) minimumDistance = fiducial.distToRobot;
+                    }
+                    if (minimumDistance <= Constants.Swerve.kMaximumLimelightDistance || mt2_shooter.tagCount >= 2) {
+                        if (mt2_shooter.tagCount > 2) {
+                            setVisionMeasurementStdDevs(teleGoodStdDevs);
+                        } else {
+                            setVisionMeasurementStdDevs(teleStdDevs);
+                        }
+                        addVisionMeasurement(mt2_shooter.pose, mt2_shooter.timestampSeconds);
+                    }
                 }
             } else {
                 Alert.warning("Couldn't find main limelight");
             }
 
-            if (limelightRearMeasurement != null) {
-                if (limelightRearMeasurement.tagCount >= 2 ||
-                    (limelightRearMeasurement.tagCount == 1 && limelightRearMeasurement.rawFiducials[0].ambiguity < 0.2)) {
-                    // if (DriverStation.isAutonomousEnabled()) {
-                    //     addVisionMeasurement(limelightRearMeasurement.pose, limelightRearMeasurement.timestampSeconds, visionMeasurementStdDevs);
-                    // } else {
-                        addVisionMeasurement(limelightRearMeasurement.pose, limelightRearMeasurement.timestampSeconds);
-                    // }
+            if (mt2_rear != null) {
+                if (mt2_rear.tagCount >= 2 ||
+                    (mt2_rear.tagCount == 1 && mt2_rear.rawFiducials[0].ambiguity < 0.2)) {
+                    double minimumDistance = mt2_rear.rawFiducials[0].distToRobot;
+                    for (RawFiducial fiducial : mt2_rear.rawFiducials) {
+                        if (fiducial.distToRobot < minimumDistance) minimumDistance = fiducial.distToRobot;
+                    }
+                    if (minimumDistance <= Constants.Swerve.kMaximumLimelightDistance || mt2_rear.tagCount >= 2) {
+                        if (mt2_rear.tagCount > 2) {
+                            setVisionMeasurementStdDevs(teleGoodStdDevs);
+                        } else {
+                            setVisionMeasurementStdDevs(teleStdDevs);
+                        }
+                        addVisionMeasurement(mt2_rear.pose, mt2_rear.timestampSeconds);
+                    }
                 }
             } else {
                 Alert.warning("Couldn't find rear limelight");
             }
+
+            SmartDashboard.putNumber("SOTM / Drive Interpolated Theta", m_optimalRotationSupplier.getAsDouble());
+            SmartDashboard.putNumber("SOTM / Drive Current Theta", currentPose().getRotation().getRadians());
         }
-
-        // Update poses for bump detection
-        if (m_currentPose != null) {
-            m_lastPose = m_currentPose;
-        }
-        
-        m_currentPose = currentPose();
-        
-        // Write to log
-
-        // String[] line = {null, String.valueOf(m_currentPose.getRotation().getDegrees())};
-
-        ZoneInfo currentZone = ZoneConstants.checkZone(m_currentPose.getTranslation());
-
-        // SmartDashboard.putData("currentPose", m_currentField);
-
-        // if (currentZone != lastZone && currentZone.isWithinOne) {
-        //     line[0] = currentZone.shortName();
-        //     try {
-        //         CSVWriter writer = new CSVWriter(outputfile);
-                
-        //         writer.writeNext(line);
-        //         writer.close();
-        //     }
-        //     catch (IOException e) {
-        //         e.printStackTrace();
-        //     }
-        // }
 
         m_currentField.setRobotPose(currentPose());
-        SmartDashboard.putData("currentPose", m_currentField);
-        SmartDashboard.putData("targetPose", m_targetField);
-        SmartDashboard.putNumber("Drive_speedMultiplier", m_speedMultipler);
+        SmartDashboard.putData("Drive / Current Pose", m_currentField);
+        SmartDashboard.putData("Drive / Target Pose", m_targetField);
+        if (!m_limelightDisable) {
+            PoseEstimate rearLimelight = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-rear");
+            PoseEstimate limelight = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+            if (rearLimelight != null) m_rearLimelightEstimate.setRobotPose(rearLimelight.pose);
+            if (limelight != null) m_mainLimelightEstimate.setRobotPose(limelight.pose);
+            SmartDashboard.putData("Drive / Rear Limelight Estimate", m_rearLimelightEstimate);
+            SmartDashboard.putData("Drive / Main Limelight Estimate", m_mainLimelightEstimate);
+        }
+        SmartDashboard.putNumber("Drive / Speed Multiplier", m_speedMultipler);
 
-        SmartDashboard.putString("Drive_currentZone", currentZone.fullName());
+        SmartDashboard.putString("Drive / Current Zone", ZoneConstants.checkZone(currentPose().getTranslation()).fullName());
 
-        SmartDashboard.putString("Drive_Robot drive mode", m_fieldCentric ? "Field Centric" : "Robot Centric");
-        SmartDashboard.putNumber("Drive_trenchX", m_trenchXPos);
-        SmartDashboard.putBoolean("Drive_trenchLock", m_trenchLock);
-        SmartDashboard.putBoolean("Drive_hubLock", m_hubLock);
+        SmartDashboard.putString("Drive / Robot Drive Mode", m_fieldCentric ? "Field Centric" : "Robot Centric");
+        SmartDashboard.putNumber("Drive / Trench Y M", m_trenchYPos);
+        SmartDashboard.putBoolean("Drive / Trench Lock", m_trenchLock);
+        SmartDashboard.putBoolean("Drive / Hub Lock", m_hubLock);
 
         SmartDashboard.putData(m_driveController.getXController());
         SmartDashboard.putData(m_driveController.getYController());
         SmartDashboard.putData(m_driveController.getThetaController());
-        SmartDashboard.putNumber("Drive_theta_target_deg", m_driveController.getThetaController().getGoal().position / Math.PI * 180);
+        SmartDashboard.putNumber("Drive / Theta Goal DEG", m_driveController.getThetaController().getGoal().position / Math.PI * 180);
+        SmartDashboard.putNumber("Drive / Theta Setpoint DEG", m_driveController.getThetaController().getSetpoint().position / Math.PI * 180);
+
+        SmartDashboard.putNumber("Drive / Pigeon Rate RPS", getPigeon2().getAngularVelocityZDevice().getValueAsDouble());
     }
 
     private void startSimThread() {
         m_lastSimTime = Utils.getCurrentTimeSeconds();
 
-        /* Run simulation at a faster rate so PID gains behave more reasonably */
+        // Run simulation at a faster rate so PID gains behave more reasonably
         m_simNotifier = new Notifier(() -> {
             final double currentTime = Utils.getCurrentTimeSeconds();
             double deltaTime = currentTime - m_lastSimTime;
             m_lastSimTime = currentTime;
 
-            /* use the measured time delta, get battery voltage from WPILib */
+            // Use the measured time delta, get battery voltage from WPILib
             updateSimState(deltaTime, RobotController.getBatteryVoltage());
         });
         m_simNotifier.startPeriodic(kSimLoopPeriod);
@@ -471,9 +512,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     public void addVisionMeasurement(
         Pose2d visionRobotPoseMeters,
         double timestampSeconds,
-        Matrix<N3, N1> visionMeasurementStdDevs
+        Matrix<N3, N1> StdDevs
     ) {
-        super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+        super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), StdDevs);
     }
 
     @Override
@@ -493,6 +534,10 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         return new DriveToPose();
     }
 
+    public CommandBuilder driveToPose(Supplier<Pose2d> target, List<Double> speedPercents) {
+        return new DriveToPose().withTarget(target).withVelocityPercentLimits(speedPercents);
+    }
+
     /**
      * <h3>DriveToPose</h3>
      * <p>This structure uses <code>with*</code> methods.</p>
@@ -501,6 +546,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     public class DriveToPose extends CommandBuilder {
         private DoubleSupplier m_targetVelocity = () -> 0.0d;
         private BooleanSupplier m_allowedToFinish = () -> true;
+        private double m_slowdownX = 1.0;
+        private double m_slowdownY = 1.0;
+        private double m_slowdownT = 1.0;
 
         public DriveToPose() {
             super(RealSwerveSubsystem.this);
@@ -534,6 +582,17 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             return withTarget(() -> target);
         }
 
+        public DriveToPose withVelocityPercentLimits(List<Double> percents) {
+            if (percents.size() != 3) {
+                Alert.critical("Percents array is of invalid length");
+                return this;
+            }
+            m_slowdownX = percents.get(0);
+            m_slowdownY = percents.get(1);
+            m_slowdownT = percents.get(2);
+            return this;
+        }
+
         public DriveToPose withTarget(Supplier<Pose2d> target) {
             onExecute(() -> {
                     Pose2d targetPose = target.get();
@@ -543,12 +602,11 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                         m_targetVelocity.getAsDouble(),
                         targetPose.getRotation()
                     );
-                    m_targetField.setRobotPose(targetPose);
                     setControl(
                         new SwerveRequest.RobotCentric()
-                            .withVelocityX(speeds.vxMetersPerSecond * Swerve.kMaxSpeed)
-                            .withVelocityY(speeds.vyMetersPerSecond * Swerve.kMaxSpeed)
-                            .withRotationalRate(speeds.omegaRadiansPerSecond * Swerve.kMaxAngularRate)
+                            .withVelocityX(speeds.vxMetersPerSecond * Swerve.kMaxSpeed * m_slowdownX)
+                            .withVelocityY(speeds.vyMetersPerSecond * Swerve.kMaxSpeed * m_slowdownY)
+                            .withRotationalRate(speeds.omegaRadiansPerSecond * Swerve.kMaxAngularRate * m_slowdownT)
                             .withDeadband(Swerve.kVelocityDeadband * 0.5)
                             .withRotationalDeadband(Swerve.kAngularVelocityDeadband)
                     );
@@ -562,6 +620,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     }
 
     public boolean isCANSafe() {
+        if (Helpers.isBypassModeEnabled()) return true;
         for (int i = 0; i < getModules().length; i++) {
             if (!Helpers.onCANChain(getModule(i).getDriveMotor()) || !Helpers.onCANChain(getModule(i).getSteerMotor()) || !Helpers.onCANChain(getModule(i).getEncoder())) {
                 return false;
@@ -577,25 +636,23 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
                 () -> {
                     m_arcLockTheta += Math.toRadians(leftX.getAsDouble());
 
-                    m_targetCenterPoseField.setRobotPose(m_arcLockCenter);
+                    m_targetCenterPoseField.setRobotPose(Helpers.allianceHub());
 
                     SmartDashboard.putData(m_targetCenterPoseField);
 
                     return new Pose2d(
-                        Math.cos(m_arcLockTheta) * m_arcLockDistance + m_arcLockCenter.getX(),
-                        Math.sin(m_arcLockTheta) * m_arcLockDistance + m_arcLockCenter.getY(),
+                        Math.cos(m_arcLockTheta) * m_arcLockDistance + Helpers.allianceHub().getX(),
+                        Math.sin(m_arcLockTheta) * m_arcLockDistance + Helpers.allianceHub().getY(),
                         new Rotation2d(m_arcLockTheta + Math.PI/2 - getShooterAngleCompensation())
                     );
                 }
             )
             .onInitialize(
                 () -> {
-                    m_arcLockCenter = Helpers.allianceHub();
-
                     Pose2d currentPose = currentPose();
 
-                    double dX = currentPose.getX() - m_arcLockCenter.getX();
-                    double dY = currentPose.getY() - m_arcLockCenter.getY();
+                    double dX = currentPose.getX() - Helpers.allianceHub().getX();
+                    double dY = currentPose.getY() - Helpers.allianceHub().getY();
 
                     m_arcLockDistance = Math.hypot(dX, dY);
                     m_arcLockTheta = Math.atan2(dY, dX);
@@ -603,11 +660,11 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             );
     }
 
-    private double getShooterAngleCompensation() {
+    public double getShooterAngleCompensation() {
         Pose2d currentPose = currentPose();
 
-        double dX = currentPose.getX() - m_arcLockCenter.getX();
-        double dY = currentPose.getY() - m_arcLockCenter.getY();
+        double dX = currentPose.getX() - HubOrchestrator.virtualHub.getX();
+        double dY = currentPose.getY() - HubOrchestrator.virtualHub.getY();
 
         return Math.PI/2 - Math.acos(Constants.Swerve.kShooterOffset / Math.hypot(dX, dY));
     }
@@ -632,12 +689,12 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
 
         AutoBuilder.configure(
             this::currentPose,
-            this::resetPose,
+            this::resetControl,
             this::getSpeed,
             (speeds, feeds) -> {
-                SmartDashboard.putNumber("SetSpeeds_x", speeds.vxMetersPerSecond);
-                SmartDashboard.putNumber("SetSpeeds_y", speeds.vyMetersPerSecond);
-                SmartDashboard.putNumber("SetSpeeds_theta", speeds.omegaRadiansPerSecond);
+                SmartDashboard.putNumber("Drive / Auto Speeds / X M", speeds.vxMetersPerSecond);
+                SmartDashboard.putNumber("Drive / Auto Speeds / Y M", speeds.vyMetersPerSecond);
+                SmartDashboard.putNumber("Drive / Auto Speeds / Theta RPS", speeds.omegaRadiansPerSecond);
 
                 this.setControl(m_autoRequest.withSpeeds(speeds));
             },
@@ -650,8 +707,9 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
             this
         );
 
-        FollowPathCommand.warmupCommand().schedule();
+        CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
     }
+
     public void resetControl(Pose2d pose) {
         resetPose(pose);
         m_driveController.getXController().reset();
@@ -680,7 +738,7 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
     }
 
     public ChassisSpeeds getSpeed() {
-        return getKinematics().toChassisSpeeds(getState().ModuleStates);
+        return ChassisSpeeds.fromRobotRelativeSpeeds(getState().Speeds, currentPose().getRotation());
     }
 
     public Rectangle2d getNearestTrench() {
@@ -707,13 +765,40 @@ public class RealSwerveSubsystem extends SwerveBase implements SwerveSubsystem {
         return driveToPose()
             .withTarget(
                 () -> {
+                    Pose2d targetPose = Helpers.getTargetHangPose(currentPose());
+
                     return new Pose2d(
-                        Constants.HangConstants.kHangCenterDisplacement + (Helpers.isBlueAlliance() ? Constants.HangConstants.kTowerDistanceFromWallX : ZoneConstants.kFieldLength.magnitude() - Constants.HangConstants.kTowerDistanceFromWallX),
+                        targetPose.getX(),
                         currentPose().getY(),
-                        // If left - 0, If right - 180
-                        ZoneConstants.isOnLeftSide(currentPose().getTranslation()) ? Rotation2d.k180deg : Rotation2d.kZero
+                        targetPose.getRotation()
                     );
                 }
-            );
+            )
+            .withVelocityPercentLimits(List.of(.25d, .2d, .25d));
+    }
+
+    private boolean m_hasBeenRegistered = false;
+
+    public void registerSubsystem() {
+        if (!m_hasBeenRegistered) {
+            CommandScheduler.getInstance().registerSubsystem(this);
+            m_hasBeenRegistered = true;
+        }
+    }
+
+    public boolean isRegistered() {
+        return m_hasBeenRegistered;
+    }
+
+    private static boolean m_isTemporarilySlowed = false;
+    public Command temporarySlowmode() {
+        return new CommandBuilder() // should NOT require drivetrain 
+            .onExecute(() -> {
+                m_isTemporarilySlowed = true;
+            })
+            .onEnd(() -> {
+                m_isTemporarilySlowed = false;
+            })
+            .isFinished(false);
     }
 }

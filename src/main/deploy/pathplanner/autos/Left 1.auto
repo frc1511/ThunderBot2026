@@ -29,15 +29,21 @@
           }
         },
         {
-          "type": "wait",
+          "type": "named",
           "data": {
-            "waitTime": 1.0
+            "name": "Shoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Left 1 Hang"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "ShootForever"
+            "name": "Hang"
           }
         }
       ]

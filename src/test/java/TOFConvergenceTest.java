@@ -1,7 +1,6 @@
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,18 +13,23 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.util.Constants;
 import frc.util.FiringTable;
+import frc.util.Helpers;
 import frc.util.FiringTable.FiringDataPoint;
 
 public class TOFConvergenceTest {
     @BeforeEach
     void setup() {
         assert HAL.initialize(500, 0); // initialize the HAL, crash if failed
+        Helpers.alertsShouldUseConsole = true;
     }
 
     private FiringTable firingTable = new FiringTable();
 
+    private static Translation2d virtualHub = Translation2d.kZero;
     private Pair<FiringDataPoint, Double> converge(ChassisSpeeds currentSpeed, Translation2d robotPosition, Translation2d targetPosition) {
         ArrayList<Translation2d> iterations = new ArrayList<Translation2d>();
+
+        Translation2d actualVirtualHubTarget = Translation2d.kZero;
 
         Translation2d initialDeltaTranslation = targetPosition.minus(robotPosition);
 
@@ -58,30 +62,36 @@ public class TOFConvergenceTest {
             );
 
             iterations.add(realTrajectoryEnd);
+            actualVirtualHubTarget = virtualTargetPosition;
 
             if (previousTimeOfFlight != null && Math.abs(newTau - previousTau) < Constants.Swerve.kTimeOfFlightConvergenceTolerance) {
                 break;
             }
-            
+
             currentDeltaPosition = virtualTargetPosition.minus(robotPosition);
 
             previousTimeOfFlight = newTau;
         }
 
-        Translation2d finalTargetPosition = iterations.get(iterations.size() - 1);
+        virtualHub = actualVirtualHubTarget;
 
-        Translation2d deltaTarget = finalTargetPosition.minus(robotPosition);
+        // m_stupidDebugField.setRobotPose(new Pose2d(virtualHub, new Rotation2d(0)));
+        // SmartDashboard.putData("stupid_debug_field", m_stupidDebugField);
+
+        Translation2d deltaTarget = virtualHub.minus(robotPosition);
         double finalDistance = deltaTarget.getNorm();
         double finalTheta = deltaTarget.getAngle().getRadians();
 
         FiringDataPoint finalPoint = firingTable.lerp(finalDistance);
-        
+
+        // finalPoint.speedRPM = Helpers.clamp(finalPoint.speedRPM, 0, 2800);
+
         return new Pair<FiringTable.FiringDataPoint,Double>(finalPoint, finalTheta);
     }
 
     @Test
     void ConvergenceTest() {
-        HashSet<Pair<Pose2d, ChassisSpeeds>> testValues = new HashSet<>();
+        ArrayList<Pair<Pose2d, ChassisSpeeds>> testValues = new ArrayList<Pair<Pose2d, ChassisSpeeds>>();
         testValues.add(new Pair<Pose2d,ChassisSpeeds>(
             new Pose2d(Constants.Swerve.blueHubCenterPose.getTranslation().minus(new Translation2d(2, 0)), Rotation2d.kZero),
             new ChassisSpeeds(1, 1, 0)
@@ -90,17 +100,17 @@ public class TOFConvergenceTest {
             new Pose2d(2, 2, new Rotation2d(0)),
             new ChassisSpeeds(1, 1, 0)
         ));
-        testValues.add(new Pair<Pose2d,ChassisSpeeds>( // 8800 rpm
+        testValues.add(new Pair<Pose2d,ChassisSpeeds>(
             new Pose2d(1, 3, new Rotation2d(0)),
             new ChassisSpeeds(-1, 1, 0)
         ));
-        testValues.add(new Pair<Pose2d,ChassisSpeeds>( // 1500 deg hood + 150000000 rpm
+        testValues.add(new Pair<Pose2d,ChassisSpeeds>(
             new Pose2d(4, 1, new Rotation2d(0)),
-            new ChassisSpeeds(0, 3, 0)
+            new ChassisSpeeds(0, 2.5, 0)
         ));
-        testValues.add(new Pair<Pose2d,ChassisSpeeds>( // Insanely high
+        testValues.add(new Pair<Pose2d,ChassisSpeeds>(
             new Pose2d(2, 1, new Rotation2d(0)),
-            new ChassisSpeeds(-5, -3, 0)
+            new ChassisSpeeds(-4, -3, 0)
         ));
 
         testValues.forEach(pair -> {
@@ -110,6 +120,7 @@ public class TOFConvergenceTest {
 
             Pair<FiringDataPoint, Double> convergeResult = converge(speeds, pose.getTranslation(), hub.getTranslation());
 
+            System.out.println("Current Pose: " + pose + " Current Speeds " + speeds);
             System.out.println("Speed: " + convergeResult.getFirst().speedRPM);
             System.out.println("Hood: " + convergeResult.getFirst().hoodAngle);
             System.out.println("Rbt Angle: " + convergeResult.getSecond());

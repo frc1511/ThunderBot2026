@@ -1,5 +1,6 @@
 package frc.robot.subsystems.Drive;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -87,4 +88,10 @@ public interface SwerveSubsystem extends ThunderInterface {
     public Command alignToTowerY();
 
     public CommandBuilder driveToPose(Supplier<Pose2d> target);
+
+    public CommandBuilder driveToPose(Supplier<Pose2d> target, List<Double> speedPercents);
+
+    public Command temporarySlowmode();
+
+    public Command driveWithVelocities(double vx, double vy, double vRot);
 }

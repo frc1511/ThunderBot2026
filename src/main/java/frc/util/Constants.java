@@ -1,14 +1,14 @@
 package frc.util;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.DegreesPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import java.util.Set;
@@ -45,11 +45,13 @@ public class Constants {
     public static boolean kUseSignalLogger = false;
     public static boolean kUseDataLog = true;
     public static boolean kUseHDDL = false; // High density data logging
+    public static boolean kLogTimeAndJoystick = false;
+    public static boolean kLogSafetyWatchdogStatuses = false;
     public static double kHDDLRate = 200d; // Hz
 
-    public static final double kCANChainDisconnectTimeout = 0.5; // in seconds
+    public static final double kCANChainDisconnectTimeout = 0.5; // In seconds
 
-    public static final double kAntiSpamAlertTimeout = 5; // in seconds
+    public static final double kAntiSpamAlertTimeout = 5; // In seconds
 
     public static final double kControllerDeadzone = 0.3;
 
@@ -63,6 +65,13 @@ public class Constants {
         DISABLED,
         DISCONNECTED
     }
+
+    public static enum SysIDMechanism {
+        NONE,
+        DRIVE,
+        SHOOTER
+    }
+    public static final SysIDMechanism kSysIDMode = SysIDMechanism.NONE;
 
     public class IOMap {
         /*
@@ -89,7 +98,8 @@ public class Constants {
         public class Intake {
             public static final int kCANcoder = 15;
             public static final int kPivotMotor = 16;
-            public static final int kChompMotor = 17;
+            public static final int kChompMotorRight = 17;
+            public static final int kChompMotorLeft = 41;
         }
       
         public class Swerve {
@@ -113,8 +123,8 @@ public class Constants {
         }
       
         public class Shooter {
-            public static final int kShooterMotorA = 21; // RIGHT
-            public static final int kShooterMotorB = 20; // LEFT
+            public static final int kShooterMotorA = 21; // Right
+            public static final int kShooterMotorB = 20; // Left
             public static final int kTurretMotor = 40;
         }
         
@@ -194,20 +204,20 @@ public class Constants {
             }
         }
     }
-    
+
     public interface Shooter {
         double kMaxShooterSpeed = 0.5d;
         double kShooterAtSpeedTolerance = 100d;
         double kTargetShooterRPM = 1900d;
         double kFeedRPM = 2200d;
-        
+
         public interface TurretPID extends BasePID {}
         double kTurretTolerance = 0.5d;
 
-        public interface ShooterPID extends BasePID { // TODO: This still needs to be retuned but we're waiting so people don't use the fact that we would have to retune again as an excuse to no do things to the robot :P
-            double kP = 4.5;
-            double kI = .1;
-            double kD = .7;
+        public interface ShooterPID extends BasePID {
+            double kP = .1;
+            double kI = 0;
+            double kD = 0;
             double kS = 0.20022;
             double kV = 0.11647;
             double kA = 0.01009;
@@ -219,6 +229,8 @@ public class Constants {
         }
 
         double kReverseSpeed = -0.2d;
+
+        int kFuelEstimationLookback = 6;
     }
 
     public interface Hood {
@@ -242,8 +254,8 @@ public class Constants {
             }
         }
         public interface HoodPID extends BasePID {
-            double kP = 22; // TOO Zippy at 23
-            double kI = 8; // TOO Zippy at 40
+            double kP = 22;
+            double kI = 8;
             double kD = 0;
             double kS = 0;
             double kV = 0.12;
@@ -264,7 +276,7 @@ public class Constants {
     public class Hunger {
         public interface Intake {
             double kEatRPM = 3000;
-            double kEatPercent = .7;
+            double kEatPercent = 1.0;
 
             interface IntakePID extends BasePID { 
                 double kP = 8.0;
@@ -277,13 +289,16 @@ public class Constants {
 
         public interface Pivot {
             interface PivotPID extends BasePID { 
-                double kP = 0.5;
-                double kI = .003;
-                double kD = 0.05;
+                double kP = 6.5;
+                double kI = .00;
+                double kD = 0.0;
+                double kS = .25;
+                double kCos = .35;
             }
+            double kCosRatio = 1;
 
             enum Position {
-                TOP(-0.336914), MIDDLE(-0.175), HALFWAY_DOWN(-0.13), BOTTOM(0.001708984375); //they change alot but should be approx right
+                TOP(0.35), HALFWAY_DOWN(0.233), BOTTOM(0.0); // They change alot but should be approx right
 
                 private double m_value;
 
@@ -295,10 +310,12 @@ public class Constants {
                     return this.m_value;
                 }
             }
-            double kCANcoderOffset = -0.669894;
+            double kCANcoderOffset = 0.07870;
 
             double kTolerance = 0.015d;
             double kBigTolerance = 0.02d;
+
+            double kEncoderConversionFactor = 1d/90d;
         }
     }
 
@@ -312,25 +329,28 @@ public class Constants {
         double kSetpointMaxVelocity = 0.02; // Prevents flybys
         double kSetpointPositionTolerance = 0.25;
         double kZeroingSpeed = -0.1;
-        double kMaxDeploySpeed = 0.9; // Extending Hanger FINAL DONT CHNAGE
-        double kMaxPullSpeed = -0.9;  // Retracting Hanger (pulling the robot up on the bar) FINAL DONT CHANGE
-        double kMaxDeployDistanceRotations = 34; // (changed from 33 -> 34 for FLR)
-        double kMaxPullDistanceRotations = 6; // This is NOT a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down (changed from 8 -> 6 at FLR)
+        double kMaxDeploySpeed = 0.9; // Extending Hanger
+        double kMaxPullSpeed = -0.9;  // Retracting Hanger (pulling the robot up on the bar)
+        double kMaxDeployDistanceRotations = 34;
+        double kMaxPullDistanceRotations = 6; // This is NOT a delta and is absolute to the zero, DON'T confuse it for how much the robot is pulling down
         double kJostleAmplitude = 0.5;
         double kTrenchSafeDistanceRotations = 1;
 
         double kTowerDistanceFromWallX = 1.2065;
-        double kHangCenterDisplacement = 0.12954;
+        double kHangCenterDisplacementX = 0.12954;
+        double kHangCenterDisplacementY = 0.3048;
     }
 
     public class Swerve {
-        public static final double kTimeOfFlightConvergenceTolerance = 0.1;
-        public static final int kTimeOfFlightConvergenceMaxRecursions = 10;
+        public static final double kTimeOfFlightConvergenceTolerance = 0.01;
+        public static final int kTimeOfFlightConvergenceMaxRecursions = 20;
+        public static final double kMaximumLimelightDistance = 3d;
+        public static final double kTemporarySlowdownAmount = .15d;
 
         // Max Speed
         public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.9); // DON"T TOUCH, USE MULTIPLIER FOR MAX SPEED INSTEAD
 
-        public static final double kSpeedStep = 0.1; // Amount to step speed for the inc/dec btns
+        public static final double kSpeedStep = 0.1; // Amount to step speed for the increase/decrease buttons
 
         public static final double kShooterOffset = .351; // meters
         public static final double kTrenchLockMaxDist = 3; // meters
@@ -354,9 +374,9 @@ public class Constants {
         private static final Voltage kSteerFrictionVoltage = Volts.of(0.2);
         private static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
 
-        public static final double kMaxSpeed = 0.8 * kSpeedAt12Volts.in(MetersPerSecond); // % Multiplier | kSpeedAt12Volts desired top speed
-        public static final double kMaxAngularRate = .8 * RotationsPerSecond.of(1.5).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-        public static final double kMaxAngularAcceleration = .25 * RotationsPerSecondPerSecond.of(.75).in(RadiansPerSecondPerSecond);
+        public static final double kMaxSpeed = 0.8 * kSpeedAt12Volts.in(MetersPerSecond); // % Multiplier * kSpeedAt12Volts desired top speed
+        public static final double kMaxAngularRate = 1d * DegreesPerSecond.of(600).in(RadiansPerSecond);
+        public static final double kMaxAngularAcceleration = 1d * DegreesPerSecondPerSecond.of(240).in(RadiansPerSecondPerSecond);
 
         public static final double kVelocityDeadband = 0.05 * kMaxSpeed; // % Multiplier 
         public static final double kAngularVelocityDeadband = 0.05 * kMaxAngularRate; // % Multiplier
@@ -366,8 +386,8 @@ public class Constants {
             double kI = .1;
         }
         public interface ThetaPID extends BasePID {
-            double kP = 1.5;
-            double kD = 0.5;
+            double kP = 8;
+            double kD = 1;
         }
 
         public interface ThetaAutoPID extends BasePID {
@@ -377,6 +397,9 @@ public class Constants {
         public static final PIDController kHolonomicXPIDController = new PIDController(XYPID.kP, XYPID.kI, XYPID.kD);
         public static final PIDController kHolonomicYPIDController = new PIDController(XYPID.kP, XYPID.kI, XYPID.kD);
         public static final ProfiledPIDController kHolonomicThetaPIDController = new ProfiledPIDController(ThetaPID.kP, ThetaPID.kI, ThetaPID.kD, new Constraints(kMaxAngularRate, kMaxAngularAcceleration));
+        static {
+            kHolonomicThetaPIDController.setTolerance(.05, .05);
+        }
 
         public static Pose2d targetPose = new Pose2d(
             11.887319 - 1,
@@ -399,12 +422,12 @@ public class Constants {
         // Steer PID
         public static final Slot0Configs steerGains = new Slot0Configs()
             .withKP(38.568).withKI(0).withKD(1.7601)
-            .withKS(0.080138).withKV(2.1689).withKA(0.060677) // 2.66
+            .withKS(0.080138).withKV(2.1689).withKA(0.060677)
             .withStaticFeedforwardSign(StaticFeedforwardSignValue.UseClosedLoopSign);
         // Drive PID
         public static final Slot0Configs driveGains = new Slot0Configs()
             .withKP(0.16461).withKI(0).withKD(0)
-            .withKS(0.077536).withKV(0.11232); // 0.11232 ; 0.0071659
+            .withKS(0.077536).withKV(0.11232);
 
         private static final ClosedLoopOutputType kSteerClosedLoopOutput = ClosedLoopOutputType.Voltage;
         private static final ClosedLoopOutputType kDriveClosedLoopOutput = ClosedLoopOutputType.Voltage;
@@ -426,10 +449,6 @@ public class Constants {
                     .withSupplyCurrentLimit(Amps.of(30))
                     .withSupplyCurrentLimitEnable(true)
             );
-            // .withClosedLoopRamps(
-            //     new ClosedLoopRampsConfigs()
-            //         .withVoltageClosedLoopRampPeriod(0.1)
-            // );
         private static final TalonFXConfiguration steerInitialConfigs = new TalonFXConfiguration()
             .withCurrentLimits(
                 new CurrentLimitsConfigs()

@@ -4,6 +4,7 @@ import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.configs.MagnetSensorConfigs;
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.PersistMode;
@@ -33,20 +34,24 @@ public class PivotSubsystem extends ThunderSubsystem {
     private SparkClosedLoopController m_pidController;
 
     public PivotSubsystem() {
-        pivotConfig = new SparkMaxConfig(); 
+        pivotConfig = new SparkMaxConfig();
         pivotConfig.closedLoop
-            .pid(Constants.Hunger.Pivot.PivotPID.kP, Constants.Hunger.Pivot.PivotPID.kI, Constants.Hunger.Pivot.PivotPID.kD)
-            .allowedClosedLoopError(Constants.Hunger.Pivot.kTolerance, ClosedLoopSlot.kSlot0);
-        // .feedForward
-        //     .kCosRatio(Constants.Hunger.Pivot.kCosRatio)
-        //     .kCos(Constants.Hunger.Pivot.PivotPID.kCos);
+                    .pid(Constants.Hunger.Pivot.PivotPID.kP, Constants.Hunger.Pivot.PivotPID.kI, Constants.Hunger.Pivot.PivotPID.kD)
+                    .allowedClosedLoopError(Constants.Hunger.Pivot.kTolerance, ClosedLoopSlot.kSlot0)
+                    .outputRange(-0.4, 0.7)
+                .feedForward
+                    .kS(Constants.Hunger.Pivot.PivotPID.kS)
+                    .kCosRatio(Constants.Hunger.Pivot.kCosRatio)
+                    .kCos(Constants.Hunger.Pivot.PivotPID.kCos);
+        pivotConfig.inverted(true);
+        pivotConfig.idleMode(IdleMode.kBrake);
 
         pivotConfig.encoder
-            .positionConversionFactor(1d/96d);
-        
+            .positionConversionFactor(Constants.Hunger.Pivot.kEncoderConversionFactor);
+
         if (!Broken.pivotDisabled) {
             m_CANcoder = new CANcoder(Constants.IOMap.Intake.kCANcoder);
-            m_CANcoder.getConfigurator().apply(new MagnetSensorConfigs().withMagnetOffset(Constants.Hunger.Pivot.kCANcoderOffset));
+            m_CANcoder.getConfigurator().apply(new MagnetSensorConfigs().withMagnetOffset(Constants.Hunger.Pivot.kCANcoderOffset).withSensorDirection(SensorDirectionValue.Clockwise_Positive));
 
             m_motor = new SparkMax(Constants.IOMap.Intake.kPivotMotor, MotorType.kBrushless);
             m_motor.configure(pivotConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -69,101 +74,94 @@ public class PivotSubsystem extends ThunderSubsystem {
 
         m_builtinEncoder.setPosition(m_CANcoder.getPosition().getValueAsDouble());
 
-        SmartDashboard.putNumber("Pivot_builtin_position", m_builtinEncoder.getPosition());
-        SmartDashboard.putNumber("Pivot_CANcoder_position", m_CANcoder.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber("Pivot_pidSetpoint", m_pidController.getSetpoint());
-        SmartDashboard.putBoolean("Pivot_atSetpoint", m_pidController.isAtSetpoint());
-        SmartDashboard.putNumber("Pivot_output_%", m_motor.getAppliedOutput());
-        SmartDashboard.putNumber("Pivot_output_A", m_motor.getOutputCurrent());
-        SmartDashboard.putNumber("Pivot_pidError", m_pidController.getSetpoint() - m_CANcoder.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Pivot / Builtin Position", m_builtinEncoder.getPosition());
+        SmartDashboard.putNumber("Pivot / CANcoder Position", m_CANcoder.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Pivot / PID Setpoint", m_pidController.getSetpoint());
+        SmartDashboard.putBoolean("Pivot / At Setpoint", m_pidController.isAtSetpoint());
+        SmartDashboard.putNumber("Pivot / Output %", m_motor.getAppliedOutput());
+        SmartDashboard.putNumber("Pivot / Output A", m_motor.getOutputCurrent());
+        SmartDashboard.putNumber("Pivot / PID Error", m_pidController.getSetpoint() - m_CANcoder.getPosition().getValueAsDouble());
+        SmartDashboard.putNumber("Pivot / Velocity", m_CANcoder.getVelocity().getValueAsDouble());
     }
 
-    public void setMotorMode(IdleMode mode) {
-        if (Broken.pivotDisabled) return; 
-
-        pivotConfig.idleMode(mode);
-        m_motor.configure(pivotConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    public Command setCoastMode() {
+        if (Broken.pivotDisabled) return Commands.none(); 
+        return new CommandBuilder()
+            .onInitialize(() -> {
+                pivotConfig.idleMode(IdleMode.kCoast);
+                m_motor.configure(pivotConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+            })
+            .onEnd(() -> {
+                pivotConfig.idleMode(IdleMode.kBrake);
+                m_motor.configure(pivotConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+            });
     }
 
     public Command halt() {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(m_motor::stopMotor);
     }
 
     public Command down() {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.BOTTOM.get(), ControlType.kPosition))
-            .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(Constants.Hunger.Pivot.Position.BOTTOM.get(), m_pidController.getSetpoint(), Constants.Hunger.Pivot.kTolerance));
+            .onExecute(() -> setSetpoint(Constants.Hunger.Pivot.Position.BOTTOM.get()))
+            .isFinished(() -> doneMoving(Constants.Hunger.Pivot.Position.BOTTOM.get()));
     }
 
     public Command up() {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.TOP.get(), ControlType.kPosition))
-            .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(Constants.Hunger.Pivot.Position.TOP.get(), m_pidController.getSetpoint(), Constants.Hunger.Pivot.kTolerance));
+            .onExecute(() -> setSetpoint(Constants.Hunger.Pivot.Position.TOP.get()))
+            .isFinished(() -> doneMoving(Constants.Hunger.Pivot.Position.TOP.get()));
     }
 
     public Command upSoft() {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.TOP.get(), ControlType.kPosition))
+            .onExecute(() -> setSetpoint(Constants.Hunger.Pivot.Position.TOP.get()))
             .isFinished(true);
     }
 
     public Command downSoft() {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.BOTTOM.get(), ControlType.kPosition))
+            .onExecute(() -> setSetpoint(Constants.Hunger.Pivot.Position.BOTTOM.get()))
             .isFinished(true);
     }
 
-    public Command middle() {
-        if (Broken.pivotDisabled) return Commands.none();
-
-        return new CommandBuilder(this)
-            .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.MIDDLE.get(), ControlType.kPosition))
-            .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(Constants.Hunger.Pivot.Position.MIDDLE.get(), m_pidController.getSetpoint(), Constants.Hunger.Pivot.kTolerance)); // This extra NONSENSE is because the motor controller is slow or something and, uh, doesn't actually set the setpoint for a bit.
-    }
-
     public Command halfwayDown() {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_pidController.setSetpoint(Constants.Hunger.Pivot.Position.HALFWAY_DOWN.get(), ControlType.kPosition))
-            .isFinished(() -> m_pidController.isAtSetpoint() && Helpers.ensureTarget(Constants.Hunger.Pivot.Position.HALFWAY_DOWN.get(), m_pidController.getSetpoint(), Constants.Hunger.Pivot.kBigTolerance)); // This extra NONSENSE is because the motor controller is slow or something and, uh, doesn't actually set the setpoint for a bit.
-
+            .onExecute(() -> setSetpoint(Constants.Hunger.Pivot.Position.HALFWAY_DOWN.get()))
+            .isFinished(() -> doneMoving(Constants.Hunger.Pivot.Position.HALFWAY_DOWN.get()));
     }
 
-    public Command jostle() {
-        if (Broken.pivotDisabled) return Commands.none();
-
-        return middle()
-            .andThen(down());
-    }
-    
     public Command jostleRepeatedly() {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
-        return halfwayDown()
+        return halfwayDown().withTimeout(1.5)
             .andThen(down()).repeatedly();
     }
 
-    public Command manual_pivot(DoubleSupplier speed) {
-        if (Broken.pivotDisabled) return Commands.none();
+    @Override
+    public Command manual(DoubleSupplier speed) {
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
-            .onExecute(() -> m_motor.set(speed.getAsDouble()));
+            .onExecute(() -> m_motor.set(speed.getAsDouble()))
+            .onEnd(() -> m_motor.stopMotor());
     }
 
     public Command manual_voltage(DoubleSupplier voltage) {
-        if (Broken.pivotDisabled) return Commands.none();
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> m_motor.setVoltage(voltage.getAsDouble()));
@@ -180,5 +178,23 @@ public class PivotSubsystem extends ThunderSubsystem {
         if (!Helpers.onCANChain(m_motor)) return Status.DISCONNECTED;
         if (Helpers.isRunning(m_motor)) return Status.ACTIVE;
         return Status.IDLE;
+    }
+
+    public Command rememberPosition() {
+        if (Broken.pivotDisabled) return CommandBuilder.none(this);
+
+        double initialPosition = m_builtinEncoder.getPosition();
+        return new CommandBuilder(this)
+            .onExecute(() -> setSetpoint(initialPosition))
+            .isFinished(() -> doneMoving(initialPosition))
+            .ignoringDisable(true);
+    }
+
+    private void setSetpoint(double position) {
+        m_pidController.setSetpoint(position, ControlType.kPosition);
+    }
+
+    private boolean doneMoving(double target) {
+        return m_pidController.isAtSetpoint() && Helpers.ensureTarget(target, m_pidController.getSetpoint(), Constants.Hunger.Pivot.kBigTolerance);
     }
 }

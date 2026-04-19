@@ -2,6 +2,7 @@ package frc.robot.subsystems.Cannon;
 
 import static edu.wpi.first.units.Units.Amps;
 
+import java.util.ArrayList;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
@@ -16,8 +17,8 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
@@ -33,6 +34,8 @@ public class ShooterSubsystem extends ThunderSubsystem {
     private double m_targetSpeed = 0;
 
     private DoubleSupplier optimalSpeedSupplier = () -> 0d;
+
+    private ArrayList<Double> m_lastVoltages;
 
     public ShooterSubsystem() {
         TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
@@ -69,10 +72,19 @@ public class ShooterSubsystem extends ThunderSubsystem {
                     m_primaryMotor = m_shooterMotorA;
                 }
             }
+
+            m_primaryMotor.getVelocity().setUpdateFrequency(100);
+            m_primaryMotor.getClosedLoopReference().setUpdateFrequency(100);
         } else {
             Broken.shooterFullyDisabled = true;
             m_primaryMotor = null;
         }
+
+        m_lastVoltages = new ArrayList<Double>();
+        for (int i = 0; i < Constants.Shooter.kFuelEstimationLookback; i++) {
+            m_lastVoltages.add(0d);
+        }
+
     }
 
     public void setOptimalSpeedGetter(DoubleSupplier supplier) {
@@ -80,25 +92,34 @@ public class ShooterSubsystem extends ThunderSubsystem {
     }
 
     public boolean shooterAtSpeed() {
-        if (Broken.shooterFullyDisabled) return true;
+        if (Broken.shooterFullyDisabled || Helpers.isBypassModeEnabled()) return true;
 
-        return Math.abs(Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()) - m_targetSpeed) < Constants.Shooter.kShooterAtSpeedTolerance;
+        return Math.abs(Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()) - m_targetSpeed) < Constants.Shooter.kShooterAtSpeedTolerance && Helpers.RPStoRPM(m_primaryMotor.getClosedLoopError().getValueAsDouble()) < Constants.Shooter.kShooterAtSpeedTolerance;
     }
 
     @Override
     public void periodic() {
         if (Broken.shooterFullyDisabled) return;
 
-        SmartDashboard.putNumber("shooter_rpm", Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()));
-        SmartDashboard.putNumber("shooter_target_rpm", Helpers.RPStoRPM(m_primaryMotor.getClosedLoopReference().getValueAsDouble()));
-        SmartDashboard.putNumber("shooter_output_V", m_primaryMotor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("shooter_err", Math.abs(Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()) - m_targetSpeed));
-        SmartDashboard.putBoolean("shooter_atSpeed", shooterAtSpeed());
-        SmartDashboard.putNumber("shooter_optimalSpeed", optimalSpeedSupplier.getAsDouble());
+        SmartDashboard.putNumber("Shooter / Motor Output V", m_primaryMotor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Shooter / Setpoint Error", Math.abs(Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()) - m_targetSpeed));
+
+        SmartDashboard.putNumber("SOTM / Shooter RPM", optimalSpeedSupplier.getAsDouble());
+
+        checkIfShotFuel();
+
+        SmartDashboard.putNumber("Shooter / Total Estimated Fuel Shot", m_totalShotFuel);
+    }
+
+    @Override
+    public void hddlPeriodic() {
+        SmartDashboard.putNumber("Shooter / Speed RPM", Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()));
+        SmartDashboard.putNumber("Shooter / Target Speed RPM", Helpers.RPStoRPM(m_primaryMotor.getClosedLoopReference().getValueAsDouble()));
+        SmartDashboard.putBoolean("Shooter / At Target Speed", shooterAtSpeed());
     }
 
     public Command halt() {
-        if (Broken.shooterFullyDisabled) return new InstantCommand(()->{}, this);
+        if (Broken.shooterFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(m_primaryMotor::stopMotor);
@@ -110,7 +131,7 @@ public class ShooterSubsystem extends ThunderSubsystem {
     }
 
     public Command runAtCustomSpeed(DoubleSupplier speedRPM) {
-        if (Broken.shooterFullyDisabled) return Commands.none();
+        if (Broken.shooterFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> runAtSpeed(speedRPM.getAsDouble()))
@@ -125,35 +146,37 @@ public class ShooterSubsystem extends ThunderSubsystem {
 
     // Used only for autos
     public Command preheat() {
-        if (Broken.shooterFullyDisabled) return Commands.none();
+        if (Broken.shooterFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> runAtSpeed(optimalSpeedSupplier.getAsDouble()))
             .isFinished(this::shooterAtSpeed)
-            .onEnd(this::halt);
+            .onEnd(this::halt)
+            .raceWith(new ConditionalCommand(new WaitCommand(1), new WaitCommand(3), Helpers::isBypassModeEnabled));
     }
 
     // This is used in tele for preheat and fire
     public Command holdSpeedForShoot() {
-        if (Broken.shooterFullyDisabled) return Commands.none();
+        if (Broken.shooterFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> runAtSpeed(optimalSpeedSupplier.getAsDouble()))
             .onEnd(this::halt);
     }
 
-    public Command manual_shooter(DoubleSupplier speed) {
-        if (Broken.shooterFullyDisabled) return Commands.none();
+    @Override
+    public Command manual(DoubleSupplier speed) {
+        if (Broken.shooterFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() ->
                 runAtSpeed(speed.getAsDouble())
             )
-            .isFinished(() -> false);
+            .onEnd(() -> m_primaryMotor.stopMotor());
     }
 
     public Command manual_voltage(DoubleSupplier voltage) {
-        if (Broken.shooterFullyDisabled) return Commands.none();
+        if (Broken.shooterFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() ->
@@ -183,5 +206,33 @@ public class ShooterSubsystem extends ThunderSubsystem {
 
     public boolean isActuallyShooting() {
         return Math.abs(getMotorRate()) > 5;
+    }
+
+    private int m_totalShotFuel = 0;
+
+    public void checkIfShotFuel() {
+        double currentVoltage = m_primaryMotor.getMotorVoltage().getValueAsDouble();
+
+        if (m_lastVoltages.size() >= Constants.Shooter.kFuelEstimationLookback) {
+            m_lastVoltages.remove(0);
+        }
+        m_lastVoltages.add(currentVoltage);
+
+        double firstSum = m_lastVoltages.subList(0, (Integer)Constants.Shooter.kFuelEstimationLookback/3).stream().mapToDouble(Double::doubleValue).sum();
+        double secondSum = m_lastVoltages.subList((Integer)Constants.Shooter.kFuelEstimationLookback/3, Constants.Shooter.kFuelEstimationLookback/3*2).stream().mapToDouble(Double::doubleValue).sum();
+        double thirdSum = m_lastVoltages.subList((Integer)Constants.Shooter.kFuelEstimationLookback/3*2, Constants.Shooter.kFuelEstimationLookback).stream().mapToDouble(Double::doubleValue).sum();
+
+        double firstAverage = firstSum / (Constants.Shooter.kFuelEstimationLookback/3);
+        double secondAverage = secondSum / (Constants.Shooter.kFuelEstimationLookback/3);
+        double thirdAverage = thirdSum / (Constants.Shooter.kFuelEstimationLookback/3);
+
+        double firstDelta = secondAverage - firstAverage;
+        double secondDelta = thirdAverage - secondAverage;
+
+        if (secondDelta < 0 && firstDelta >= 0) {
+            if (thirdAverage < .1 || secondAverage < .1) {
+                m_totalShotFuel++;
+            }
+        }
     }
 }

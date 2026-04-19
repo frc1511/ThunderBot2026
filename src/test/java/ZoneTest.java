@@ -35,7 +35,7 @@ class ZoneTest {
   }
 
   @Test
-  void nonZeroLenTrenches() {
-    assertTrue(ZoneConstants.trenchCache.size() >= 1);
+  void lenTrenches() {
+    assertTrue(ZoneConstants.trenchCache.size() == 4);
   }
 }

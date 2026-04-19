@@ -9,11 +9,14 @@ import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 public class Helpers {
+    public static boolean alertsShouldUseConsole = false;
+
     public static boolean onCANChain(TalonFX motor) {
         if (motor == null) return false;
         return motor.isConnected(Constants.kCANChainDisconnectTimeout);
@@ -81,7 +84,7 @@ public class Helpers {
         return Math.min(Math.max(x, lo), hi);
     }
 
-    // Will return true if the average distance to the average value is less than the tolerance
+    /** Returns true if the average distance to the average value is less than the tolerance */
     public static boolean standardDeviation(HashSet<Double> values, double tolerance) {
         double total = values.stream().mapToDouble(Double::doubleValue).sum();
         double average = total / values.size();
@@ -102,14 +105,17 @@ public class Helpers {
 
     public static boolean isHubActive(boolean withOffset) {
         Optional<Alliance> alliance = DriverStation.getAlliance();
+
         // If we have no alliance, we cannot be enabled, therefore no hub.
         if (alliance.isEmpty()) {
             return false;
         }
+
         // Hub is always enabled in autonomous.
         if (DriverStation.isAutonomousEnabled()) {
             return true;
         }
+
         // At this point, if we're not teleop enabled, there is no hub.
         if (!DriverStation.isTeleopEnabled()) {
             return false;
@@ -118,7 +124,8 @@ public class Helpers {
         // We're teleop enabled, compute.
         double matchTime = DriverStation.getMatchTime() - (withOffset ? Constants.kTimerAheadTime_sec : 0);
         String gameData = DriverStation.getGameSpecificMessage();
-        // If we have no game data, we cannot compute, assume hub is active, as its likely early in teleop.
+
+        // If we have no game data, we cannot compute, assume hub is active, as it's likely early in teleop.
         if (gameData.isEmpty()) {
             return true;
         }
@@ -127,8 +134,7 @@ public class Helpers {
             case 'R' -> redInactiveFirst = true;
             case 'B' -> redInactiveFirst = false;
             default -> {
-            // If we have invalid game data, assume hub is active.
-            return true;
+                return true; // If we have invalid game data, assume hub is active.
             }
         }
 
@@ -139,27 +145,76 @@ public class Helpers {
         };
 
         if (matchTime > 130) {
-            // Transition shift, hub is active.
-            return true;
+            return true; // Transition shift, hub is active.
         } else if (matchTime > 105) {
-            // Shift 1
-            return shift1Active;
+            return shift1Active; // Shift 1
         } else if (matchTime > 80) {
-            // Shift 2
-            return !shift1Active;
+            return !shift1Active; // Shift 2
         } else if (matchTime > 55) {
-            // Shift 3
-            return shift1Active;
+            return shift1Active; // Shift 3
         } else if (matchTime > 30) {
-            // Shift 4
-            return !shift1Active;
+            return !shift1Active; // Shift 4
         } else {
-            // End game, hub always active.
-            return true;
+            return true; // End game, hub always active.
         }
     }
 
     public static Trigger hubToBecomeActive() {
         return new Trigger(() -> isHubActive(true));
+    }
+
+    private static boolean pitModeEnabled = false;
+    public static void setPitMode(boolean enabled) {
+        pitModeEnabled = enabled;
+    }
+
+    public static boolean isPitModeEnabled() {
+        return pitModeEnabled;
+    }
+
+    private static boolean pitModePlusEnabled = false;
+    public static void setPitModePlus(boolean enabled) {
+        pitModePlusEnabled = enabled;
+    }
+
+    /**
+     * Pitmode+ is for extra freaky programmng things like sysid
+     */
+    public static boolean isPitModePlusEnabled() {
+        return pitModePlusEnabled;
+    }
+
+    private static boolean bypassModeEnabled = false;
+    public static void setBypassMode(boolean enabled) {
+        bypassModeEnabled = enabled;
+    }
+
+    /**
+     * Bypass mode is a stepping stone up from pit mode that ~~removes a bunch of safety features.~~ allows you to bypass some requirements so that you can easily run things like the shooter without having to worry if the hood has reached its goal yet. The caveat is that the robot just assumes you set things up correctly as it skips checking so you can just go, meaning you should probably read the functionality of whatever you're testing when in bypass mode before testing it. 
+     */
+    public static boolean isBypassModeEnabled() {
+        return bypassModeEnabled;
+    }
+
+    public static Pose2d getTargetHangPose(Pose2d currentPose) {
+        double xOffset = Constants.HangConstants.kHangCenterDisplacementX;
+        double yOffset = Constants.HangConstants.kHangCenterDisplacementY;
+        Pose2d target = Pose2d.kZero;
+        double y = currentPose.getY();
+        if (isBlueAlliance()) {
+            if (y <= 4d) {
+                target = new Pose2d(1.0375 + .1 + xOffset, 3.2523 - yOffset, Rotation2d.kZero);
+            } else {
+                target = new Pose2d(1.0375 + .1 - xOffset, 4.2391 + yOffset, Rotation2d.kPi);
+            }
+        } else {
+            if (y <= 4d) {
+                target = new Pose2d(15.4325 + -.05 + xOffset, 3.7301 - yOffset, Rotation2d.kZero);
+            } else {
+                target = new Pose2d(15.4325 + -.05 - xOffset, 4.9169 + yOffset, Rotation2d.kPi);
+            }
+        }
+
+        return target;
     }
 }

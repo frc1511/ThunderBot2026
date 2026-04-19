@@ -20,8 +20,6 @@ import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
@@ -53,6 +51,7 @@ public class HangSubsystem extends ThunderSubsystem {
             .allowedClosedLoopError(Constants.HangConstants.kSetpointPositionTolerance, ClosedLoopSlot.kSlot0)
             .outputRange(Constants.HangConstants.kMaxPullSpeed, Constants.HangConstants.kMaxDeploySpeed);
         
+        m_isClimbing = false;
         m_isZeroed = false;
 
         if (!Broken.hangFullyDisabled) {
@@ -67,7 +66,7 @@ public class HangSubsystem extends ThunderSubsystem {
             m_distanceSensor = new AnalogInput(IOMap.Hang.kAnalogDistance);
         }
 
-        if (Broken.hangLowerLimitDisabled) {
+        if (Broken.hangLowerLimitDisabled || Helpers.isBypassModeEnabled()) {
             m_isZeroed = true;
         }
     }
@@ -76,16 +75,16 @@ public class HangSubsystem extends ThunderSubsystem {
     public void periodic() {
         if (Broken.hangFullyDisabled) return;
 
-        SmartDashboard.putBoolean("Hang_atLower", isAtLowerLimit());
-        SmartDashboard.putBoolean("Hang_atUpper", isAtUpperLimit());
-        SmartDashboard.putBoolean("Hang_isZeroed", isZeroed());
-        SmartDashboard.putNumber("Hang_position", m_encoder.getPosition());
-        SmartDashboard.putNumber("Hang_output_%", m_motor.getAppliedOutput());
-        SmartDashboard.putNumber("Hang_pidSetpoint", m_pidController.getSetpoint());
-        SmartDashboard.putBoolean("Hang_atSetpoint", atSetpoint());
-        SmartDashboard.putNumber("Hang_output_A", m_motor.getOutputCurrent());
-        SmartDashboard.putNumber("hang_distance_sensorDistance", getDistanceSensor().getFirst());
-        SmartDashboard.putBoolean("hang_distance_sensorValid", getDistanceSensor().getSecond());
+        SmartDashboard.putBoolean("Hang / At Lower Sensor", isAtLowerLimit());
+        SmartDashboard.putBoolean("Hang / At Upper Sensor", isAtUpperLimit());
+        SmartDashboard.putBoolean("Hang / Is Zeroed", isZeroed());
+        SmartDashboard.putNumber("Hang / Position", m_encoder.getPosition());
+        SmartDashboard.putNumber("Hang / Output %", m_motor.getAppliedOutput());
+        SmartDashboard.putNumber("Hang / Pid Setpoint", m_pidController.getSetpoint());
+        SmartDashboard.putBoolean("Hang / At Setpoint", atSetpoint());
+        SmartDashboard.putNumber("Hang / Putput A", m_motor.getOutputCurrent());
+        SmartDashboard.putNumber("Hang / Distance Sensor Distance", getDistanceSensor().getFirst());
+        SmartDashboard.putBoolean("Hang / Distance Sensor Valid", getDistanceSensor().getSecond());
     }
 
     private boolean isAtLowerLimit() {
@@ -98,7 +97,7 @@ public class HangSubsystem extends ThunderSubsystem {
     private boolean isAtUpperLimit() {
         if (Broken.hangUpperLimitDisabled) return false;
         if (Broken.hangFullyDisabled) return true;
-        
+
         return !m_upperLimitSensor.get();
     }
 
@@ -107,14 +106,17 @@ public class HangSubsystem extends ThunderSubsystem {
     }
 
     public Command zeroHang() {
-        
-        if (Broken.hangFullyDisabled || Broken.hangLowerLimitDisabled) {
+        if (Broken.hangFullyDisabled || Broken.hangLowerLimitDisabled || Helpers.isBypassModeEnabled()) {
             m_isZeroed = true;
-            return new InstantCommand(() -> {}, this);
+            return CommandBuilder.none(this);
         }
 
         return new CommandBuilder(this)
             .onExecute(() -> {
+                if (Helpers.isBypassModeEnabled()) {
+                    stop();
+                    return;
+                }
                 if (isAtLowerLimit()) {
                     stop();
                     return;
@@ -123,7 +125,7 @@ public class HangSubsystem extends ThunderSubsystem {
 
                 m_motor.set(HangConstants.kZeroingSpeed);
             })
-            .isFinished(this::isAtLowerLimit)
+            .isFinished(() -> isAtLowerLimit() || Helpers.isBypassModeEnabled())
             .onEnd((boolean interupped) -> {
                 stop();
                 if (!interupped) {
@@ -143,11 +145,11 @@ public class HangSubsystem extends ThunderSubsystem {
     private boolean atExtensionLimit() {
         if (Broken.hangFullyDisabled) return true;
 
-        return (atSetpoint() && m_pidController.getSetpoint() == HangConstants.kMaxDeployDistanceRotations) || isAtUpperLimit();
+        return (atSetpoint() && m_pidController.getSetpoint() == HangConstants.kMaxDeployDistanceRotations) || (isAtUpperLimit() && !Helpers.isBypassModeEnabled());
     }
 
-    public Command extend() { //hang will die if it goes past the upper limit
-        if (Broken.hangFullyDisabled) return Commands.none();
+    public Command extend() { // Hang will die if it goes past the upper limit
+        if (Broken.hangFullyDisabled) return CommandBuilder.none(this);
         
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -163,14 +165,18 @@ public class HangSubsystem extends ThunderSubsystem {
             .onlyIf(this::isZeroed);
     }
 
+    public boolean hasFinishedExtending() {
+        return atExtensionLimit();
+    }
+
     private boolean atRetractionLimit() {
         if (Broken.hangFullyDisabled) return true;
 
-        return (atSetpoint() && m_pidController.getSetpoint() == HangConstants.kMaxPullDistanceRotations) || isAtLowerLimit();
+        return (atSetpoint() && m_pidController.getSetpoint() == HangConstants.kMaxPullDistanceRotations) || (isAtLowerLimit() && !Helpers.isBypassModeEnabled());
     }
 
     public Command retract() {
-        if (Broken.hangFullyDisabled) return Commands.none();
+        if (Broken.hangFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -190,7 +196,7 @@ public class HangSubsystem extends ThunderSubsystem {
     private double m_beforePosition = 0;
 
     public Command stowForTrench() {
-        if (Broken.hangFullyDisabled) return Commands.none();
+        if (Broken.hangFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onInitialize(() -> {
@@ -212,7 +218,7 @@ public class HangSubsystem extends ThunderSubsystem {
     }
 
     public Command halt() {
-        if (Broken.hangFullyDisabled) return new InstantCommand(()->{}, this);
+        if (Broken.hangFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(this::stop)
@@ -229,12 +235,12 @@ public class HangSubsystem extends ThunderSubsystem {
     }
 
     public Command manual(DoubleSupplier speedSupplier) {
-        if (Broken.hangFullyDisabled) return Commands.none();
+        if (Broken.hangFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> {
                 double speed = -speedSupplier.getAsDouble() * .5;
-                if ((isAtLowerLimit() && speed < 0) || (isAtUpperLimit() && speed > 0))
+                if ((isAtLowerLimit() && speed < 0) || (isAtUpperLimit() && speed > 0) || Helpers.isBypassModeEnabled())
                     stop();
                 else {
                     m_isClimbing = true;
@@ -259,7 +265,7 @@ public class HangSubsystem extends ThunderSubsystem {
     private double m_preJostlePosition;
     private double m_i = 0;
     public Command jostle() {
-        if (Broken.hangFullyDisabled) return Commands.none();
+        if (Broken.hangFullyDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onInitialize(() -> {

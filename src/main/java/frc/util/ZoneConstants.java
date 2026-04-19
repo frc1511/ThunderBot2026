@@ -12,10 +12,10 @@ import edu.wpi.first.wpilibj.DriverStation;
 public class ZoneConstants {
     public static final Distance kFieldLength = Units.Meters.of(16.541);
     public static final Distance kFieldWidth = Units.Meters.of(8.069);
-    public static final Translation2d kRightBlueTrenchCenterSidePoint = new Translation2d(Units.Meters.zero(), Units.Meters.of(4.624));
-    public static final Distance kTrenchWidth = Units.Meters.of(1.427);
-    public static final Distance kDepth = Units.Meters.of(0.5715);
-    public static final Distance kBumpWidth = Units.Meters.of(2.60);
+    public static final Translation2d kRightBlueTrenchCenterSidePoint = new Translation2d(Units.Meters.zero(), Units.Meters.of(4.623));
+    public static final Distance kTrenchWidth = Units.Meters.of(1.278731);
+    public static final Distance kDepth = Units.Meters.of(0.9);
+    public static final Distance kBumpWidth = Units.Meters.of(2.750945);
 
     public static Rectangle2d constructZone(boolean isBump, boolean isBlueSide, boolean isDSside, boolean isRightSide) {
         Translation2d rightPoint = kRightBlueTrenchCenterSidePoint;
@@ -55,22 +55,26 @@ public class ZoneConstants {
             new Translation2d(leftPoint.getMeasureY(), leftPoint.getMeasureX()));
     }
 
-    public static Translation2d trenchPoint(boolean isBump, boolean isBlueSide, boolean isRightSide) {
+    public static Translation2d trenchPoint(boolean isBlueSide, boolean isRightSide) {
         Translation2d rightPoint = kRightBlueTrenchCenterSidePoint;
         Translation2d leftPoint = kRightBlueTrenchCenterSidePoint;
 
-        if (!isBlueSide) {
-            isRightSide = !isRightSide;
-        }
+        System.out.println("Blue: " + isBlueSide + " Right: " + isRightSide);
 
         Translation2d trenchOffset = new Translation2d(
             (!isRightSide ? kBumpWidth.times(2).plus(kTrenchWidth) // If on the left, add everything thats to the right of it
                 : Units.Meters.zero())
             , Units.Meters.zero());
 
+            
         rightPoint = rightPoint.plus(trenchOffset);
         leftPoint = leftPoint.plus(trenchOffset);
         leftPoint = leftPoint.plus(new Translation2d(kTrenchWidth, Units.Meters.zero()));
+
+        if (!isBlueSide) {
+            rightPoint = new Translation2d(kFieldWidth, kFieldLength).minus(rightPoint);
+            leftPoint = new Translation2d(kFieldWidth, kFieldLength).minus(leftPoint);
+        }
 
         return new Translation2d(rightPoint.getMeasureY(), rightPoint.getMeasureX()).interpolate(new Translation2d(leftPoint.getMeasureY(), leftPoint.getMeasureX()), 0.5);
     }
@@ -126,8 +130,8 @@ public class ZoneConstants {
             zoneInfo.isRightSide = isRightSide;
 
             zoneCache.add(new Pair<Rectangle2d,ZoneConstants.ZoneInfo>(rect, zoneInfo));
-            if (isDSside) {
-                Translation2d trenchPoint = trenchPoint(isBump, isBlueSide, isRightSide);
+            if (isDSside && !isBump) {
+                Translation2d trenchPoint = trenchPoint(isBlueSide, isRightSide);
                 trenchCache.add(trenchPoint);
             }
         }

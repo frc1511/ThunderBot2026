@@ -8,8 +8,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.util.Broken;
 import frc.util.CommandBuilder;
 import frc.util.Constants;
@@ -33,16 +31,16 @@ public class SpindexerSubsystem extends ThunderSubsystem {
     public void periodic() {
         if (Broken.spindexerDisabled) return;
         
-        SmartDashboard.putNumber("Spindexer_output_%", m_motor.get());
-        SmartDashboard.putNumber("Spindexer_output_A", m_motor.getMotorVoltage().getValueAsDouble());
-        SmartDashboard.putNumber("Spindexer_velocity", m_motor.getVelocity().getValueAsDouble());
+        SmartDashboard.putNumber("Spindexer / Output %", m_motor.get());
+        SmartDashboard.putNumber("Spindexer / Output A", m_motor.getMotorVoltage().getValueAsDouble());
+        SmartDashboard.putNumber("Spindexer / Speed RPM", m_motor.getVelocity().getValueAsDouble());
     }
 
     /**
      * PLEASE use {@code SpinDuration} for the duration
     */
     public Command spin(Constants.Storage.Spindexer.Duration duration) {
-        if (Broken.spindexerDisabled) return Commands.none();
+        if (Broken.spindexerDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(() -> {
@@ -53,17 +51,19 @@ public class SpindexerSubsystem extends ThunderSubsystem {
     }
 
     public Command halt() {
-        if (Broken.hoodDisabled) return new InstantCommand(()->{}, this);
+        if (Broken.spindexerDisabled) return CommandBuilder.none(this);
 
         return new CommandBuilder(this)
             .onExecute(m_motor::stopMotor);
     }
 
-    public Command manual_spindexer(DoubleSupplier speed) {
-        if (Broken.spindexerDisabled) return Commands.none();
+    @Override
+    public Command manual(DoubleSupplier speed) {
+        if (Broken.spindexerDisabled) return CommandBuilder.none(this);
         
         return new CommandBuilder(this)
-            .onExecute(() -> m_motor.set(speed.getAsDouble()));
+            .onExecute(() -> m_motor.set(speed.getAsDouble()))
+            .onEnd(() -> m_motor.stopMotor());
     }
     
     public Status status() {
