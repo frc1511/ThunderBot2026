@@ -27,6 +27,7 @@ public class FiringTable {
         firingTable.add(new FiringDataPoint(3.628, 2040, 0.05, 1.11));
         firingTable.add(new FiringDataPoint(4.037, 2170, 0.06, 1.21));
         firingTable.add(new FiringDataPoint(4.411, 2180, 0.07, 1.24));
+        firingTable.add(new FiringDataPoint(4.955, 2240, 0.08, 1.29));
     }
 
     public FiringDataPoint lerp(double distance) {
