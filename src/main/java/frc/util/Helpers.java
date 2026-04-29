@@ -203,15 +203,15 @@ public class Helpers {
         double y = currentPose.getY();
         if (isBlueAlliance()) {
             if (y <= 4d) {
-                target = new Pose2d(1.0375 + .1 + xOffset, 3.2523 - yOffset, Rotation2d.kZero);
+                target = new Pose2d(1.0566 + xOffset, 3.2523 - yOffset, Rotation2d.kZero);
             } else {
-                target = new Pose2d(1.0375 + .1 - xOffset, 4.2391 + yOffset, Rotation2d.kPi);
+                target = new Pose2d(1.0566 - xOffset, 4.2391 + yOffset, Rotation2d.kPi);
             }
         } else {
             if (y <= 4d) {
-                target = new Pose2d(15.4325 + -.05 + xOffset, 3.7301 - yOffset, Rotation2d.kZero);
+                target = new Pose2d(15.4834 + xOffset, 3.7301 - yOffset, Rotation2d.kZero);
             } else {
-                target = new Pose2d(15.4325 + -.05 - xOffset, 4.9169 + yOffset, Rotation2d.kPi);
+                target = new Pose2d(15.4834 - xOffset, 4.9169 + yOffset, Rotation2d.kPi);
             }
         }
 
