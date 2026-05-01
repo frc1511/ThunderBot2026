@@ -135,7 +135,7 @@ public class HubOrchestrator {
         if (cannonOrchestrator.hood.getTargetPosition() == Constants.Hood.Position.FEED) {
             return Constants.Shooter.kFeedRPM;
         } else {
-            return latestConvergance.getFirst().speedRPM;
+            return latestConvergance.getFirst().speedRPM - 50;
         }
     }
 
