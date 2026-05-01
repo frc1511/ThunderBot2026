@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.817454545454545,
-        "y": 7.43625
+        "x": 3.621625,
+        "y": 7.4
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.343102272727272,
-        "y": 7.467170454545454
+        "x": 6.2292499999999995,
+        "y": 7.554602272727272
       },
       "isLocked": false,
       "linkedName": "Triple Swipe Left 1"
@@ -86,8 +86,12 @@
       "rotationDegrees": -0.7213372202614557
     },
     {
-      "waypointRelativePos": 3.2767295597484427,
-      "rotationDegrees": -0.27858759251775145
+      "waypointRelativePos": 2.5094339622641484,
+      "rotationDegrees": 0.0
+    },
+    {
+      "waypointRelativePos": 2.943396226415084,
+      "rotationDegrees": -171.93691377158382
     }
   ],
   "constraintZones": [
@@ -146,7 +150,7 @@
   "folder": "Triple Swipe Left",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -173.19868517601842
+    "rotation": -168.2577806272877
   },
   "useDefaultConstraints": true
 }
