@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.817454545454545,
-        "y": 7.43625
+        "x": 3.621625,
+        "y": 7.3
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.610840909090908,
-        "y": 7.43625
+        "x": 5.415011363636363,
+        "y": 7.3
       },
       "isLocked": false,
       "linkedName": "Triple Swipe Left 2"

@@ -40,7 +40,9 @@
   "bumperOffsetX": 0.0,
   "bumperOffsetY": 0.0,
   "robotFeatures": [
-    "{\"name\":\"Rectangle\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":-0.2,\"y\":-0.11},\"size\":{\"width\":0.5,\"length\":0.26},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}",
-    "{\"name\":\"Rectangle\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":-0.33,\"y\":0.3},\"size\":{\"width\":0.16,\"length\":0.06},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}"
+    "{\"name\":\"Shooter\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":-0.2,\"y\":-0.11},\"size\":{\"width\":0.5,\"length\":0.26},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}",
+    "{\"name\":\"Rear Limelight\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":-0.33,\"y\":0.3},\"size\":{\"width\":0.16,\"length\":0.06},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}",
+    "{\"name\":\"Main Limelight\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":-0.13,\"y\":0.4},\"size\":{\"width\":0.06,\"length\":0.08},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}",
+    "{\"name\":\"Intake\",\"type\":\"rounded_rect\",\"data\":{\"center\":{\"x\":0.5,\"y\":0.0},\"size\":{\"width\":0.711,\"length\":0.23},\"borderRadius\":0.05,\"strokeWidth\":0.02,\"filled\":false}}"
   ]
 }
