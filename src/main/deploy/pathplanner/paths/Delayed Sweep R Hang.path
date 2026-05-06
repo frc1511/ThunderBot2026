@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.931306818181818,
-        "y": 1.4892159090909092
+        "x": 1.4571931818181816,
+        "y": 2.7981818181818188
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.013761363636364,
-        "y": 1.7365795454545456
+        "x": 1.5396477272727274,
+        "y": 3.045545454545455
       },
       "isLocked": false,
       "linkedName": "Delayed Sweep Shoot"
@@ -48,7 +48,7 @@
   "folder": "Delayed Sweep Right",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -50.96448710125308
+    "rotation": -71.93952806380084
   },
   "useDefaultConstraints": true
 }
