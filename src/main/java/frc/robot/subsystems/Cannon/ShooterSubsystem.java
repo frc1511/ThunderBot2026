@@ -73,8 +73,8 @@ public class ShooterSubsystem extends ThunderSubsystem {
                 }
             }
 
-            m_primaryMotor.getVelocity().setUpdateFrequency(100);
-            m_primaryMotor.getClosedLoopReference().setUpdateFrequency(100);
+            // m_primaryMotor.getVelocity().setUpdateFrequency(100);
+            // m_primaryMotor.getClosedLoopReference().setUpdateFrequency(100);
         } else {
             Broken.shooterFullyDisabled = true;
             m_primaryMotor = null;

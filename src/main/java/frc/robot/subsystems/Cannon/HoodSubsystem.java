@@ -74,8 +74,8 @@ public class HoodSubsystem extends ThunderSubsystem {
             m_motor = new TalonFX(Constants.IOMap.Hood.kHoodMotor);
             m_motor.getConfigurator().apply(hoodConfig);
 
-            m_motor.getClosedLoopReference().setUpdateFrequency(100);
-            m_motor.getClosedLoopReferenceSlope().setUpdateFrequency(200);
+            // m_motor.getClosedLoopReference().setUpdateFrequency(100);
+            // m_motor.getClosedLoopReferenceSlope().setUpdateFrequency(200);
 
             m_beamBreakZero = new DigitalInput(Constants.IOMap.Hood.kDIObeamBreak);
             if (!Broken.hoodBeamBreakDisabled && isAtZero() ||
