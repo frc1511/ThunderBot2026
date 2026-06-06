@@ -27,6 +27,8 @@ public class IntakeSubsystem extends ThunderSubsystem {
 
     private TalonFX m_primaryMotor;
 
+    private double m_motorSpeed;
+
     public IntakeSubsystem() {
         TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
         intakeConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
@@ -62,11 +64,19 @@ public class IntakeSubsystem extends ThunderSubsystem {
             Broken.intakeFullyDisabled = true;
             m_primaryMotor = null;
         }
+
+        m_motorSpeed = Constants.Hunger.Intake.kEatPercent;
+
+        if (Constants.kDemoMode_On) {
+            SmartDashboard.putNumber("DEMO / Intake Boost (PERCENT)", 0d);
+        }
     }
 
     @Override
     public void periodic() {
         if (Broken.intakeFullyDisabled) return;
+
+        m_motorSpeed = Helpers.clamp(Constants.kDemo_ShooterSpeed + SmartDashboard.getNumber("DEMO / Intake Boost (PERCENT)", 0d), -1d, 1d);
 
         SmartDashboard.putNumber("Intake / Speed RPM", Helpers.RPStoRPM(m_primaryMotor.getVelocity().getValueAsDouble()));
         SmartDashboard.putNumber("Intake / Target RPM", Helpers.RPStoRPM(m_primaryMotor.getClosedLoopReference().getValueAsDouble()));
@@ -82,7 +92,7 @@ public class IntakeSubsystem extends ThunderSubsystem {
 
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_primaryMotor.set(Constants.Hunger.Intake.kEatPercent);
+                m_primaryMotor.set(m_motorSpeed);
             })
             .onEnd(m_primaryMotor::stopMotor)
             .withName(Constants.Hunger.Intake.intakeCommandName);
@@ -96,7 +106,7 @@ public class IntakeSubsystem extends ThunderSubsystem {
 
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_primaryMotor.set(Constants.Hunger.Intake.kEatPercent);
+                m_primaryMotor.set(m_motorSpeed);
             })
             .isFinished(true);
     }
@@ -113,7 +123,7 @@ public class IntakeSubsystem extends ThunderSubsystem {
 
         return new CommandBuilder(this)
             .onExecute(() -> {
-                m_primaryMotor.set(-Constants.Hunger.Intake.kEatPercent);
+                m_primaryMotor.set(-m_motorSpeed);
             })
             .onEnd(m_primaryMotor::stopMotor)
             .withName(Constants.Hunger.Intake.intakeCommandName);

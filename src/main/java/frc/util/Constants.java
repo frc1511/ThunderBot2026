@@ -42,6 +42,20 @@ import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Voltage;
 
 public class Constants {
+    //////////////////////////////////////////////////////
+    //////////////////////// DEMO ////////////////////////
+    //////////////////////////////////////////////////////
+    public static boolean kDemoMode_On = true;
+    //////////////////////////////////////////////////////
+    public static double kDemo_ShooterSpeed = 1500d;
+    public static double kDemo_HoodAngle = 0.01d;
+    public static double kDemo_IntakeSpeed = 1.0d;
+    public static double kDemo_DriveSpeedMult = 0.3; // %
+    public static double kDemo_DriveAccelMult = 0.3; // %
+    //////////////////////////////////////////////////////
+    //////////////////////// DEMO ////////////////////////
+    //////////////////////////////////////////////////////
+
     public static boolean kUseSignalLogger = false;
     public static boolean kUseDataLog = true;
     public static boolean kUseHDDL = false; // High density data logging
@@ -276,7 +290,7 @@ public class Constants {
     public class Hunger {
         public interface Intake {
             double kEatRPM = 3000;
-            double kEatPercent = 1.0;
+            double kEatPercent = kDemoMode_On ? kDemo_IntakeSpeed : 1.0;
 
             interface IntakePID extends BasePID { 
                 double kP = 8.0;
@@ -374,9 +388,9 @@ public class Constants {
         private static final Voltage kSteerFrictionVoltage = Volts.of(0.2);
         private static final Voltage kDriveFrictionVoltage = Volts.of(0.2);
 
-        public static final double kMaxSpeed = 0.8 * kSpeedAt12Volts.in(MetersPerSecond); // % Multiplier * kSpeedAt12Volts desired top speed
-        public static final double kMaxAngularRate = 1d * DegreesPerSecond.of(600).in(RadiansPerSecond);
-        public static final double kMaxAngularAcceleration = 1d * DegreesPerSecondPerSecond.of(240).in(RadiansPerSecondPerSecond);
+        public static final double kMaxSpeed = (kDemoMode_On ? kDemo_DriveSpeedMult : 0.8) * kSpeedAt12Volts.in(MetersPerSecond); // % Multiplier * kSpeedAt12Volts desired top speed
+        public static final double kMaxAngularRate = (kDemoMode_On ? kDemo_DriveAccelMult : 0.5) * DegreesPerSecond.of(1200).in(RadiansPerSecond);
+        public static final double kMaxAngularAcceleration = (kDemoMode_On ? kDemo_DriveAccelMult : 1) * DegreesPerSecondPerSecond.of(240).in(RadiansPerSecondPerSecond);
 
         public static final double kVelocityDeadband = 0.05 * kMaxSpeed; // % Multiplier 
         public static final double kAngularVelocityDeadband = 0.05 * kMaxAngularRate; // % Multiplier

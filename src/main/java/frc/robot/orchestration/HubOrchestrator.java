@@ -35,6 +35,11 @@ public class HubOrchestrator {
 
         m_virtualHub = new Field2d();
 
+        if (Constants.kDemoMode_On) {
+            SmartDashboard.putNumber("DEMO / Shooter Boost (RPM)", 0d);
+            SmartDashboard.putNumber("DEMO / Hood Adjustment (ROT)", 0d);
+        }
+
         runConvergance();
     }
 
@@ -132,6 +137,9 @@ public class HubOrchestrator {
     }
 
     public double getOptimalShootSpeed() {
+        if (Constants.kDemoMode_On) {
+            return Helpers.clamp(Constants.kDemo_ShooterSpeed + SmartDashboard.getNumber("DEMO / Shooter Boost (RPM)", 0d), 0, 10000);
+        }
         if (cannonOrchestrator.hood.getTargetPosition() == Constants.Hood.Position.FEED) {
             return Constants.Shooter.kFeedRPM;
         } else {
@@ -140,10 +148,19 @@ public class HubOrchestrator {
     }
 
     public double getOptimalHoodAngle() {
+        if (Constants.kDemoMode_On) {
+            return Helpers.clamp(Constants.kDemo_HoodAngle + SmartDashboard.getNumber("DEMO / Hood Adjustment (ROT)", 0d), 0, 2);
+        }
         return latestConvergance.getFirst().hoodAngle;
     }
 
     public double getOptimalDriveOrientation() {
+        if (Constants.kDemoMode_On) {
+            Pose2d nearestHub = Helpers.allianceHub();
+            Pose2d currentPose = swerveSubsystem.currentPose();
+            Translation2d deltaTarget = nearestHub.getTranslation().minus(currentPose.getTranslation());
+            return deltaTarget.getAngle().getRadians();
+        }
         return latestConvergance.getSecond();
     }
 }
