@@ -3,45 +3,45 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.817454545454545,
-        "y": 7.43625
+        "x": 3.621625,
+        "y": 7.4
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.343102272727272,
-        "y": 7.467170454545454
+        "x": 6.2292499999999995,
+        "y": 7.554602272727272
       },
       "isLocked": false,
       "linkedName": "Triple Swipe Left 1"
     },
     {
       "anchor": {
-        "x": 7.476374999999999,
-        "y": 6.034522727272727
+        "x": 6.239556818181818,
+        "y": 5.797465909090908
       },
       "prevControl": {
-        "x": 7.424840909090908,
-        "y": 7.663
+        "x": 6.188022727272727,
+        "y": 7.425943181818181
       },
       "nextControl": {
-        "x": 7.5120835342159955,
-        "y": 4.906133046047248
+        "x": 6.275265352397814,
+        "y": 4.669076227865429
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 6.816738636363636,
-        "y": 5.106909090909092
+        "x": 7.115636363636363,
+        "y": 5.797465909090908
       },
       "prevControl": {
-        "x": 7.146556818181818,
-        "y": 4.385431818181818
+        "x": 7.445454545454544,
+        "y": 5.075988636363634
       },
       "nextControl": {
-        "x": 6.477533622075055,
-        "y": 5.848920059665366
+        "x": 6.7764313493477815,
+        "y": 6.539476877847182
       },
       "isLocked": false,
       "linkedName": null
@@ -82,16 +82,16 @@
       "rotationDegrees": -174.17299747824137
     },
     {
-      "waypointRelativePos": 0.8951406649616367,
-      "rotationDegrees": -90.0
+      "waypointRelativePos": 1.10062893081761,
+      "rotationDegrees": -0.7213372202614557
     },
     {
-      "waypointRelativePos": 2.4143222506393878,
-      "rotationDegrees": -90.0
+      "waypointRelativePos": 2.5094339622641484,
+      "rotationDegrees": 0.0
     },
     {
-      "waypointRelativePos": 2.869565217391299,
-      "rotationDegrees": 180.0
+      "waypointRelativePos": 2.943396226415084,
+      "rotationDegrees": -171.93691377158382
     }
   ],
   "constraintZones": [
@@ -150,7 +150,7 @@
   "folder": "Triple Swipe Left",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -173.19868517601842
+    "rotation": -168.2577806272877
   },
   "useDefaultConstraints": true
 }

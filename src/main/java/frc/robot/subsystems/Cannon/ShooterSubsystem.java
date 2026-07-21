@@ -72,9 +72,10 @@ public class ShooterSubsystem extends ThunderSubsystem {
                     m_primaryMotor = m_shooterMotorA;
                 }
             }
-
-            m_primaryMotor.getVelocity().setUpdateFrequency(100);
-            m_primaryMotor.getClosedLoopReference().setUpdateFrequency(100);
+            if (Constants.kUseHDDL) {
+                m_primaryMotor.getVelocity().setUpdateFrequency(100);
+                m_primaryMotor.getClosedLoopReference().setUpdateFrequency(100);
+            }
         } else {
             Broken.shooterFullyDisabled = true;
             m_primaryMotor = null;
@@ -84,7 +85,6 @@ public class ShooterSubsystem extends ThunderSubsystem {
         for (int i = 0; i < Constants.Shooter.kFuelEstimationLookback; i++) {
             m_lastVoltages.add(0d);
         }
-
     }
 
     public void setOptimalSpeedGetter(DoubleSupplier supplier) {

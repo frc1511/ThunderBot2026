@@ -507,24 +507,31 @@ public class Robot extends TimedRobot {
 
         blinkyBlinkyOrchestrator.batteryVoltage = PDH.getVoltage();
 
-        if (!driverController.isConnected()) {
-            Alert.error("Drive Controller Disconnected");
-        }
-
-        if (!auxController.isConnected()) {
-            Alert.error("Aux Controller Disconnected");
-        }
-
+        
         SmartDashboard.putBoolean("Extra / Drive Disabled", driveDisable.isOn());
         SmartDashboard.putBoolean("Extra / Aux Disabled", auxDisable.isOn());
 
         if (Constants.kLogTimeAndJoystick && m_timeAndJoystickReplay != null) {
             m_timeAndJoystickReplay.update();
         }
-
+        
         SmartDashboard.putNumber("Extra / Frozen Dashboard Detector 2000", i++);
 
         String bigText = String.format("%.3f", Math.max(25 - hubActiveTimer.get(), -2.0)).replace(".", "s");
+
+        if (Constants.kDemoMode_On) {
+            bigText = "!! DEMO MODE !!";
+        }
+
+        if (!driverController.isConnected()) {
+            Alert.error("Drive Controller Disconnected");
+            bigText = "Drive Disconnected";
+        }
+
+        if (!auxController.isConnected()) {
+            Alert.error("Aux Controller Disconnected");
+            bigText = "Aux Disconnected";
+        }
 
         if (pitMode.isOn() || pitModePlus.isOn() || pitModePlatinumEditionTM.isOn()) {
             bigText = "!!! Pit Mode !!!";

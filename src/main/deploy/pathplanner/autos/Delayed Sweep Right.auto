@@ -7,7 +7,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 2.0
+            "waitTime": 4.0
           }
         },
         {
@@ -25,19 +25,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Shoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Delayed Sweep R Hang"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Hang"
+            "name": "ShootForever"
           }
         }
       ]
