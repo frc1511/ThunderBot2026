@@ -108,9 +108,9 @@ public class Robot extends TimedRobot {
     public ThunderSwitch _DNU_pitModePlusPhysical = switchBoard.button(8);
     public ThunderSwitch bypassMode = switchBoard.button(9);
     public ThunderSwitch oneDriverMode = switchBoard.button(10);
-    public ThunderSwitch pitMode = switchBoard.button(11);
+    public ThunderSwitch pitMode = switchBoard.button(11); //! Note: Only puts motors in coast, plus changes controls
 
-    public ThunderSwitch pitModePlus = switchBoard.new ThunderSwitch(new Trigger(() -> _DNU_pitModePlusPhysical.isOn() && pitMode.isOn()));
+    public ThunderSwitch pitModePlus = switchBoard.new ThunderSwitch(new Trigger(() -> _DNU_pitModePlusPhysical.isOn() && pitMode.isOn())); // Manual subsystem control is active on aux
 
     public PowerDistribution PDH = new PowerDistribution(1, ModuleType.kRev);
 
@@ -158,7 +158,7 @@ public class Robot extends TimedRobot {
 
         blinkyBlinkyOrchestrator.bootStatus(1);
 
-        // MARK: Orchestration
+        //! MARK: Orchestration
 
         cannonOrchestrator = new CannonOrchestrator(this);
         firingOrchestrator = new FiringOrchestrator(this);
@@ -234,7 +234,7 @@ public class Robot extends TimedRobot {
             RobotModeTriggers.disabled().and(pitMode::isOn).onTrue(pivot.rememberPosition());
         }
 
-        { // MARK: Switchboard
+        { //! MARK: Switchboard
             ledDisable.get()
                 .whileTrue(
                     new InstantCommand(() -> {
@@ -263,7 +263,7 @@ public class Robot extends TimedRobot {
         }
 
         /**********************/
-        // MARK: Drive
+        //! MARK: Drive
         /**********************/
 
         { // Omnipresent Drive Controls (OneDrive Off/On)
@@ -317,10 +317,15 @@ public class Robot extends TimedRobot {
         }
 
         /**********************/
-        // MARK: Aux
+        //! MARK: Aux
         /**********************/
+        
+        { 
+            //! + OneDrive Aux Fallback
+            //! | =========================================================
+            //! | [On](Drive Disable)  [Off](Aux Disable)   [On](One Drive) 
+            //! | [---](Pit Plus)      [---](Pit Platinum)
 
-        { // OneDrive Aux Fallback
             BooleanSupplier condition = () -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff();
 
             auxController.leftTrigger() // Outtake (hold)
@@ -353,7 +358,9 @@ public class Robot extends TimedRobot {
             auxController.y().and(condition)      .whileTrue(drivetrain.hubLock().alongWith(shooter.holdSpeedForShoot().asProxy()).withName("OneDriveBackupDriveHubLock")); // Lock onto hub and shoot
             auxController.a().and(condition)         .onTrue(drivetrain.resetRotation().withName("OneDriveBackupDriveSeedFieldCentric")); // Reset IMU
 
-            // These ones get overridden during pit mode plus
+            //? Not in pit mode but in onedrive still
+            //? | [On](Drive Disable)  [Off](Aux Disable)   [On](One Drive) 
+            //? | [Off](Pit Plus)      [---](Pit Platinum)
             condition = () -> driveDisable.isOn() && oneDriverMode.isOn() && auxDisable.isOff() && pitModePlus.isOff();
 
             auxController.povLeft().and(condition)   .onTrue(drivetrain.decreaseSpeed().withName("OneDriveBackupDriveDescSpeed")); // Drive go weeee
@@ -364,17 +371,40 @@ public class Robot extends TimedRobot {
                                                     .onFalse(hang.halt()               .withName("OneDriveBackupHangStop"));
         }
 
-        { // Main Aux Controls
+
+
+        { 
+            //! + Main Aux Controls
+            //! | =========================================================
+            //! | [---](Drive Disable) [Off](Aux Disable)   [Off](One Drive) 
+            //! | [Off](Pit Plus)      [---](Pit Platinum)
+
             BooleanSupplier condition = () -> auxDisable.isOff() && oneDriverMode.isOff() && pitModePlus.isOff();
+            
+            /**
+             *              Feed (HOLD)
+             *                  ↑
+             *                  Y
+             * Restart SOTM <X--#--B> Trench Preset
+             *                  A
+             *                  ↓
+             *             Tower Preset
+             */
+
+            /**
+             * SOTM is on by default, it turns off if any of the presets are pressed (besides feed)
+             *!SOTM means the auto shooter speed and hood angle to drivers, not including hub align, like it would to a programmer, so hub align remains on after preset is selcted.
+            **/
+
+            auxController.y().and(condition)           .whileTrue(hood.toPosition(() -> Constants.Hood.Position.FEED.get())   .withName("PresetFeed"))
+                                                         .onFalse(hood.toPosition(() -> Constants.Hood.Position.TRENCH.get()) .withName("PresetPostFeed"));
+            auxController.x().and(condition)              .onTrue(hubOrchestrator.restartSOTM()                               .withName("RestartSOTM"));
+            auxController.b().and(condition)              .onTrue(hubOrchestrator.useStaticPoint(""+"trench")                 .withName("PresetTrench"));
+            auxController.a().and(condition)              .onTrue(hubOrchestrator.useStaticPoint(""+"tower")                  .withName("PresetTower"));
 
             (auxController.leftStick().or(auxController.rightStick())).and(condition)
                                                        .whileTrue(shooter.reverse()                                           .withName("ShooterReverse"));
             auxController.start().and(condition)       .whileTrue(hungerOrchestrator.jostleRepeatedly()                       .withName("HungerJostle"));
-            auxController.y().and(condition)           .whileTrue(hood.toPosition(() -> Constants.Hood.Position.FEED.get())   .withName("PresetFeed"))
-                                                         .onFalse(hood.toPosition(() -> Constants.Hood.Position.TRENCH.get()) .withName("PresetPostFeed"));
-            auxController.x().and(condition)              .onTrue(hood.toPosition(() -> Constants.Hood.Position.TRENCH.get()) .withName("PresetTower"));
-            auxController.b().and(condition)              .onTrue(hood.toPosition(() -> Constants.Hood.Position.TRENCH.get()) .withName("PresetTrench"));
-            auxController.a().and(condition)              .onTrue(hood.toPosition(() -> Constants.Hood.Position.HUB.get())    .withName("PresetHub"));
             auxController.leftBumper().and(condition)  .whileTrue(shooter.holdSpeedForShoot().asProxy()                       .withName("ShooterPreheat"))
                                                          .onFalse(shooter.halt()                                              .withName("ShooterHalt"));
             auxController.leftTrigger().and(condition) .whileTrue(intake.outtake()                                            .withName("IntakeOuttake"))
@@ -390,10 +420,19 @@ public class Robot extends TimedRobot {
                                                          .onFalse(spindexer.halt()                                            .withName("SpindexerHalt"));
         }
 
+
+
         pitMode.get().and(this::isDisabled).whileTrue(pivot.setCoastMode().ignoringDisable(true));
         pitMode.get().and(this::isDisabled).whileTrue(hood.setCoastMode().ignoringDisable(true));
 
-        { // Manual Aux Controls (PitMode On, Plus On, Platinum Off)
+
+
+        { 
+            //! + Manual Aux Controls
+            //! | =========================================================
+            //! | [---](Drive Disable) [Off](Aux Disable)   [Off](One Drive) 
+            //! | [On](Pit Plus)       [Off](Pit Platinum)
+
             BooleanSupplier condition = () -> auxDisable.isOff() && oneDriverMode.isOff() && pitModePlus.isOn() && pitModePlatinumEditionTM.isOff();
 
             /**
@@ -431,7 +470,12 @@ public class Robot extends TimedRobot {
             auxController.leftTrigger() .and(condition).whileTrue(manualModeHandler.manual2ModifierSuperLow());
         }
         
-        { // Manual Aux SysID (PitMode On, Plus On, Platinum On)
+        { 
+            //! + Manual Aux SysID
+            //! | =========================================================
+            //! | [---](Drive Disable) [Off](Aux Disable)   [Off](One Drive) 
+            //! | [On](Pit Plus)       [On](Pit Platinum)
+
             BooleanSupplier condition = () -> auxDisable.isOff() && oneDriverMode.isOff() && pitModePlus.isOn() && pitModePlatinumEditionTM.isOn();
 
             if (Constants.kSysIDMode == Constants.SysIDMechanism.SHOOTER) {
@@ -451,7 +495,7 @@ public class Robot extends TimedRobot {
 
         blinkyBlinkyOrchestrator.bootStatus(3);
 
-        // MARK: Auto
+        //! MARK: Auto
         NamedCommands.registerCommand("DB_Hub_AL_Start", drivetrain.setHubLock(true));
         NamedCommands.registerCommand("DB_Hub_AL_Stop", drivetrain.setHubLock(false));
         NamedCommands.registerCommand("Preheat", shooter.holdSpeedForShoot().withTimeout(0));
@@ -498,7 +542,7 @@ public class Robot extends TimedRobot {
         Alert.info(String.format("Last build time: %s, on branch %s.", BuildConstants.BUILD_DATE, BuildConstants.GIT_BRANCH) + (BuildConstants.DIRTY == 1 ? "Modified" : ""));
     }
 
-    private int i = 0; // For the Frozen Dashboard Detector 2000
+    private int counter = 0; // For the Frozen Dashboard Detector 2000
 
     @Override
     public void robotPeriodic() {
@@ -515,7 +559,7 @@ public class Robot extends TimedRobot {
             m_timeAndJoystickReplay.update();
         }
         
-        SmartDashboard.putNumber("Extra / Frozen Dashboard Detector 2000", i++);
+        SmartDashboard.putNumber("Extra / Frozen Dashboard Detector 2000", counter++);
 
         String bigText = String.format("%.3f", Math.max(25 - hubActiveTimer.get(), -2.0)).replace(".", "s");
 
@@ -531,6 +575,10 @@ public class Robot extends TimedRobot {
         if (!auxController.isConnected()) {
             Alert.error("Aux Controller Disconnected");
             bigText = "Aux Disconnected";
+        }
+
+        if (!hubOrchestrator.m_isUsingSOTM && (counter % 100 - 50 <= 0)) { // Counter goes up 50/s, this alternates true every 1s
+            bigText = "!!! SOTM OFF !!!";
         }
 
         if (pitMode.isOn() || pitModePlus.isOn() || pitModePlatinumEditionTM.isOn()) {

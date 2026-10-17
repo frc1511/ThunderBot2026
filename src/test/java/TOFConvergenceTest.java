@@ -14,7 +14,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.util.Constants;
 import frc.util.FiringTable;
 import frc.util.Helpers;
-import frc.util.FiringTable.FiringDataPoint;
+import frc.util.FiringDataPoint;
 
 public class TOFConvergenceTest {
     @BeforeEach
@@ -86,7 +86,7 @@ public class TOFConvergenceTest {
 
         // finalPoint.speedRPM = Helpers.clamp(finalPoint.speedRPM, 0, 2800);
 
-        return new Pair<FiringTable.FiringDataPoint,Double>(finalPoint, finalTheta);
+        return new Pair<FiringDataPoint,Double>(finalPoint, finalTheta);
     }
 
     @Test

@@ -1,8 +1,10 @@
 package frc.robot.orchestration;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -17,21 +19,27 @@ import frc.robot.subsystems.Drive.SwerveSubsystem;
 import frc.util.Constants;
 import frc.util.FiringTable;
 import frc.util.Helpers;
-import frc.util.FiringTable.FiringDataPoint;
+import frc.util.StaticFiringTable;
+import frc.util.StaticFiringTable.StaticFiringDataPoint;
+import frc.util.FiringDataPoint;
 
 public class HubOrchestrator {
     CannonOrchestrator cannonOrchestrator;
     SwerveSubsystem swerveSubsystem;
     FiringTable firingTable;
+    StaticFiringTable staticFiringTable;
 
     Pair<FiringDataPoint, Double> latestConvergance;
 
     private Field2d m_virtualHub;
+    public  boolean m_isUsingSOTM = true;
+    private FiringDataPoint m_staticPoint = null;
 
     public HubOrchestrator(Robot robot) {
         cannonOrchestrator = robot.cannonOrchestrator;
         swerveSubsystem = robot.drivetrain;
         firingTable = new FiringTable();
+        staticFiringTable = new StaticFiringTable();
 
         m_virtualHub = new Field2d();
 
@@ -120,12 +128,13 @@ public class HubOrchestrator {
 
         FiringDataPoint finalPoint = firingTable.lerp(finalDistance);
 
-        return new Pair<FiringTable.FiringDataPoint,Double>(finalPoint, finalTheta);
+        return new Pair<FiringDataPoint, Double>(finalPoint, finalTheta);
     }
 
     public static Translation2d virtualHub = new Translation2d();
 
     public void runConvergance() {
+
         ChassisSpeeds currentSpeed = swerveSubsystem.getSpeed();
         Pose2d currentPose = swerveSubsystem.currentPose();
         Pose2d nearestHub = Helpers.allianceHub();
@@ -133,7 +142,32 @@ public class HubOrchestrator {
         SmartDashboard.putNumber("SOTM / Converge Dist", Math.sqrt(Math.pow(currentPose.getX() - nearestHub.getX(), 2) + Math.pow(currentPose.getY() - nearestHub.getY(), 2)));
         
         latestConvergance = converge(currentSpeed, currentPose.getTranslation(), nearestHub.getTranslation());
+        // Override SOTM data point if at static point
+        if (!m_isUsingSOTM && m_staticPoint != null) {
+            latestConvergance = new Pair<FiringDataPoint, Double>(m_staticPoint, latestConvergance.getSecond());
+        }
+
         SmartDashboard.putNumber("SOTM / Firing Speed", latestConvergance.getFirst().speedRPM);
+        SmartDashboard.putNumber("SOTM / Hood Angle", latestConvergance.getFirst().hoodAngle);
+    }
+
+    public Command useStaticPoint(String name) {
+        return new InstantCommand(() -> {
+            Optional<StaticFiringDataPoint> data = staticFiringTable.staticFiringTable.stream()
+                                  .filter(x -> name.equals(x.name))
+                                  .findFirst();
+            if (data.isPresent()) {
+                latestConvergance = new Pair<FiringDataPoint, Double>(data.get(), latestConvergance.getSecond());
+                m_isUsingSOTM = false;
+            }
+        });
+    }
+
+    public Command restartSOTM() {
+        return new InstantCommand(() -> {
+            m_isUsingSOTM = true;
+            runConvergance(); // Just to make sure it's got good data in there
+        });
     }
 
     public double getOptimalShootSpeed() {
