@@ -131,4 +131,11 @@ public class TOFConvergenceTest {
             assertTrue(convergeResult.getFirst().hoodAngle > Constants.Hood.Position.BOTTOM.get());
         });
     }
+
+    @Test
+    void lerpTest() {
+        FiringDataPoint data = firingTable.lerp(3.48d);
+        System.out.println("Speed: " + data.speedRPM);
+        System.out.println("Hood: " + data.hoodAngle);
+    }
 }

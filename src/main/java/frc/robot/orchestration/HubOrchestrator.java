@@ -158,6 +158,7 @@ public class HubOrchestrator {
                                   .findFirst();
             if (data.isPresent()) {
                 latestConvergance = new Pair<FiringDataPoint, Double>(data.get(), latestConvergance.getSecond());
+                m_staticPoint = data.get();
                 m_isUsingSOTM = false;
             }
         });

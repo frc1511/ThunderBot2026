@@ -266,7 +266,12 @@ public class Robot extends TimedRobot {
         //! MARK: Drive
         /**********************/
 
-        { // Omnipresent Drive Controls (OneDrive Off/On)
+        { 
+            // Omnipresent Drive Controls (OneDrive Off/On)
+            //! | =========================================================
+            //! | [Off](Drive Disable) [---](Aux Disable)   [---](One Drive) 
+            //! | [---](Pit Plus)      [---](Pit Platinum)
+
             BooleanSupplier condition = () -> driveDisable.isOff(); // Always present on drive controller
 
             driverController.x().and(condition).whileTrue(drivetrain.brick().withName("DriveBrick")); // Points wheels inwards while held
@@ -275,7 +280,12 @@ public class Robot extends TimedRobot {
             driverController.a().and(condition).onTrue(drivetrain.resetRotation().withName("DriveSeedFieldCentric")); // Reset IMU
         }
 
-        { // Hang Controls
+        { 
+            //! Hang Controls
+            //! | =========================================================
+            //! | [Off](Drive Disable) [---](Aux Disable)   [---](One Drive) 
+            //! | [---](Pit Plus)      [---](Pit Platinum) +[Off](Climber Disable)
+
             BooleanSupplier condition = () -> driveDisable.isOff() && climberDisable.isOff();
 
             driverController.b().and(condition).whileTrue(hang.jostle().withName("HangJostle"));
@@ -283,7 +293,12 @@ public class Robot extends TimedRobot {
             driverController.povDown().and(condition).whileTrue(hang.retract().withName("HangRetract")).onFalse(hang.halt().withName("HangHalt")); // Hang goes downies while held
         }
 
-        { // Default Drive Controls (OneDrive Off)
+        { 
+            //! Default Drive Controls
+            //! | =========================================================
+            //! | [Off](Drive Disable) [---](Aux Disable)   [Off](One Drive) 
+            //! | [---](Pit Plus)      [---](Pit Platinum)
+            
             BooleanSupplier condition = () -> driveDisable.isOff() && oneDriverMode.isOff();
 
             driverController.leftTrigger() .and(condition).whileTrue(drivetrain.temporarySlowmode().withName("DriveTemporarySlowdown"));
@@ -302,7 +317,11 @@ public class Robot extends TimedRobot {
             );
         }
 
-        { // OneDrive Drive Controls (OneDrive On)
+        { 
+            //! OneDrive Drive Controls
+            //! | =========================================================
+            //! | [Off](Drive Disable) [---](Aux Disable)   [On](One Drive) 
+            //! | [---](Pit Plus)      [---](Pit Platinum)
             BooleanSupplier condition = () -> driveDisable.isOff() && oneDriverMode.isOn();
 
             driverController.povLeft().and(condition).onTrue(drivetrain.decreaseSpeed().withName("OneDriveDriveDescSpeed")); // Drive go weeee
@@ -385,10 +404,10 @@ public class Robot extends TimedRobot {
              *              Feed (HOLD)
              *                  ↑
              *                  Y
-             * Restart SOTM <X--#--B> Trench Preset
+             * Restart SOTM <X--#--B> Trench Preset (HOLD)
              *                  A
              *                  ↓
-             *             Tower Preset
+             *           Tower Preset (HOLD)
              */
 
             /**
@@ -399,8 +418,10 @@ public class Robot extends TimedRobot {
             auxController.y().and(condition)           .whileTrue(hood.toPosition(() -> Constants.Hood.Position.FEED.get())   .withName("PresetFeed"))
                                                          .onFalse(hood.toPosition(() -> Constants.Hood.Position.TRENCH.get()) .withName("PresetPostFeed"));
             auxController.x().and(condition)              .onTrue(hubOrchestrator.restartSOTM()                               .withName("RestartSOTM"));
-            auxController.b().and(condition)              .onTrue(hubOrchestrator.useStaticPoint(""+"trench")                 .withName("PresetTrench"));
-            auxController.a().and(condition)              .onTrue(hubOrchestrator.useStaticPoint(""+"tower")                  .withName("PresetTower"));
+            auxController.b().and(condition)              .onTrue(hubOrchestrator.useStaticPoint(""+"trench")                 .withName("PresetTrench"))
+                                                         .onFalse(hubOrchestrator.restartSOTM()                               .withName("RestartSOTM"));
+            auxController.a().and(condition)              .onTrue(hubOrchestrator.useStaticPoint(""+"tower")                  .withName("PresetTower"))
+                                                         .onFalse(hubOrchestrator.restartSOTM()                               .withName("RestartSOTM"));
 
             (auxController.leftStick().or(auxController.rightStick())).and(condition)
                                                        .whileTrue(shooter.reverse()                                           .withName("ShooterReverse"));

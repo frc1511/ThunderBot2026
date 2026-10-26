@@ -20,8 +20,7 @@ public class StaticFiringTable {
     public List<StaticFiringDataPoint> staticFiringTable = new ArrayList<StaticFiringDataPoint>();
 
     public StaticFiringTable() {
-        //!!!!!!!!!!! Non-final, please input acutual data !!!!!!!!!!!//
-        staticFiringTable.add(new StaticFiringDataPoint("trench", 1730, 0.01));
-        staticFiringTable.add(new StaticFiringDataPoint("tower", 1800, 0.25));
+        staticFiringTable.add(new StaticFiringDataPoint("trench", 2015, 0.047d));
+        staticFiringTable.add(new StaticFiringDataPoint("tower", 1976, 0.043d));
     }
 }
